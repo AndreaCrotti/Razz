@@ -37,11 +37,12 @@
 import unittest
 import random
 import pprint
+from itertool import product
 
 NROUNDS = 5
 MAXPLAYER = 7
 PLAYERS_NAMES = [ "Aldo", "Bruno", "Carlo", "Dino", "Ezio", "Franco", "Gino" ]
-CARDS = [ str(n) for n in range(1,11) ] + ["J", "Q", "K"]
+CARDS = ["A"] + [ str(n) for n in range(2,11) ] + ["J", "Q", "K"]
 VALS = {}
 
 i = 1
@@ -51,6 +52,17 @@ for c in CARDS:
 
 SUITS = ["A", "B", "C", "D"]
 
+def getNewCard(deck):
+    while True:
+        print "choose a card from the deck"
+        pprint.pprint(deck)
+        c = raw_input("value")
+        s = raw_input("suit")
+        card = deck.getCard(c, s)
+        if card:
+            return card
+    
+
 class TestRazzTester(unittest.TestCase):
     def test_AtLeastOnePlayer(self):
         pass
@@ -59,9 +71,18 @@ class RazzGame(object):
     """
     Main class representing the status of our game
     """
-    def __init__(self, ngame, nplayers):
+    def __init__(self, ngame, players, deck):
         self.ngame = ngame
-        self.nplayers = nplayers
+        self.players = players
+        self.deck = deck
+
+    def round0(self):
+        for p in self.players:
+            print "selecting the hidden cards"
+            for i in range(2):
+                c = getNewCard(self.deck)
+                p.addCard(c)
+
 
 class RazzHand(object):
     def __init__(self, cards):
@@ -74,7 +95,15 @@ class Deck(object):
     """
     Class containig methods on the particular deck
     """
-    pass
+    def __init__(self, suits, values):
+        self.cards = [ Card(val, suit) for val, suit in product(values, suits) ]
+
+    def getCard(self, value, suit):
+        c = Card(value, suit)
+        if c in self.cards:
+            self.cards.remove(c)
+            return c
+        return None
 
 class Card(object):
     def __init__(self, value, suite):
@@ -83,12 +112,19 @@ class Card(object):
 
     def __cmp__(self, other):
         return -cmp(VALS[self.value], VALS[other.value])
+
+    def __eq__(self, other):
+        return (self.value == other.value and self.suite == other.suite)
     
 class Player(object):
     def __init__(self, name):
         self.name = name
+        self.cards = []
+
+    def addCard(self, card):
+        self.cards.append(card)
     
 
 if __name__ == '__main__':
-    unittest.main()
+    pass
 
