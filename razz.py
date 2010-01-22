@@ -42,7 +42,7 @@ from itertool import product
 NROUNDS = 5
 MAXPLAYER = 7
 PLAYERS_NAMES = [ "Aldo", "Bruno", "Carlo", "Dino", "Ezio", "Franco", "Gino" ]
-CARDS = ["A"] + [ str(n) for n in range(2,11) ] + ["J", "Q", "K"]
+CARDS = ["A"] + [ str(n) for n in range(2, 11) ] + ["J", "Q", "K"]
 VALS = {}
 
 i = 1
@@ -63,10 +63,6 @@ def getNewCard(deck):
             return card
     
 
-class TestRazzTester(unittest.TestCase):
-    def test_AtLeastOnePlayer(self):
-        pass
-
 class RazzGame(object):
     """
     Main class representing the status of our game
@@ -82,6 +78,12 @@ class RazzGame(object):
             for i in range(2):
                 c = getNewCard(self.deck)
                 p.addCard(c)
+
+    def round123(self):
+        pass
+
+    def round5(self):
+        pass
 
 
 class RazzHand(object):
@@ -123,7 +125,12 @@ class Player(object):
 
     def addCard(self, card):
         self.cards.append(card)
+
     
+class TestRazzTester(unittest.TestCase):
+    def test_AtLeastOnePlayer(self):
+        pass
+
 
 if __name__ == '__main__':
     pass

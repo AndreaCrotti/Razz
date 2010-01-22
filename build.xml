@@ -1,0 +1,6 @@
+<project name="razz" default="compile" basedir=".">
+
+<target name="compile" >
+
+</target>
+</project>
