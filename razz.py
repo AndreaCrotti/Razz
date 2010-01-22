@@ -37,7 +37,10 @@
 import unittest
 import random
 import pprint
-from itertool import product
+from itertools import product
+
+# TODO: remove the ugly global stuff
+# TODO: test everything better
 
 NROUNDS = 5
 MAXPLAYER = 7
@@ -87,18 +90,30 @@ class RazzGame(object):
 
 
 class RazzHand(object):
-    def __init__(self, cards):
+
+    def __init__(self, cards = []):
         self.cards = cards
 
+    def __str__(self):
+       return "; ".join(map(str, self.cards))
+
     def __cmp__(self, other):
-        pass
+        self.cards.sort(reverse=True)
+        other.cards.sort(reverse=True)
+        return cmp(self.cards, other.cards)
+
+    def addCard(self, card):
+        self.cards.append(card)
 
 class Deck(object):
     """
     Class containig methods on the particular deck
     """
-    def __init__(self, suits, values):
+    def __init__(self, values, suits):
         self.cards = [ Card(val, suit) for val, suit in product(values, suits) ]
+
+    def __str__(self):
+        return "\n".join(map(str, self.cards))
 
     def getCard(self, value, suit):
         c = Card(value, suit)
@@ -107,10 +122,20 @@ class Deck(object):
             return c
         return None
 
+    def getRandomCard(self):
+        "Returns a card randomly from the deck"
+        c = random.choice(self.cards)
+        print "removing card %s" % str(c)
+        self.cards.remove(c)
+        return c
+
 class Card(object):
     def __init__(self, value, suite):
         self.value = value
         self.suite = suite
+
+    def __str__(self):
+        return " of ".join([str(self.value), str(self.suite)])
 
     def __cmp__(self, other):
         return -cmp(VALS[self.value], VALS[other.value])
@@ -131,6 +156,16 @@ class TestRazzTester(unittest.TestCase):
     def test_AtLeastOnePlayer(self):
         pass
 
+class TestDeck(unittest.TestCase):
+    def test_deckNotEmpty(self):
+        pass
+
+def gen_rand_hand():
+    d = Deck(CARDS, SUITS)
+    h = RazzHand()
+    for _ in range(7):
+        h.addCard(d.getRandomCard())
+    return h
 
 if __name__ == '__main__':
     pass
