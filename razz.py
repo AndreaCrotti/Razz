@@ -43,13 +43,13 @@ from itertools import product
 # TODO: test everything better
 
 NROUNDS = 5
-MAXPLAYER = 7
+MAXPLAYER = 8
 PLAYERS_NAMES = [ "Aldo", "Bruno", "Carlo", "Dino", "Ezio", "Franco", "Gino" ]
-CARDS = ["A"] + [ str(n) for n in range(2, 11) ] + ["J", "Q", "K"]
+RANKS = ["A"] + [ str(n) for n in range(2, 11) ] + ["J", "Q", "K"]
 VALS = {}
 
 i = 1
-for c in CARDS:
+for c in RANKS:
     VALS[c] = i
     i += 1
 
@@ -161,7 +161,7 @@ class TestDeck(unittest.TestCase):
         pass
 
 def gen_rand_hand():
-    d = Deck(CARDS, SUITS)
+    d = Deck(RANKS, SUITS)
     h = RazzHand()
     for _ in range(7):
         h.addCard(d.getRandomCard())
