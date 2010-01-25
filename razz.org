@@ -1,0 +1,12 @@
+
+* Objectives
+** Design a nice structure
+
+** See how to run test units in many languages
+
+** Compare the performances and the possibilities given
+
+** Write a distributed version in erlang/python and see how they behaves
+
+* Links
+  [[http://www.pokereagles.com/poker-rules/razz-rules.php][razz rules explained]]

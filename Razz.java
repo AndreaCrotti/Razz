@@ -1,5 +1,5 @@
 // Check where is the junit framework
-import junit.framework.*;
+//import junit.framework.*;
 
 /**
 * Describe class <code>Razz</code>
@@ -11,3 +11,10 @@ public class Razz {
     }
 }
 
+class Deck {
+    
+}
+
+class Hand {
+
+}
