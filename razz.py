@@ -22,26 +22,23 @@ class RazzGame(object):
         self.players = players
         self.deck = deck
 
-
 class Deck(object):
-    """
-    Class containig methods on the particular deck
-    """
     def __init__(self, values, repetitions):
         self.cards = dict(zip(values, [repetitions] * len(values)))
 
     def getCard(self, card):
-        if self.cards.has_key(card) and self.cards[card] > 0:
+        "Returns one card or delete the entry when they're finished"
+        if self.cards[card] == 1:
+            self.cards.pop(card)
+        else:
             self.cards[card] -= 1
-            return card
-        return None
+        return card
 
-    ## When arriving to 0 card delete completely the entry
+    # in this way we choose only on the rank, not all the cards
     def getRandomCard(self):
         "Returns a card randomly from the deck"
-        c = random.choice(self.cards)
-        print "removing card %s" % str(c)
-        return c
+        c = random.choice(self.cards.keys())
+        return self.getCard(c)
     
 class Player(object):
     def __init__(self, name):
