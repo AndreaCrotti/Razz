@@ -15,25 +15,33 @@ class RazzGame(object):
     """
     Main class representing the status of our game
     """
-    def __init__(self, ngame, nplayers):
-        self.ngame = ngame
+    def __init__(self, nplayers):
         # initializing a standard 52 cards deck
         self.deck = Deck(range(1, 14) * 4)
         self.hands = {}
+        # we could also create a Player class but there's no need
         for i in range(nplayers):
             self.hands[i] = RazzHand([])
 
     def __str__(self):
         return "\n".join(map(str, self.hands.values()))
 
+    def play(self):
+        "real game"
+        print "starting the real game"
+        for p, h in self.hands.items():
+            while not(h.is_full()):
+                self.addCardToPlayer(p, self.deck.getRandomCard())
+        # at this point everybody should have 7 cards
+
     def round0(self, initcards):
         """Initialization of the game, give the right card to the players
         gets a dictionary with the initial cards for every player"""
+        print "round 0"
         self.hands.update(initcards)
 
     def addCardToPlayer(self, player, card):
         self.hands[player].addCard(card)
-        self.deck.getCard(card)
 
 class Deck(object):
     def __init__(self, card_list):
@@ -45,6 +53,9 @@ class Deck(object):
         # I need to get back the card list to print correctly
         return str(self.cards)
 
+    def __len__(self):
+        return sum(self.cards.values())
+
     def getCard(self, card):
         "Returns one card or delete the entry when they're finished"
         if self.cards[card] == 1:
@@ -53,7 +64,7 @@ class Deck(object):
             self.cards[card] -= 1
         return card
 
-    # in this way we choose only on the rank, not all the cards
+    # FIXME: removing 2 cards every time for some reasons
     def getRandomCard(self):
         "Returns a card randomly from the deck"
         c = random.choice(self.cards.keys())
@@ -95,6 +106,9 @@ class RazzHand(Deck):
         # only reaches here if they're perfectly equal
         return 0
 
+    def is_full(self):
+        return len(self) == self.TOT_CARDS
+
     # maybe better to not remove completely but just create another list
     def normalize(self):
         "Remove all the pairs, we are sure we're not removing too much thanks to has_duplicates"
@@ -110,14 +124,6 @@ class RazzHand(Deck):
         else:
             return False
 
-class Player(object):
-    def __init__(self, name):
-        self.name = name
-        self.cards = []
-
-    def addCard(self, card):
-        self.cards.append(card)
-    
 class TestRazzTester(unittest.TestCase):
     def test_highCardValues(self):
         h = [13, 10, 7, 6, 2]
@@ -136,8 +142,13 @@ class TestRazzTester(unittest.TestCase):
 
 
 class TestDeck(unittest.TestCase):
-    def test_deckNotEmpty(self):
-        pass
+    def test_RandomIsAlwaysGettingACard(self):
+        r = Deck(range(1,14) * 4)
+        i = 0
+        while i < 52:
+            self.assertTrue(r.getRandomCard() > 0)
+            i += 1
+        
 
 def str_to_card(s):
     if s.isdigit():
@@ -153,4 +164,11 @@ if __name__ == '__main__':
     nplayers = int(argv[1])
     my_cards = map(str_to_card, argv[2 : 5])
     other_cards = map(str_to_card, argv[5 : 5 + nplayers])
-    print nplayers, my_cards, other_cards
+    init_cards = {}
+    init_cards[0] = my_cards
+    for p, o in enumerate(other_cards):
+        init_cards[p] = o
+
+    r = RazzGame(nplayers)
+    r.round0(init_cards)
+    r.play()
