@@ -26,18 +26,22 @@ class RazzGame(object):
     def __str__(self):
         return "\n".join(map(str, self.hands.values()))
 
-    def play(self):
-        "real game"
+    def play(self, rank):
+        """ Run the game and return how many hands where below the rank given """
         print "starting the real game"
         for p, h in self.hands.items():
             while not(h.is_full()):
                 self.addCardToPlayer(p, self.deck.getRandomCard())
         # at this point everybody should have 7 cards
 
-    def round0(self, initcards):
+    def loop(self, times, rank, initcards):
+        # at every loop it should restart from scratch
+        for n in range(times):
+            pass
+
+    def init_game(self, initcards):
         """Initialization of the game, give the right card to the players
         gets a dictionary with the initial cards for every player"""
-        print "round 0"
         self.hands.update(initcards)
 
     def addCardToPlayer(self, player, card):
@@ -140,12 +144,16 @@ class TestRazzTester(unittest.TestCase):
         low = [8, 4, 3, 2, 1]
         self.assertTrue(RazzHand(pok) < RazzHand(low))
 
+    # adding some testing about normalization and more
+    def test_NormalizeDontRemoveTooManyCards(self):
+        pass
 
 class TestDeck(unittest.TestCase):
     def test_RandomIsAlwaysGettingACard(self):
         r = Deck(range(1,14) * 4)
         i = 0
-        while i < 52:
+        # we get a card until the deck is empty
+        while i < len(r):
             self.assertTrue(r.getRandomCard() > 0)
             i += 1
         
@@ -170,5 +178,5 @@ if __name__ == '__main__':
         init_cards[p] = o
 
     r = RazzGame(nplayers)
-    r.round0(init_cards)
+    r.init_game(init_cards)
     r.play()
