@@ -15,10 +15,25 @@ class RazzGame(object):
     """
     Main class representing the status of our game
     """
-    def __init__(self, ngame, players, deck):
+    def __init__(self, ngame, nplayers):
         self.ngame = ngame
-        self.players = players
-        self.deck = deck
+        # initializing a standard 52 cards deck
+        self.deck = Deck(range(1, 14) * 4)
+        self.hands = {}
+        for i in range(nplayers):
+            self.hands[i] = RazzHand([])
+
+    def __str__(self):
+        return "\n".join(map(str, self.hands.values()))
+
+    def round0(self, initcards):
+        """Initialization of the game, give the right card to the players
+        gets a dictionary with the initial cards for every player"""
+        self.hands.update(initcards)
+
+    def addCardToPlayer(self, player, card):
+        self.hands[player].addCard(card)
+        self.deck.getCard(card)
 
 class Deck(object):
     def __init__(self, card_list):
@@ -27,7 +42,8 @@ class Deck(object):
             self.addCard(c)
 
     def __str__(self):
-        return ", ".join(self.cards.keys())
+        # I need to get back the card list to print correctly
+        return str(self.cards)
 
     def getCard(self, card):
         "Returns one card or delete the entry when they're finished"
@@ -132,7 +148,7 @@ def str_to_card(s):
 
 if __name__ == '__main__':
     # getting the arguments
-#    unittest.main()
+    unittest.main()
     idx = 1
     nplayers = int(argv[1])
     my_cards = map(str_to_card, argv[2 : 5])

@@ -32,6 +32,10 @@
   The problem should be called as
   ./razz_simulation DESIRED_RANK NUM_OF_GAMES MY_FIRST_CARD MY_SECOND_CARD MY_THIRD_CARD THE_OPEN_CARD_OF_OPPONENT_1..THE_OPEN_CARD_OF_OPPONENT_7
 
+* Real implementation stuff
+  - When finding at least one pair after normalization just discard the hand
+  - When 
+
 * Objectives
 ** Design a nice structure
 
