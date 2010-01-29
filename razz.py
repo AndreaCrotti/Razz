@@ -9,7 +9,7 @@ from random import choice
 from sys import argv
 from copy import copy
 
-NROUNDS = 1000
+NROUNDS = 10000
 RAZZ_CARDS = dict(A = 1, J = 11, Q = 12, K = 13)
 
 ## FIXME: Getting too many times 5, there must be a bug
@@ -34,16 +34,13 @@ class RazzGame(object):
             while not(h.is_full()):
                 # make sure to have all the cards
                 self.addCardToPlayer(p, self.deck.getRandomCard())
-                #print "now player %d has cards %s" % (p, str(self.hands[p]))
         # at this point everybody have 7 cards, I can rank my own cards
-        print self.hands[0]
         return self.hands[0].rank()
 
     def reset(self, init_cards):
         self.deck = Deck(self.DECK_CARDS)
 
         for p, h in init_cards.items():
-            # FIXME: the bug is here, I'm taking an modified razzhand
             self.hands[p] = RazzHand(h)
             # remove the hand given from the main deck
             self.deck.remove(self.hands[p])
@@ -240,6 +237,10 @@ myCards = {
 
 myGame.reset(myCards)
 
+def makeHistogram(values):
+    print "\nRANK\t TIMES"
+    for k, v in values.items():
+        print "%d\t%d" % (k, v)
 
 def main():
     nplayers = int(argv[1])
@@ -253,8 +254,16 @@ def main():
     for i in range(1, nplayers):
         init_cards[i] = [other_cards[i-1]]
 
+    s = """
+    number of players: %d
+    my initial cards: %s
+    other players cards: %s""" % (nplayers, str(my_cards), str(other_cards))
+    print s
+
     r = RazzGame(nplayers)
-    r.loop(10000, 7, init_cards)
+    hist = r.loop(NROUNDS, init_cards)
+    makeHistogram(hist)
+    print "TOT\t%d" % (sum(hist.values()))
     
 if __name__ == '__main__':
     # getting the arguments
