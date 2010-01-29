@@ -30,12 +30,17 @@ class RazzGame(object):
 
     def play(self):
         """ Run the game and return the rank of my local hand """
-        for p, h in self.hands.items():
-            while not(h.is_full()):
-                # make sure to have all the cards
-                self.addCardToPlayer(p, self.deck.getRandomCard())
-        # at this point everybody have 7 cards, I can rank my own cards
+        h = self.hands[0]
+        while not(h.is_full()):
+            self.addCardToPlayer(0, self.deck.getRandomCard())
+
         return self.hands[0].rank()
+        # This simplification could not be possible
+        # for p, h in self.hands.items():
+        #     while not(h.is_full()):
+        #         # make sure to have all the cards
+        #         self.addCardToPlayer(p, self.deck.getRandomCard())
+        # at this point everybody have 7 cards, I can rank my own cards
 
     def reset(self, init_cards):
         self.deck = Deck(self.DECK_CARDS)
@@ -214,10 +219,6 @@ class TestDeck(unittest.TestCase):
         while i < len(r):
             self.assertTrue(r.getRandomCard() > 0)
             i += 1
-
-class TestRazzGame(unittest.TestCase):
-    def test_resetIsReallyResetting(self):
-        pass
         
 def str_to_RazzCard(s):
     if s.isdigit():
@@ -226,21 +227,13 @@ def str_to_RazzCard(s):
         s = s.upper()
         return RAZZ_CARDS[s] # not handling exceptions here?
 
-
-myGame = RazzGame(4)
-myCards = {
-    0 : [10, 10, 10],
-    1 : [],
-    2 : [],
-    3 : []
-}
-
-myGame.reset(myCards)
-
 def makeHistogram(values):
-    print "\nRANK\t TIMES"
+    cell = 10
+    print "RANK".ljust(cell) + "TIMES".ljust(cell)
     for k, v in values.items():
-        print "%d\t%d" % (k, v)
+        s = str(k).ljust(cell) + str(v).ljust(cell)
+        print s
+    print "TOT".ljust(cell) + str(sum(values.values())).ljust(cell)
 
 def main():
     nplayers = int(argv[1])
@@ -263,10 +256,9 @@ def main():
     r = RazzGame(nplayers)
     hist = r.loop(NROUNDS, init_cards)
     makeHistogram(hist)
-    print "TOT\t%d" % (sum(hist.values()))
     
 if __name__ == '__main__':
     # getting the arguments
-    #unittest.main()
-    main()
+    unittest.main()
+    # main()
     
