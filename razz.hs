@@ -1,5 +1,5 @@
 {-
-  Create a sort of monad for playing somehow
+  - Use a monad to encapsulate the changes.
 -}
 
 module Razz where
@@ -7,20 +7,19 @@ module Razz where
 type Value = String
 type Suit = String
 
-data Card = Card Value Suit
+data Card = Card Value
 type Deck = [Card]
 type Hand = [Card]
 
 instance Show Card where
-    show (Card v s) = v ++ " of " ++ s
+    show (Card v) = v
    
 -- cartesian product of the input
-mkDeck :: [Suit] -> [Value] -> Deck
-mkDeck sx vx = [ Card s v | s <- sx, v <- vx ]
+mkDeck :: [Value] -> Int ->  Deck
+mkDeck sx rep = concat $ replicate rep $ [ Card s | s <- sx]
 
 razzCards = "A" : map show [2..10] ++ ["J", "Q", "K"]
-razzSuits = ["X", "Y", "Z", "W"]
-razzDeck = mkDeck razzCards razzSuits
+razzDeck = mkDeck razzCards 4
 
 getValue :: Value -> Int
 getValue v = case v of
