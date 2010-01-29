@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # Some ideas:
 # - use threading and server/client protocol
+# - see if using a queue or a heap could be better for performances
 
 import unittest
 import random
@@ -15,34 +16,43 @@ class RazzGame(object):
     """
     Main class representing the status of our game
     """
+    DECK_CARDS = range(1, 14) * 4
     def __init__(self, nplayers):
-        # initializing a standard 52 cards deck
-        self.deck = Deck(range(1, 14) * 4)
-        self.hands = {}
-        # we could also create a Player class but there's no need
-        for i in range(nplayers):
-            self.hands[i] = RazzHand([])
+        self.nplayers = nplayers
 
     def __str__(self):
         return "\n".join(map(str, self.hands.values()))
 
-    def play(self, rank):
+    def play(self):
         """ Run the game and return how many hands where below the rank given """
-        print "starting the real game"
         for p, h in self.hands.items():
             while not(h.is_full()):
+                # make sure to have all the cards
                 self.addCardToPlayer(p, self.deck.getRandomCard())
+            # check if the rank of my hand is equal to the given rank
         # at this point everybody should have 7 cards
+        return self.hands[0].rank()
 
-    def loop(self, times, rank, initcards):
+    def reset(self, init_cards):
+        self.deck = Deck(self.DECK_CARDS)
+        self.hands = {}
+        for i in range(self.nplayers):
+            self.hands[i] = RazzHand([])
+
+        for k in init_cards.keys():
+            for c in init_cards[k]:
+                # in this way we also remove the initial cards from the deck
+                self.addCardToPlayer(k, c)
+        
+    # Must remove also the initial cards from the working deck
+    def loop(self, times, rank, init_cards):
         # at every loop it should restart from scratch
+        counter = 0
         for n in range(times):
-            pass
-
-    def init_game(self, initcards):
-        """Initialization of the game, give the right card to the players
-        gets a dictionary with the initial cards for every player"""
-        self.hands.update(initcards)
+            self.reset(init_cards)
+            if self.play() == rank:
+                counter += 1
+        print "got rank %d %d over %d times" % (rank, counter, times)
 
     def addCardToPlayer(self, player, card):
         self.hands[player].addCard(card)
@@ -68,7 +78,7 @@ class Deck(object):
             self.cards[card] -= 1
         return card
 
-    # FIXME: removing 2 cards every time for some reasons
+    # FIXME: this random is not very fair, taking all the cards with different odds
     def getRandomCard(self):
         "Returns a card randomly from the deck"
         c = random.choice(self.cards.keys())
@@ -100,9 +110,8 @@ class RazzHand(Deck):
         if other.has_duplicates():
             return 1
 
-        # getting the list of cards and sorting them at same time
         cself, cother = sorted(self.cards.keys()), sorted(other.cards.keys())
-        for s, o in izip(cself, cother) :
+        for s, o in izip(cself, cother):
             if s < o:
                 return 1
             if s > o:
@@ -110,15 +119,35 @@ class RazzHand(Deck):
         # only reaches here if they're perfectly equal
         return 0
 
+    def rank(self):
+        "Returns the rank of a high value hand"
+        self.normalize()
+        if self.has_duplicates():
+            return -1
+        else:
+            return max(self.cards.keys())
+
     def is_full(self):
         return len(self) == self.TOT_CARDS
 
     # maybe better to not remove completely but just create another list
     def normalize(self):
         "Remove all the pairs, we are sure we're not removing too much thanks to has_duplicates"
-        for k in self.cards.keys():
+        cards = self.cards.keys()
+        done = lambda : len(self) == self.EVAL_CARDS
+
+        for k in cards:
             while self.cards[k] > 1:
-                self.getCard(k)
+                if done():
+                    return
+                else:
+                    self.getCard(k)
+
+        cards.sort()
+        while not(done()):
+            # removing higher cards as much as possible
+            c = cards.pop()
+            self.getCard(c)
 
     def has_duplicates(self):
         "If I have 4 equal cards even removing 3 out of 7 I still get a pair"
@@ -128,7 +157,7 @@ class RazzHand(Deck):
         else:
             return False
 
-class TestRazzTester(unittest.TestCase):
+class TestRazzHand(unittest.TestCase):
     def test_highCardValues(self):
         h = [13, 10, 7, 6, 2]
         h1 = [13, 10, 7, 2, 1]
@@ -145,8 +174,14 @@ class TestRazzTester(unittest.TestCase):
         self.assertTrue(RazzHand(pok) < RazzHand(low))
 
     # adding some testing about normalization and more
-    def test_NormalizeDontRemoveTooManyCards(self):
-        pass
+    def test_NormalizeAlwaysGiveRightNumberOfCards(self):
+        hand = RazzHand([1,2,2,3,4,5,5])
+        hand2 = RazzHand([1,2,2,3,3])
+        hand.normalize()
+        hand2.normalize()
+        self.assertTrue(len(hand) == hand.EVAL_CARDS)
+        self.assertTrue(len(hand2) == hand2.EVAL_CARDS)
+        
 
 class TestDeck(unittest.TestCase):
     def test_RandomIsAlwaysGettingACard(self):
@@ -157,7 +192,6 @@ class TestDeck(unittest.TestCase):
             self.assertTrue(r.getRandomCard() > 0)
             i += 1
         
-
 def str_to_card(s):
     if s.isdigit():
         return int(s)
@@ -165,18 +199,19 @@ def str_to_card(s):
         s = s.upper()
         return RAZZ_CARDS[s] # not handling exceptions here?
 
-if __name__ == '__main__':
-    # getting the arguments
-    unittest.main()
-    idx = 1
+def main():
     nplayers = int(argv[1])
     my_cards = map(str_to_card, argv[2 : 5])
     other_cards = map(str_to_card, argv[5 : 5 + nplayers])
     init_cards = {}
     init_cards[0] = my_cards
     for p, o in enumerate(other_cards):
-        init_cards[p] = o
+        init_cards[p] = [o]
 
     r = RazzGame(nplayers)
-    r.init_game(init_cards)
-    r.play()
+    r.loop(1000, 10, init_cards)
+    
+if __name__ == '__main__':
+    # getting the arguments
+    #unittest.main()
+    main()
