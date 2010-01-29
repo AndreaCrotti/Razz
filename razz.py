@@ -2,21 +2,28 @@
 # Some ideas:
 # - use threading and server/client protocol
 # - see if using a queue or a heap could be better for performances
+# - write documentation in RST syntax for sphinx
 
 import unittest
 from random import choice
 from sys import argv
+from copy import copy
 
-NROUNDS = 10000
+NROUNDS = 1000
 RAZZ_CARDS = dict(A = 1, J = 11, Q = 12, K = 13)
 
+## FIXME: Getting too many times 5, there must be a bug
 class RazzGame(object):
     """
     Main class representing the status of our game
+    First give all the cards to each player,
+    in the end we just care about the rank given by only one of
+    the players
     """
     DECK_CARDS = range(1, 14) * 4
     def __init__(self, nplayers):
         self.nplayers = nplayers
+        self.hands = {}
 
     def __str__(self):
         return "\n".join(map(str, self.hands.values()))
@@ -27,29 +34,31 @@ class RazzGame(object):
             while not(h.is_full()):
                 # make sure to have all the cards
                 self.addCardToPlayer(p, self.deck.getRandomCard())
-        # at this point everybody have 7 cards
+                #print "now player %d has cards %s" % (p, str(self.hands[p]))
+        # at this point everybody have 7 cards, I can rank my own cards
+        print self.hands[0]
         return self.hands[0].rank()
 
     def reset(self, init_cards):
         self.deck = Deck(self.DECK_CARDS)
-        self.hands = {}
-        for i in range(self.nplayers):
-            self.hands[i] = RazzHand([])
 
-        for k in init_cards.keys():
-            for c in init_cards[k]:
-                # in this way we also remove the initial cards from the deck
-                self.addCardToPlayer(k, c)
+        self.hands = {}
+        for p, h in init_cards.items():
+            self.hands[p] = h
+            self.deck.remove(h)
         
     # Must remove also the initial cards from the working deck
-    def loop(self, times, rank, init_cards):
+    def loop(self, times, init_cards):
         # at every loop it should restart from scratch
-        counter = 0
+        ranks = {}
         for n in range(times):
             self.reset(init_cards)
-            if self.play() == rank:
-                counter += 1
-        print "got rank %d %d over %d times" % (rank, counter, times)
+            got_rank = self.play()
+            if ranks.has_key(got_rank):
+                ranks[got_rank] += 1
+            else:
+                ranks[got_rank] = 1
+        return ranks
 
     def addCardToPlayer(self, player, card):
         self.hands[player].addCard(card)
@@ -67,6 +76,25 @@ class Deck(object):
     def __len__(self):
         return sum(self.cards.values())
 
+    def __add__(self, other):
+        res = copy(self)
+        for c in other.cards.keys():
+            if res.cards.has_key(c):
+                res.cards[c] += other.cards[c]
+            else:
+                res.cards[c] = other.cards[c]
+        return res
+    
+    def __sub__(self, other):
+        res = copy(self)
+        for c in other.cards.keys():
+            res[c] = self.cards[c] - other.cards[c]
+        return res
+
+    def remove(self, other):
+        for c in other.cards.keys():
+            self.cards[c] -= other.cards[c]
+
     def getCard(self, card):
         "Returns one card or delete the entry when they're finished"
         if self.cards[card] == 1:
@@ -75,10 +103,17 @@ class Deck(object):
             self.cards[card] -= 1
         return card
 
-    # FIXME: this random is not very fair, taking all the cards with different odds
+    def toList(self):
+        l = []
+        for k in self.cards.keys():
+            l += [k] * self.cards[k]
+        return l
+
+    # apparently we're getting the same odds with the fair and non fair algorithm
     def getRandomCard(self):
         "Returns a card randomly from the deck"
-        c = choice(self.cards.keys())
+        #c = choice(self.cards.keys())
+        c = choice(self.toList())
         return self.getCard(c)
 
     def addCard(self, card):
@@ -130,8 +165,8 @@ class RazzHand(Deck):
             self.getCard(c)
 
     def has_duplicates(self):
-        "If I have 4 equal cards even removing 3 out of 7 I still get a pair"
-        return 2 in self.cards.values()
+        "Return if there is at least one duplicate card"
+        return any(map(lambda x: x > 1, self.cards.values()))
 
 class TestRazzHand(unittest.TestCase):
     def test_highCardValues(self):
@@ -183,17 +218,32 @@ def str_to_RazzCard(s):
         s = s.upper()
         return RAZZ_CARDS[s] # not handling exceptions here?
 
+
+myGame = RazzGame(4)
+myCards = {
+    0 : RazzHand([10, 10, 10]),
+    1 : RazzHand([]),
+    2 : RazzHand([]),
+    3 : RazzHand([])
+}
+
+myGame.reset(myCards)
+
+
 def main():
     nplayers = int(argv[1])
     my_cards = map(str_to_RazzCard, argv[2 : 5])
     other_cards = map(str_to_RazzCard, argv[5 : 5 + nplayers])
+    # I can concatenate the initial cards in one hand only
+    # for performance reasons
     init_cards = {}
-    init_cards[0] = my_cards
-    for p, o in enumerate(other_cards):
-        init_cards[p] = [o]
+    init_cards[0] = RazzHand(my_cards)
+    
+    for i in range(1, nplayers):
+        init_cards[i] = RazzHand([other_cards[i-1]])
 
     r = RazzGame(nplayers)
-    r.loop(10000, 10, init_cards)
+    r.loop(10000, 7, init_cards)
     
 if __name__ == '__main__':
     # getting the arguments
