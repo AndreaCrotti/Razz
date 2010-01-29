@@ -42,10 +42,11 @@ class RazzGame(object):
     def reset(self, init_cards):
         self.deck = Deck(self.DECK_CARDS)
 
-        self.hands = {}
         for p, h in init_cards.items():
-            self.hands[p] = h
-            self.deck.remove(h)
+            # FIXME: the bug is here, I'm taking an modified razzhand
+            self.hands[p] = RazzHand(h)
+            # remove the hand given from the main deck
+            self.deck.remove(self.hands[p])
         
     # Must remove also the initial cards from the working deck
     def loop(self, times, init_cards):
@@ -94,6 +95,9 @@ class Deck(object):
     def remove(self, other):
         for c in other.cards.keys():
             self.cards[c] -= other.cards[c]
+            # this could actually only happen if you try to ask for
+            # more than 4 cards of the same value in calling the program
+            assert(self.cards[c] >= 0)
 
     def getCard(self, card):
         "Returns one card or delete the entry when they're finished"
@@ -202,6 +206,9 @@ class TestRazzHand(unittest.TestCase):
         hand = RazzHand([6,4,3,2,1])
         self.assertTrue(hand.rank() == 6)
 
+    def test_RankPairIsCorrect(self):
+        self.assertTrue(RazzHand([1,1,2,2,2,5,6]).rank() == -1)
+
 class TestDeck(unittest.TestCase):
     def test_RandomIsAlwaysGettingACard(self):
         r = Deck(range(1,14) * 4)
@@ -210,6 +217,10 @@ class TestDeck(unittest.TestCase):
         while i < len(r):
             self.assertTrue(r.getRandomCard() > 0)
             i += 1
+
+class TestRazzGame(unittest.TestCase):
+    def test_resetIsReallyResetting(self):
+        pass
         
 def str_to_RazzCard(s):
     if s.isdigit():
@@ -221,10 +232,10 @@ def str_to_RazzCard(s):
 
 myGame = RazzGame(4)
 myCards = {
-    0 : RazzHand([10, 10, 10]),
-    1 : RazzHand([]),
-    2 : RazzHand([]),
-    3 : RazzHand([])
+    0 : [10, 10, 10],
+    1 : [],
+    2 : [],
+    3 : []
 }
 
 myGame.reset(myCards)
@@ -237,10 +248,10 @@ def main():
     # I can concatenate the initial cards in one hand only
     # for performance reasons
     init_cards = {}
-    init_cards[0] = RazzHand(my_cards)
+    init_cards[0] = my_cards
     
     for i in range(1, nplayers):
-        init_cards[i] = RazzHand([other_cards[i-1]])
+        init_cards[i] = [other_cards[i-1]]
 
     r = RazzGame(nplayers)
     r.loop(10000, 7, init_cards)
