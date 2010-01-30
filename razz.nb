@@ -1,0 +1,13 @@
+(*
+   Doing some analysis of the combinatory numbers we should get
+   Use
+   - binomial
+   - exponentials
+   and more
+*)
+
+RAZZ_CARDS = Range[1,13];
+REPS = 4;
+
+
+                                               m
