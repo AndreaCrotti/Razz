@@ -3,16 +3,18 @@
 # - use threading and server/client protocol
 # - see if using a queue or a heap could be better for performances
 # - write documentation in RST syntax for sphinx
+# - see http://code.activestate.com/recipes/498229/ for the weighted choice
 
 import unittest
 from random import choice
 from sys import argv
-from copy import copy
+from copy import copy, deepcopy
 
 NROUNDS = 10000
 RAZZ_CARDS = dict(A = 1, J = 11, Q = 12, K = 13)
+NON_HIGH_CARD = -1
+DECK_CARDS = range(1, 14) * 4
 
-## FIXME: Getting too many times 5, there must be a bug
 class RazzGame(object):
     """
     Main class representing the status of our game
@@ -20,10 +22,18 @@ class RazzGame(object):
     in the end we just care about the rank given by only one of
     the players
     """
-    DECK_CARDS = range(1, 14) * 4
-    def __init__(self, nplayers):
+    def __init__(self, nplayers, init_cards):
         self.nplayers = nplayers
-        self.hands = {}
+        self.initial_hands = {}
+        self.initial_deck = Deck(DECK_CARDS)
+
+        for p, h in init_cards.items():
+            self.initial_hands[p] = RazzHand(h)
+            # remove the hand given from the main deck
+            self.initial_deck.remove(self.initial_hands[p])
+
+        self.deck = deepcopy(self.initial_deck)
+        self.hands = deepcopy(self.initial_hands)
 
     def __str__(self):
         return "\n".join(map(str, self.hands.values()))
@@ -35,27 +45,17 @@ class RazzGame(object):
             self.addCardToPlayer(0, self.deck.getRandomCard())
 
         return self.hands[0].rank()
-        # This simplification could not be possible
-        # for p, h in self.hands.items():
-        #     while not(h.is_full()):
-        #         # make sure to have all the cards
-        #         self.addCardToPlayer(p, self.deck.getRandomCard())
-        # at this point everybody have 7 cards, I can rank my own cards
 
-    def reset(self, init_cards):
-        self.deck = Deck(self.DECK_CARDS)
-
-        for p, h in init_cards.items():
-            self.hands[p] = RazzHand(h)
-            # remove the hand given from the main deck
-            self.deck.remove(self.hands[p])
+    def reset(self):
+        self.deck = deepcopy(self.initial_deck)
+        self.hands = deepcopy(self.initial_hands)
         
     # Must remove also the initial cards from the working deck
-    def loop(self, times, init_cards):
+    def loop(self, times):
         # at every loop it should restart from scratch
         ranks = {}
         for n in range(times):
-            self.reset(init_cards)
+            self.reset()
             got_rank = self.play()
             if ranks.has_key(got_rank):
                 ranks[got_rank] += 1
@@ -79,6 +79,7 @@ class Deck(object):
     def __len__(self):
         return sum(self.cards.values())
 
+    # FIXME: if correct here to use copy instead of deepcopy
     def __add__(self, other):
         res = copy(self)
         for c in other.cards.keys():
@@ -145,7 +146,7 @@ class RazzHand(Deck):
         "Returns the rank of a high value hand"
         self.normalize()
         if self.has_duplicates():
-            return -1
+            return NON_HIGH_CARD
         else:
             return max(self.cards.keys())
 
@@ -178,7 +179,7 @@ class TestRazzHand(unittest.TestCase):
     def test_highCardValues(self):
         h = [13, 10, 7, 6, 2]
         h1 = [13, 10, 7, 2, 1]
-        self.assertTrue(RazzHand(h) == RazzHand(h1))
+        self.assertEqual(RazzHand(h), RazzHand(h1))
 
     def test_PairLosesAgainstHighCard(self):
         p1 = RazzHand([13, 13, 7, 6, 2])
@@ -188,7 +189,7 @@ class TestRazzHand(unittest.TestCase):
     def test_PairHasDuplicates(self):
         p1 = RazzHand([13, 13, 7, 6, 2])
         p1.normalize()
-        self.assertTrue(p1.has_duplicates() == True)
+        self.assertEqual(p1.has_duplicates(), True)
 
     def test_pokerLoseAgainstLowHand(self):
         pok = [6, 6, 6, 6, 3]
@@ -206,14 +207,14 @@ class TestRazzHand(unittest.TestCase):
 
     def test_RazzHandRanksCorrectly(self):
         hand = RazzHand([6,4,3,2,1])
-        self.assertTrue(hand.rank() == 6)
+        self.assertEqual(hand.rank(), 6)
 
     def test_RankPairIsCorrect(self):
-        self.assertTrue(RazzHand([1,1,2,2,2,5,6]).rank() == -1)
+        self.assertEqual(RazzHand([1,1,2,2,2,5,6]).rank(), NON_HIGH_CARD)
 
 class TestDeck(unittest.TestCase):
     def test_RandomIsAlwaysGettingACard(self):
-        r = Deck(range(1,14) * 4)
+        r = Deck(DECK_CARDS)
         i = 0
         # we get a card until the deck is empty
         while i < len(r):
@@ -253,12 +254,12 @@ def main():
     other players cards: %s""" % (nplayers, str(my_cards), str(other_cards))
     print s
 
-    r = RazzGame(nplayers)
-    hist = r.loop(NROUNDS, init_cards)
+    r = RazzGame(nplayers, init_cards)
+    hist = r.loop(NROUNDS)
     makeHistogram(hist)
     
 if __name__ == '__main__':
     # getting the arguments
-    unittest.main()
-    # main()
+    #unittest.main()
+    main()
     
