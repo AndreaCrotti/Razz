@@ -7,10 +7,9 @@
 # - decouple RazzHand and Deck since they have different usage
 # - see http://code.activestate.com/recipes/498229/ for the weighted choice
 
-import unittest
 from random import choice
 from sys import argv
-from copy import copy, deepcopy
+from copy import deepcopy
 
 NROUNDS = 10000
 RAZZ_CARDS = dict(A = 1, J = 11, Q = 12, K = 13)
@@ -40,11 +39,19 @@ class RazzGame(object):
     def __str__(self):
         return "\n".join(map(str, self.hands.values()))
 
-    def play(self):
-        """ Run the game and return the rank of my local hand """
-        h = self.hands[0]
-        while not(h.is_full()):
-            self.hands[0].addCard(self.deck.getRandomCard())
+    def play(self, full = False):
+        """ Run the game and return the rank of my local hand
+        If full actually play the whole game not just my player.
+        """
+        if full:
+            playing = self.nplayers
+        else:
+            playing = 1
+
+        for n in xrange(playing):
+            h = self.hands[n]
+            while not(h.is_full()):
+                h.addCard(self.deck.getRandomCard())
 
         return self.hands[0].rank()
 
@@ -53,7 +60,7 @@ class RazzGame(object):
         self.hands = deepcopy(self.initial_hands)
         
     # Must remove also the initial cards from the working deck
-    def loop(self, times):
+    def loop(self, times, full = False):
         # at every loop it should restart from scratch
         ranks = {}
         for n in range(times):
@@ -77,22 +84,6 @@ class Deck(object):
 
     def __len__(self):
         return sum(self.cards.values())
-
-    # FIXME: if correct here to use copy instead of deepcopy
-    def __add__(self, other):
-        res = copy(self)
-        for c in other.cards.keys():
-            if res.cards.has_key(c):
-                res.cards[c] += other.cards[c]
-            else:
-                res.cards[c] = other.cards[c]
-        return res
-    
-    def __sub__(self, other):
-        res = copy(self)
-        for c in other.cards.keys():
-            res[c] = self.cards[c] - other.cards[c]
-        return res
 
     def remove(self, other):
         for c in other.cards.keys():
@@ -174,51 +165,6 @@ class RazzHand(Deck):
         "Return if there is at least one duplicate card"
         return any(map(lambda x: x > 1, self.cards.values()))
 
-class TestRazzHand(unittest.TestCase):
-    def test_highCardValues(self):
-        h = [13, 10, 7, 6, 2]
-        h1 = [13, 10, 7, 2, 1]
-        self.assertEqual(RazzHand(h), RazzHand(h1))
-
-    def test_PairLosesAgainstHighCard(self):
-        p1 = RazzHand([13, 13, 7, 6, 2])
-        p2 = RazzHand([10, 7, 3, 2, 1])
-        self.assertTrue(p1 < p2)
-
-    def test_PairHasDuplicates(self):
-        p1 = RazzHand([13, 13, 7, 6, 2])
-        p1.normalize()
-        self.assertEqual(p1.has_duplicates(), True)
-
-    def test_pokerLoseAgainstLowHand(self):
-        pok = [6, 6, 6, 6, 3]
-        low = [8, 4, 3, 2, 1]
-        self.assertTrue(RazzHand(pok) < RazzHand(low))
-
-    # adding some testing about normalization and more
-    def test_NormalizeAlwaysGiveRightNumberOfCards(self):
-        hand = RazzHand([1,2,2,3,4,5,5])
-        hand2 = RazzHand([1,2,2,3,3])
-        hand.normalize()
-        hand2.normalize()
-        self.assertTrue(len(hand) == hand.EVAL_CARDS)
-        self.assertTrue(len(hand2) == hand2.EVAL_CARDS)
-
-    def test_RazzHandRanksCorrectly(self):
-        hand = RazzHand([6,4,3,2,1])
-        self.assertEqual(hand.rank(), 6)
-
-    def test_RankPairIsCorrect(self):
-        self.assertEqual(RazzHand([1,1,2,2,2,5,6]).rank(), NON_HIGH_CARD)
-
-class TestDeck(unittest.TestCase):
-    def test_RandomIsAlwaysGettingACard(self):
-        r = Deck(DECK_CARDS)
-        i = 0
-        # we get a card until the deck is empty
-        while i < len(r):
-            self.assertTrue(r.getRandomCard() > 0)
-            i += 1
         
 def str_to_RazzCard(s):
     if s.isdigit():
@@ -271,7 +217,5 @@ def main():
     makeHistogram(hist)
     
 if __name__ == '__main__':
-    # getting the arguments
-    #unittest.main()
     main()
     
