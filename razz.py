@@ -3,6 +3,8 @@
 # - use threading and server/client protocol
 # - see if using a queue or a heap could be better for performances
 # - write documentation in RST syntax for sphinx
+# - use numpy for arrays
+# - decouple RazzHand and Deck since they have different usage
 # - see http://code.activestate.com/recipes/498229/ for the weighted choice
 
 import unittest
@@ -42,7 +44,7 @@ class RazzGame(object):
         """ Run the game and return the rank of my local hand """
         h = self.hands[0]
         while not(h.is_full()):
-            self.addCardToPlayer(0, self.deck.getRandomCard())
+            self.hands[0].addCard(self.deck.getRandomCard())
 
         return self.hands[0].rank()
 
@@ -62,9 +64,6 @@ class RazzGame(object):
             else:
                 ranks[got_rank] = 1
         return ranks
-
-    def addCardToPlayer(self, player, card):
-        self.hands[player].addCard(card)
 
 class Deck(object):
     def __init__(self, card_list):
@@ -119,8 +118,8 @@ class Deck(object):
     # apparently we're getting the same odds with the fair and non fair algorithm
     def getRandomCard(self):
         "Returns a card randomly from the deck"
-        #c = choice(self.cards.keys())
-        c = choice(self.toList())
+        c = choice(self.cards.keys())
+        #c = choice(self.toList())
         return self.getCard(c)
 
     def addCard(self, card):
@@ -235,6 +234,19 @@ def makeHistogram(values):
         s = str(k).ljust(cell) + str(v).ljust(cell)
         print s
     print "TOT".ljust(cell) + str(sum(values.values())).ljust(cell)
+
+# http://code.activestate.com/recipes/498233/ to fast lookup stuff
+def toss(c):
+    ###########################################################################
+    # For example                                                             #
+    # p=array((0.1, 0.2, 0.6, 0.1)) #vector of probabilities, normalized to 1 #
+    # c=cumsum(p) #cumulative probability vector                              #
+    ###########################################################################
+    from numpy import cumsum, array, searchsorted, shape
+    rd = numpy.random.random
+    y = random(shape(c))
+    x = searchsorted(c, y)
+    
 
 def main():
     nplayers = int(argv[1])
