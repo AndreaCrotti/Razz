@@ -34,7 +34,8 @@
 
 * Real implementation stuff
   - When finding at least one pair after normalization just discard the hand
-  - When 
+  - From the deck the operation you do most of the time is selecting a random card and removing
+  - From the hand the primary operation is adding cards and sorting
 
 * Objectives
 ** Design a nice structure
@@ -49,6 +50,14 @@
    A nice metric would be the
    #simulations / seconds
    The output could be equal for all the different languages and still parsable and analyzable automatically.
+
+* Speed comparison
+
+** Pure python
+
+** Cython
+
+** Pure C
 
 * Links
   [[http://www.pokereagles.com/poker-rules/razz-rules.php][razz rules explained]]
