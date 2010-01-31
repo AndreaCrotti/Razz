@@ -27,16 +27,13 @@ class RazzGame(object):
     """
     def __init__(self, nplayers, init_cards):
         self.nplayers = nplayers
-        self.initial_hands = {}
-        self.initial_deck = Deck(DECK_CARDS)
+        self.hands = {}
+        self.deck = Deck(DECK_CARDS)
 
         for p, h in init_cards.items():
-            self.initial_hands[p] = RazzHand(h)
+            self.hands[p] = RazzHand(h)
             # remove the hand given from the main deck
-            self.initial_deck.remove(self.initial_hands[p])
-
-        self.deck = deepcopy(self.initial_deck)
-        self.hands = deepcopy(self.initial_hands)
+            self.deck.remove(self.hands[p])
 
     def __str__(self):
         return "\n".join(map(str, self.hands.values()))
@@ -57,22 +54,6 @@ class RazzGame(object):
 
         return self.hands[0].rank()
 
-    def reset(self):
-        self.deck = deepcopy(self.initial_deck)
-        self.hands = deepcopy(self.initial_hands)
-        
-    # Must remove also the initial cards from the working deck
-    def loop(self, times, full = False):
-        # at every loop it should restart from scratch
-        ranks = {}
-        for n in range(times):
-            self.reset()
-            got_rank = self.play()
-            if ranks.has_key(got_rank):
-                ranks[got_rank] += 1
-            else:
-                ranks[got_rank] = 1
-        return ranks
 
 class Deck(object):
     def __init__(self, card_list):
@@ -198,6 +179,20 @@ def w_choice(lst):
         n = n - weight
     return item
 
+# Must remove also the initial cards from the working deck
+def loop(times, nplayers, init_cards, full = False):
+    # at every loop it should restart from scratch
+    ranks = {}
+    for n in range(times):
+        # every time creating a new object
+        r = RazzGame(nplayers, init_cards)
+        got_rank = r.play()
+        if ranks.has_key(got_rank):
+            ranks[got_rank] += 1
+        else:
+            ranks[got_rank] = 1
+    return ranks
+
 def main():
     if len(argv) == 1:
         # nice trick to test automatically when not passing arguments
@@ -222,8 +217,7 @@ def main():
     other players cards: %s""" % (nplayers, str(my_cards), str(other_cards))
     print s
 
-    r = RazzGame(nplayers, init_cards)
-    hist = r.loop(NROUNDS)
+    hist = loop(NROUNDS, nplayers, init_cards)
     makeHistogram(hist)
     
 if __name__ == '__main__':
