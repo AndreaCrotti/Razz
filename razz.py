@@ -7,6 +7,8 @@
 # - decouple RazzHand and Deck since they have different usage
 # - see http://code.activestate.com/recipes/498229/ for the weighted choice
 
+# MOVE OUTSIDE THE LOOP!!
+
 from random import choice
 from sys import argv
 from copy import deepcopy
@@ -197,6 +199,12 @@ def w_choice(lst):
     return item
 
 def main():
+    if len(argv) == 1:
+        # nice trick to test automatically when not passing arguments
+        import nose
+        nose.run()
+        return
+
     nplayers = int(argv[1])
     my_cards = map(str_to_RazzCard, argv[2 : 5])
     other_cards = map(str_to_RazzCard, argv[5 : 5 + nplayers])
