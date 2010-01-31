@@ -7,13 +7,10 @@
 # - decouple RazzHand and Deck since they have different usage
 # - see http://code.activestate.com/recipes/498229/ for the weighted choice
 
-# MOVE OUTSIDE THE LOOP!!
-
 from random import choice
 from sys import argv
-from copy import deepcopy
 
-NROUNDS = 10000
+NROUNDS = 100000
 RAZZ_CARDS = dict(A = 1, J = 11, Q = 12, K = 13)
 NON_HIGH_CARD = -1
 DECK_CARDS = range(1, 14) * 4
@@ -139,9 +136,13 @@ class RazzHand(Deck):
                 if done():
                     return
                 else:
+                    # is this way the best one?
                     self.getCard(k)
 
+        # duplicates are removed, now remove the highest cards
         cards.sort()
+        # using cards.remove(r.max) looks a bit faster but if there are more
+        # cards to remove the sorting must be done only once
         while not(done()):
             # removing higher cards as much as possible
             c = cards.pop()
@@ -149,9 +150,14 @@ class RazzHand(Deck):
 
     def has_duplicates(self):
         "Return if there is at least one duplicate card"
+        #####################################################################
+        # this form appear the fastest, faster then using                   #
+        # any(map(lambda x: operator.gt(x, 1), d.values()))                 #
+        # and also of a short circuiting function that quits at first entry #
+        #####################################################################
         return any(map(lambda x: x > 1, self.cards.values()))
 
-        
+
 def str_to_RazzCard(s):
     if s.isdigit():
         return int(s)
@@ -183,10 +189,10 @@ def w_choice(lst):
 def loop(times, nplayers, init_cards, full = False):
     # at every loop it should restart from scratch
     ranks = {}
-    for n in range(times):
+    for n in xrange(times):
         # every time creating a new object
         r = RazzGame(nplayers, init_cards)
-        got_rank = r.play()
+        got_rank = r.play(full)
         if ranks.has_key(got_rank):
             ranks[got_rank] += 1
         else:
