@@ -78,6 +78,8 @@ class Deck(object):
         for c in card_list:
             self.addCard(c)
 
+        self.weights = lambda : [(k, float(v) / len(self)) for k,v in self.cards.items() ]
+
     def __str__(self):
         # I need to get back the card list to print correctly
         return str(self.cards)
@@ -97,7 +99,7 @@ class Deck(object):
         if self.cards[card] == 1:
             self.cards.pop(card)
         else:
-            self.cards[card] -= 1
+           self.cards[card] -= 1
         return card
 
     def toList(self):
@@ -105,12 +107,13 @@ class Deck(object):
         for k in self.cards.keys():
             l += [k] * self.cards[k]
         return l
-
+    
     # apparently we're getting the same odds with the fair and non fair algorithm
     def getRandomCard(self):
         "Returns a card randomly from the deck"
         c = choice(self.cards.keys())
         #c = choice(self.toList())
+        #c = w_choice(self.weights())
         return self.getCard(c)
 
     def addCard(self, card):
@@ -181,18 +184,17 @@ def makeHistogram(values):
         print s
     print "TOT".ljust(cell) + str(sum(values.values())).ljust(cell)
 
-# http://code.activestate.com/recipes/498233/ to fast lookup stuff
-def toss(c):
-    ###########################################################################
-    # For example                                                             #
-    # p=array((0.1, 0.2, 0.6, 0.1)) #vector of probabilities, normalized to 1 #
-    # c=cumsum(p) #cumulative probability vector                              #
-    ###########################################################################
-    from numpy import cumsum, array, searchsorted, shape
-    rd = numpy.random.random
-    y = random(shape(c))
-    x = searchsorted(c, y)
-    
+def w_choice(lst):
+    """weighted probability, for example
+    x = w_choice( [('one',0.25), ('two',0.25), ('three',0.5)] )"""
+
+    import random
+    n = random.uniform(0, 1)
+    for item, weight in lst:
+        if n < weight:
+            break
+        n = n - weight
+    return item
 
 def main():
     nplayers = int(argv[1])
