@@ -10,7 +10,7 @@
 from random import choice, uniform
 from sys import argv
 
-NROUNDS = 10000
+NROUNDS = 100000
 RAZZ_CARDS = dict(A = 1, J = 11, Q = 12, K = 13)
 NON_HIGH_CARD = -1
 DECK_CARDS = range(1, 14) * 4
@@ -44,13 +44,14 @@ class RazzGame(object):
         else:
             playing = 1
 
+        # this way is linear
         for n in xrange(playing):
             h = self.hands[n]
             while not(h.is_full()):
                 h.addCard(self.deck.getRandomCard())
 
-        return self.hands[0].rank()
-
+    def getHand(self, player):
+        return self.hands[player]
 
 class Deck(object):
     def __init__(self, card_list):
@@ -86,7 +87,7 @@ class Deck(object):
         ## Almost the same with sum
         ## http://stackoverflow.com/questions/952914/making-a-flat-list-out-of-list-of-lists-in-python for better performances
         # return sum(([el] * d for el, d in self.cards.iteritems()), [])
-    
+        # more on flattening http://rightfootin.blogspot.com/2006/09/more-on-python-flatten.html
         l = []
         for k in self.cards.keys():
             l += [k] * self.cards[k]
@@ -196,7 +197,8 @@ def loop(times, nplayers, init_cards, full = False):
     for n in range(times):
         # every time creating a new object
         r = RazzGame(nplayers, init_cards)
-        got_rank = r.play(full)
+        r.play(full)
+        got_rank = r.getHand(0).rank()
         if ranks.has_key(got_rank):
             ranks[got_rank] += 1
         else:

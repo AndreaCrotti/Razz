@@ -37,6 +37,9 @@
   - From the deck the operation you do most of the time is selecting a random card and removing
   - From the hand the primary operation is adding cards and sorting
 
+** Python
+# write what has been experimented and the results we've got from the testing
+
 * Objectives
 ** Design a nice structure
 
@@ -50,6 +53,10 @@
    A nice metric would be the
    #simulations / seconds
    The output could be equal for all the different languages and still parsable and analyzable automatically.
+
+#+begin_src R :colnames t :exports both
+  t(sort(table(tolower(scan("org-babel.org", what="", na.strings="|"))), decreasing=TRUE)[1:10])
+#+end_src
 
 * Speed comparison
 

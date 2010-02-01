@@ -1,6 +1,7 @@
 // -*- compile-command: "gcc -o  razz -Wall razz.c" -*-
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "razz.h"
 
 /*
@@ -13,9 +14,12 @@
 #define RAZZ_HAND 7
 #define RAZZ_EVAL 5
 
-int *make_deck(const int, const int, const int);
+#define INITIAL_PLAYER 3
+#define INITIAL_OTHERS 1
 
-// typedef must be written in the right order
+#define STR_EQ(x,y) (!strcmp(x, y))
+
+// A card is just an integer
 typedef int card;
 
 typedef struct deck {
@@ -28,22 +32,73 @@ typedef struct hand {
   int actual_len;
 } hand;
 
-// A card is just an integer
+card *make_deck(const int, const int, const int);
+card str_to_card(char *);
+hand *make_hand();
+void add_card_to_hand(card, hand *);
+void print_hand(hand *);
 
 int main(int argc, char *argv[])
 {
-  hand h1 = {[1, 2, 3, 4], 4};
+  if (argc < 4) {
+    exit(EXIT_FAILURE); // check the correct code
+  }
+  int nplayers, i;
+  nplayers = atoi(argv[1]);
+
+  // creating a new deck here 
+  for (i = 1; i < argc; i++) {
+    printf("got card from string %d\n", str_to_card(argv[i]));
+  }
+  hand *h0 = make_hand();
+  add_card_to_hand(2, h0);
+  print_hand(h0);
   
+
   return 0;
 }
 
-int hand_is_full(hand *hand) {
-  if (hand -> actual_len == RAZZ_EVAL)
-    return 0;
-  return 1;
+int str_to_card(char *card) {
+  if (STR_EQ(card, "A")) {
+    return 1;
+  }
+  if (STR_EQ(card, "J")) {
+    return 11;
+  }  
+  if (STR_EQ(card, "Q")) {
+    return 12;
+  }
+  if (STR_EQ(card, "K")) {
+    return 13;
+  }  
+  // means that it's an integer
+  return atoi(card);
 }
 
-int *make_deck(const int start, const int end, const int rep) {
+hand *make_hand() {
+  hand *h = (hand *) malloc(sizeof(hand));
+  h -> actual_len = 0;
+  return h;
+}
+
+void add_card_to_hand(card c, hand *h) {
+  if (h->actual_len == RAZZ_HAND)
+    printf("error");
+  // FIXME: actual_len is not done correctly
+  else {
+    (h->cards)[h->actual_len] = c;
+    h->actual_len++;
+    printf("now actual_len = %d", h->actual_len);
+  }
+}
+
+void print_hand(hand *h) {
+  int i;
+  for (i = 0; i < h->actual_len; i++)
+    printf("%d ", h->cards[i]);
+}
+
+card *make_deck(const int start, const int end, const int rep) {
   int range_len = end - start;
   int i;
   int *deck = (int *) malloc(sizeof(int) * range_len);
