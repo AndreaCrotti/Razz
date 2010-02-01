@@ -7,10 +7,10 @@
 # - decouple RazzHand and Deck since they have different usage
 # - see http://code.activestate.com/recipes/498229/ for the weighted choice
 
-from random import choice
+from random import choice, uniform
 from sys import argv
 
-NROUNDS = 100000
+NROUNDS = 10000
 RAZZ_CARDS = dict(A = 1, J = 11, Q = 12, K = 13)
 NON_HIGH_CARD = -1
 DECK_CARDS = range(1, 14) * 4
@@ -58,8 +58,8 @@ class Deck(object):
         for c in card_list:
             self.addCard(c)
 
-        self.weights = lambda : [(k, float(v) / len(self)) for k,v in self.cards.items() ]
-
+        #self.weights = lambda : [(k, float(v) / len(self)) for k,v in self.cards.items() ]
+        
     def __str__(self):
         # I need to get back the card list to print correctly
         return str(self.cards)
@@ -83,6 +83,10 @@ class Deck(object):
         return card
 
     def toList(self):
+        ## Almost the same with sum
+        ## http://stackoverflow.com/questions/952914/making-a-flat-list-out-of-list-of-lists-in-python for better performances
+        # return sum(([el] * d for el, d in self.cards.iteritems()), [])
+    
         l = []
         for k in self.cards.keys():
             l += [k] * self.cards[k]
@@ -91,9 +95,10 @@ class Deck(object):
     # apparently we're getting the same odds with the fair and non fair algorithm
     def getRandomCard(self):
         "Returns a card randomly from the deck"
-        c = choice(self.cards.keys())
-        #c = choice(self.toList())
-        #c = w_choice(self.weights())
+        ## apparently toList is still faster than the w_choicej
+        ## the problem is that we have to compute the probabilities every time
+        c = choice(self.toList())
+        #c = w_choice(self.weights)
         return self.getCard(c)
 
     def addCard(self, card):
@@ -177,8 +182,7 @@ def w_choice(lst):
     """weighted probability, for example
     x = w_choice( [('one',0.25), ('two',0.25), ('three',0.5)] )"""
 
-    import random
-    n = random.uniform(0, 1)
+    n = uniform(0, 1)
     for item, weight in lst:
         if n < weight:
             break
@@ -189,7 +193,7 @@ def w_choice(lst):
 def loop(times, nplayers, init_cards, full = False):
     # at every loop it should restart from scratch
     ranks = {}
-    for n in xrange(times):
+    for n in range(times):
         # every time creating a new object
         r = RazzGame(nplayers, init_cards)
         got_rank = r.play(full)
