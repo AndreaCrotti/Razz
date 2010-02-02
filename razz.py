@@ -32,6 +32,7 @@ class RazzGame(object):
     def __str__(self):
         return "\n".join(map(str, self.hands.values()))
 
+    # TODO: insert 3 ways of playing, fair (with rounds), partial and fast
     def play(self, full = False):
         """ Run the game and return the rank of my local hand
         If full actually play the whole game not just my player.

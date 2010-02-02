@@ -21,6 +21,9 @@
 #define INITIAL_PLAYER 3
 #define INITIAL_OTHER 1
 
+#define RAZZ_CARDS 13
+#define RAZZ_REP 4
+
 // A card is just an integer
 typedef int card;
 typedef char rem;
@@ -31,13 +34,9 @@ typedef struct couple {
 } couple;
 
 typedef struct deck {
-  card *cards; // here it's not allocated in the stack because it's much bigger
-               // does it make sense?
-} deck;
-
-typedef struct deck_couple {
   couple *couples;
-} deck_couple;
+  int len;
+} deck;
 
 typedef struct hand {
   // this is small can be allocated in stack memory
@@ -45,11 +44,16 @@ typedef struct hand {
   int actual_len;
 } hand;
 
-card *make_deck(const int, const int, const int);
+
+deck *make_deck(const int, const int, const int);
+void print_deck(deck *);
+void free_deck(deck *);
+void print_couple(couple);
 hand *make_hand();
 void add_card_to_hand(card, hand *);
 void print_hand(hand *);
 card char_to_card(char);
+
 
 int main(int argc, char *argv[])
 {
@@ -101,6 +105,12 @@ int main(int argc, char *argv[])
     free(hands[i]);
 
   free(hands);
+
+  // starting deck code
+  deck *d = make_deck(1, 13, RAZZ_REP);
+  print_deck(d);
+  free_deck(d);
+
   return 0;
 }
 
@@ -141,13 +151,49 @@ void print_hand(hand *h) {
   printf("\n");
 }
 
-card *make_deck(const int start, const int end, const int rep) {
-  int range_len = end - start;
+couple *make_couple(const card c, const int rep) {
+  couple *couple = malloc(sizeof(couple));
+  couple->c = c;
+  couple->r = rep;
+  return couple;
+}
+
+void print_couple(couple couple) {
+  printf("%d:\t%d\n", couple.c, couple.r);
+}
+
+deck *make_deck(const int start, const int end, const int rep) {
   int i;
-  card *deck = malloc(sizeof(card) * range_len);
+  card c;
+  int range_len = end - start;
+  deck *deck = malloc(sizeof(deck));
+
+  deck->len = range_len;
+  deck->couples = malloc(sizeof(couple) * range_len);
+
   for (i = 0; i < range_len; i++) {
-    deck[i] = rep;
+    c = i + start;
+    couple ci = deck->couples[i];
+    ci.c = c;
+    ci.r = rep;
   }
 
   return deck;
+}
+
+void print_deck(deck *deck) {
+  int i;
+  for (i = 0; i < deck->len; i++) {
+    print_couple(deck->couples[i]);
+  }
+}
+
+void free_deck(deck *deck) {
+  printf("freeing the deck\n");
+  /* int i; */
+  // couples is not anymore a pointer no need to free it
+  /* for (i = 0; i < deck->len; i++) { */
+  /*   free(deck->couples[i]); */
+  /* } */
+  free(deck);
 }

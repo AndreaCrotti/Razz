@@ -59,6 +59,21 @@
 
 ** Python
 # write what has been experimented and the results we've got from the testing
+   One nice idea was to use a weighted choice instead of reconstructing the whole list given the dictionary every time.
+
+
+#+begin_src python
+def w_choice(lst):
+    """weighted probability, for example
+    x = w_choice( [('one',0.25), ('two',0.25), ('three',0.5)] )"""
+
+    n = uniform(0, 1)
+    for item, weight in lst:
+        if n < weight:
+            break
+        n = n - weight
+    return item
+#+end_src
 
 * Objectives
 ** Design a nice structure
