@@ -1,11 +1,8 @@
 #!/usr/bin/env python
 # Some ideas:
-# - use threading and server/client protocol
 # - see if using a queue or a heap could be better for performances
 # - write documentation in RST syntax for sphinx
-# - use numpy for arrays
 # - decouple RazzHand and Deck since they have different usage
-# - see http://code.activestate.com/recipes/498229/ for the weighted choice
 
 from random import choice, uniform
 from sys import argv

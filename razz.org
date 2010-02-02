@@ -1,3 +1,23 @@
+# Look in the bayesian formula to see how to get the probabilities correctly
+
+* Math
+  We can analyze the probabilities to see if we can simplify the problem.
+
+  We take a smaller deck, in this simplified game we have
+  - 5 cards
+  - 2 decks
+  Which in total give 10 cards.
+
+  The probability of getting two consecutive equal cards is
+#+begin_src dot :file prob1.pdf :cmdline -Tpdf :exports none :results silent
+  digraph g {
+  t0 [ label = "x (2/10)" ];
+  t1 [ label = "x (1/9)" ];
+  t0 -> t1;
+}
+#+end_src
+  
+  [[file:prob1.pdf]]
 
 * Rules
   In Razz, there are 5 rounds.                                                                                                           

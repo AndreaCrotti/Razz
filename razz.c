@@ -2,12 +2,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include "razz.h"
 
 /*
   Problems:
   - see how to keep the structure of the deck
   - see how random could work on that structure in an efficient way
+  - use assertions
 
  */
 #define N_SIM 1000 * 1000
@@ -15,9 +17,7 @@
 #define RAZZ_EVAL 5
 
 #define INITIAL_PLAYER 3
-#define INITIAL_OTHERS 1
-
-#define STR_EQ(x,y) (!strcmp(x, y))
+#define INITIAL_OTHER 1
 
 // A card is just an integer
 typedef int card;
@@ -33,46 +33,71 @@ typedef struct hand {
 } hand;
 
 card *make_deck(const int, const int, const int);
-card str_to_card(char *);
 hand *make_hand();
 void add_card_to_hand(card, hand *);
 void print_hand(hand *);
+card char_to_card(char);
 
 int main(int argc, char *argv[])
 {
   if (argc < 4) {
     exit(EXIT_FAILURE); // check the correct code
   }
-  int nplayers, i;
+
+  int nplayers, i, j, exp_args;
+  char c;
+
   nplayers = atoi(argv[1]);
+  exp_args = INITIAL_PLAYER + (INITIAL_OTHER * (nplayers - 1)) + 2;
+
+  // checking consistency between number of players and arguments
+  if (exp_args != argc) {
+    printf("wrong number of arguments, should be %d and its %d\n", exp_args, argc);
+    exit(EXIT_FAILURE);
+  }
 
   // creating a new deck here 
   for (i = 1; i < argc; i++) {
-    printf("got card from string %d\n", str_to_card(argv[i]));
+    if (strlen(argv[i]) > 1) {
+      printf("use J, Q, K instead of 11, 12 or 13\n");
+      exit(EXIT_FAILURE);
+    }
   }
-  hand *h0 = make_hand();
-  add_card_to_hand(2, h0);
-  print_hand(h0);
-  
 
+    // divide issues 
+  hand **hands = malloc(sizeof(hand *) * nplayers);
+  hands[0] = make_hand();
+  for (i = 1; i < INITIAL_PLAYER+1; i++) {
+    c = char_to_card(argv[i][0]);
+    add_card_to_hand(c, hands[0]);
+  }
+  for (i = 1; i < nplayers; i++) {
+    hands[i] = make_hand();
+    for (j = 0; j < INITIAL_OTHER; j++) {
+      c = char_to_card(argv[i + INITIAL_PLAYER + 1][0]);
+      add_card_to_hand(c, hands[i]);
+    }
+  }
+  for (i = 0; i < nplayers; i++) {
+    print_hand(hands[i]);
+  }
+  
+  // free everything here
+  
   return 0;
 }
 
-int str_to_card(char *card) {
-  if (STR_EQ(card, "A")) {
-    return 1;
-  }
-  if (STR_EQ(card, "J")) {
-    return 11;
-  }  
-  if (STR_EQ(card, "Q")) {
-    return 12;
-  }
-  if (STR_EQ(card, "K")) {
-    return 13;
-  }  
-  // means that it's an integer
-  return atoi(card);
+void start_game() {
+}
+
+card char_to_card(char c) {
+    switch ( c ) {
+      case 'A': return 1;
+      case 'J': return 11;
+      case 'Q': return 12;
+      case 'K': return 13;
+      default : return (c - '0');
+    }
 }
 
 hand *make_hand() {
@@ -88,14 +113,14 @@ void add_card_to_hand(card c, hand *h) {
   else {
     (h->cards)[h->actual_len] = c;
     h->actual_len++;
-    printf("now actual_len = %d", h->actual_len);
   }
 }
 
 void print_hand(hand *h) {
   int i;
-  for (i = 0; i < h->actual_len; i++)
+  for (i = 0; i < h->actual_len; i++) 
     printf("%d ", h->cards[i]);
+  printf("\n");
 }
 
 card *make_deck(const int start, const int end, const int rep) {
