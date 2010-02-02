@@ -10,8 +10,10 @@
   - see how to keep the structure of the deck
   - see how random could work on that structure in an efficient way
   - use assertions
+  - Using const whenever possible will increase the performances?
 
  */
+
 #define N_SIM 1000 * 1000
 #define RAZZ_HAND 7
 #define RAZZ_EVAL 5
@@ -21,10 +23,21 @@
 
 // A card is just an integer
 typedef int card;
+typedef char rem;
+
+typedef struct couple {
+  card c;
+  rem r;
+} couple;
 
 typedef struct deck {
-  card *cards;
-} deck; // using a pointer instead of the real struct?
+  card *cards; // here it's not allocated in the stack because it's much bigger
+               // does it make sense?
+} deck;
+
+typedef struct deck_couple {
+  couple *couples;
+} deck_couple;
 
 typedef struct hand {
   // this is small can be allocated in stack memory
@@ -56,6 +69,7 @@ int main(int argc, char *argv[])
     exit(EXIT_FAILURE);
   }
 
+  // FIXME: not handling correctly the 10!!!
   // creating a new deck here 
   for (i = 1; i < argc; i++) {
     if (strlen(argv[i]) > 1) {
@@ -64,7 +78,7 @@ int main(int argc, char *argv[])
     }
   }
 
-    // divide issues 
+  // divide issues 
   hand **hands = malloc(sizeof(hand *) * nplayers);
   hands[0] = make_hand();
   for (i = 1; i < INITIAL_PLAYER+1; i++) {
@@ -83,11 +97,15 @@ int main(int argc, char *argv[])
   }
   
   // free everything here
-  
+  for (i = 0; i < nplayers; i++) 
+    free(hands[i]);
+
+  free(hands);
   return 0;
 }
 
-void start_game() {
+void start_game(int nplayer, hand **init_hands) {
+
 }
 
 card char_to_card(char c) {
@@ -101,7 +119,7 @@ card char_to_card(char c) {
 }
 
 hand *make_hand() {
-  hand *h = (hand *) malloc(sizeof(hand));
+  hand *h = malloc(sizeof(hand));
   h -> actual_len = 0;
   return h;
 }
@@ -126,18 +144,10 @@ void print_hand(hand *h) {
 card *make_deck(const int start, const int end, const int rep) {
   int range_len = end - start;
   int i;
-  int *deck = (int *) malloc(sizeof(int) * range_len);
+  card *deck = malloc(sizeof(card) * range_len);
   for (i = 0; i < range_len; i++) {
     deck[i] = rep;
   }
 
   return deck;
-}
-
-void remove_from_deck(int *deck, const int card) {
-  if (deck[card - 1] > 0)
-    deck[card - 1] -= 1;
-  
-  else
-    printf("this should never happen");
 }
