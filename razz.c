@@ -28,13 +28,8 @@
 typedef int card;
 typedef char rem;
 
-typedef struct couple {
-  card c;
-  rem r;
-} couple;
-
 typedef struct deck {
-  couple *couples;
+  card *cards;
   int len;
 } deck;
 
@@ -48,7 +43,6 @@ typedef struct hand {
 deck *make_deck(const int, const int, const int);
 void print_deck(deck *);
 void free_deck(deck *);
-void print_couple(couple);
 hand *make_hand();
 void add_card_to_hand(card, hand *);
 void print_hand(hand *);
@@ -151,42 +145,47 @@ void print_hand(hand *h) {
   printf("\n");
 }
 
-couple *make_couple(const card c, const int rep) {
-  couple *couple = malloc(sizeof(couple));
-  couple->c = c;
-  couple->r = rep;
-  return couple;
-}
-
-void print_couple(couple couple) {
-  printf("%d:\t%d\n", couple.c, couple.r);
-}
-
+// we can avoid to call an external add_card_to_deck given that we
+// only add card here, after we remove only
 deck *make_deck(const int start, const int end, const int rep) {
-  int i;
-  card c;
+  int i, j, idx;
   int range_len = end - start;
+  int len = range_len * rep;
+
   deck *deck = malloc(sizeof(deck));
-
-  deck->len = range_len;
-  deck->couples = malloc(sizeof(couple) * range_len);
-
-  for (i = 0; i < range_len; i++) {
-    c = i + start;
-    printf("adding card %d %d times\n", c, rep);
-    couple ci = deck->couples[i];
-    ci.c = c;
-    ci.r = rep;
+  deck->cards = malloc(sizeof(card) * len);
+  deck->len = len;
+  
+  idx = 0;
+  for (i = start; i < end; i++) {
+    for (j = 0; j < rep; j++) {
+      deck->cards[idx] = i;
+      idx++;
+    }
   }
-
   return deck;
 }
+
+// deck should be kept ordered in reverse order
+// and putting a 0 to the card will make 
 
 void print_deck(deck *deck) {
   int i;
   for (i = 0; i < deck->len; i++) {
-    print_couple(deck->couples[i]);
+    printf("%d -> %d\n", i, deck->cards[i]);
   }
+}
+
+void remove_card_from_deck(card c, deck *deck) {
+  // we can assume it's sorted in inverse order
+  
+}
+
+// use the bsearch native implementation instead
+card bin_search(card c, deck *deck) {
+  int i = 0;
+  int j = deck->len;
+  int mid = (i + j) / 2;
 }
 
 void free_deck(deck *deck) {
