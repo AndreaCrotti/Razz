@@ -173,6 +173,7 @@ deck *make_deck(const int start, const int end, const int rep) {
 
   for (i = 0; i < range_len; i++) {
     c = i + start;
+    printf("adding card %d %d times\n", c, rep);
     couple ci = deck->couples[i];
     ci.c = c;
     ci.r = rep;
