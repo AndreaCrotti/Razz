@@ -4,7 +4,7 @@
 # - write documentation in RST syntax for sphinx
 # - decouple RazzHand and Deck since they have different usage
 
-from random import choice, uniform
+from random import shuffle
 from sys import argv
 
 NROUNDS = 100000
@@ -19,15 +19,14 @@ class RazzGame(object):
     in the end we just care about the rank given by only one of
     the players
     """
-    def __init__(self, nplayers, init_cards):
+    def __init__(self, nplayers, deck, init_cards):
         self.nplayers = nplayers
         self.hands = {}
-        self.deck = Deck(DECK_CARDS)
+        self.deck = deck
 
         for p, h in init_cards.items():
             self.hands[p] = RazzHand(h)
-            # remove the hand given from the main deck
-            self.deck.remove(self.hands[p])
+            self.deck.remove(self.hands[p].to_list())
 
     def __str__(self):
         return "\n".join(map(str, self.hands.values()))
@@ -47,66 +46,41 @@ class RazzGame(object):
             h = self.hands[n]
             while not(h.is_full()):
                 h.addCard(self.deck.getRandomCard())
+            print h
 
     def getHand(self, player):
         return self.hands[player]
 
 class Deck(object):
-    def __init__(self, card_list):
-        self.cards = {}
-        for c in card_list:
-            self.addCard(c)
-
-        #self.weights = lambda : [(k, float(v) / len(self)) for k,v in self.cards.items() ]
+    def __init__(self, cards):
+        self.cards = cards
+        shuffle(self.cards)
         
     def __str__(self):
-        # I need to get back the card list to print correctly
         return str(self.cards)
 
     def __len__(self):
-        return sum(self.cards.values())
+        return sum(self.cards)
 
-    def remove(self, other):
-        for c in other.cards.keys():
-            self.cards[c] -= other.cards[c]
-            # this could actually only happen if you try to ask for
-            # more than 4 cards of the same value in calling the program
-            assert(self.cards[c] >= 0)
+    def remove(self, card_list):
+        for c in card_list:
+            self.getCard(c) # discarding the output in this case
 
     def getCard(self, card):
         "Returns one card or delete the entry when they're finished"
-        if self.cards[card] == 1:
-            self.cards.pop(card)
-        else:
-           self.cards[card] -= 1
-        return card
+        if card in self.cards:
+            self.cards.remove(card)
+            return card
 
-    def toList(self):
-        ## Almost the same with sum
-        ## http://stackoverflow.com/questions/952914/making-a-flat-list-out-of-list-of-lists-in-python for better performances
-        # return sum(([el] * d for el, d in self.cards.iteritems()), [])
-        # more on flattening http://rightfootin.blogspot.com/2006/09/more-on-python-flatten.html
-        l = []
-        for k in self.cards.keys():
-            l += [k] * self.cards[k]
-        return l
-    
     # apparently we're getting the same odds with the fair and non fair algorithm
     def getRandomCard(self):
-        "Returns a card randomly from the deck"
-        ## apparently toList is still faster than the w_choicej
-        ## the problem is that we have to compute the probabilities every time
-        c = choice(self.toList())
-        #c = w_choice(self.weights)
-        return self.getCard(c)
+        "Returns a card randomly from the deck, assuming it's already in random order"
+        return self.cards.pop()
 
     def addCard(self, card):
-        if self.cards.has_key(card):
-            self.cards[card] += 1
-        else:
-            self.cards[card] = 1
+        self.cards.append(card)
 
-class RazzHand(Deck):
+class RazzHand(object):
     """
     We don't take into account flush or straight
     and simply discard anything that is not a high card
@@ -114,11 +88,28 @@ class RazzHand(Deck):
     TOT_CARDS = 7
     EVAL_CARDS = 5
     def __init__(self, card_list):
-        super(RazzHand, self).__init__(card_list)
-    
-    def __cmp__(self, other):
-        return cmp(self.rank(),  other.rank())
+        self.cards = {}
+        for c in card_list:
+            self.addCard(c)
 
+    def __len__(self):
+        return sum(self.cards.values())
+
+    def __str__(self):
+        return str(self.cards)
+
+    def addCard(self, card):
+        if card in self.cards:
+            self.cards[card] += 1
+        else:
+            self.cards[card] = 1
+
+    def to_list(self):
+        l = []
+        for c, v in self.cards.items():
+            l += [c] * v
+        return l
+                
     def rank(self):
         "Returns the rank of a high value hand"
         self.normalize()
@@ -129,6 +120,10 @@ class RazzHand(Deck):
 
     def is_full(self):
         return len(self) == self.TOT_CARDS
+
+    def getCard(self, card):
+        self.cards[card] -= 1
+        return card
 
     def normalize(self):
         "Remove all the pairs, we are sure we're not removing too much thanks to has_duplicates"
@@ -177,16 +172,6 @@ def makeHistogram(values):
         print s
     print "TOT".ljust(cell) + str(sum(values.values())).ljust(cell)
 
-def w_choice(lst):
-    """weighted probability, for example
-    x = w_choice( [('one',0.25), ('two',0.25), ('three',0.5)] )"""
-
-    n = uniform(0, 1)
-    for item, weight in lst:
-        if n < weight:
-            break
-        n = n - weight
-    return item
 
 # Must remove also the initial cards from the working deck
 def loop(times, nplayers, init_cards, full = False):
@@ -194,9 +179,13 @@ def loop(times, nplayers, init_cards, full = False):
     ranks = {}
     for n in range(times):
         # every time creating a new object
-        r = RazzGame(nplayers, init_cards)
+        d = Deck(DECK_CARDS)
+        # stupid bug somewhere that keeps me every time the old deck
+        print d
+        r = RazzGame(nplayers, d, init_cards)
         r.play(full)
         got_rank = r.getHand(0).rank()
+
         if ranks.has_key(got_rank):
             ranks[got_rank] += 1
         else:
