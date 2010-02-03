@@ -23,7 +23,6 @@ class RazzGame(object):
     def __init__(self, nplayers, init_cards):
         self.nplayers = nplayers
         self.hands = {}
-        # FIXME: bug here, somehow I don't get it from scratch
         self.deck = Deck(DECK_CARDS)
 
         for p, h in init_cards.items():
@@ -54,6 +53,7 @@ class RazzGame(object):
 
 class Deck(object):
     def __init__(self, cards):
+        # this copy is necessary or we modify the DECK_CARDS given in input
         self.cards = cards[:]
         shuffle(self.cards)
         
@@ -73,7 +73,7 @@ class Deck(object):
             self.cards.remove(card)
             return card
 
-    # apparently we're getting the same odds with the fair and non fair algorithm
+    # This is the function which must be maximally fast
     def getRandomCard(self):
         "Returns a card randomly from the deck, assuming it's already in random order"
         return self.cards.pop()
