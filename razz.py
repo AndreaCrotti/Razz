@@ -6,6 +6,7 @@
 
 from random import shuffle
 from sys import argv
+#from copy import deepcopy
 
 NROUNDS = 100000
 RAZZ_CARDS = dict(A = 1, J = 11, Q = 12, K = 13)
@@ -19,10 +20,11 @@ class RazzGame(object):
     in the end we just care about the rank given by only one of
     the players
     """
-    def __init__(self, nplayers, deck, init_cards):
+    def __init__(self, nplayers, init_cards):
         self.nplayers = nplayers
         self.hands = {}
-        self.deck = deck
+        # FIXME: bug here, somehow I don't get it from scratch
+        self.deck = Deck(DECK_CARDS)
 
         for p, h in init_cards.items():
             self.hands[p] = RazzHand(h)
@@ -46,14 +48,13 @@ class RazzGame(object):
             h = self.hands[n]
             while not(h.is_full()):
                 h.addCard(self.deck.getRandomCard())
-            print h
 
     def getHand(self, player):
         return self.hands[player]
 
 class Deck(object):
     def __init__(self, cards):
-        self.cards = cards
+        self.cards = cards[:]
         shuffle(self.cards)
         
     def __str__(self):
@@ -104,6 +105,7 @@ class RazzHand(object):
         else:
             self.cards[card] = 1
 
+    # use sum or lambda instead
     def to_list(self):
         l = []
         for c, v in self.cards.items():
@@ -179,10 +181,7 @@ def loop(times, nplayers, init_cards, full = False):
     ranks = {}
     for n in range(times):
         # every time creating a new object
-        d = Deck(DECK_CARDS)
-        # stupid bug somewhere that keeps me every time the old deck
-        print d
-        r = RazzGame(nplayers, d, init_cards)
+        r = RazzGame(nplayers, init_cards)
         r.play(full)
         got_rank = r.getHand(0).rank()
 
