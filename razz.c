@@ -15,6 +15,8 @@
   - see if using static stuff could somehow help
   - use smaller types, like http://linux.die.net/man/3/uint8_t
   - fix problem with 10
+  - see for example here http://stanford.edu/~blp/writings/clc/shuffle.html for array shuffling
+  - decide which random generator to use (lrand, rand, random)
  */
 
 #define N_SIM 1000 * 100
@@ -27,6 +29,7 @@
 #define RAZZ_CARDS 13
 #define RAZZ_REP 4
 
+/// those two macro makes the mapping index->card for the pseudo dictionary hand structure
 #define CARD_TO_IDX(x) (x - 1)
 #define IDX_TO_CARD(x) (x + 1)
 
@@ -50,6 +53,8 @@ deck *make_deck(const int, const int, const int);
 void print_deck(deck *);
 void free_deck(deck *);
 card get_random_card_from_deck(deck *);
+
+void test_random_card();
 
 hand *make_hand();
 void add_card_to_hand(card, hand *);
@@ -93,10 +98,13 @@ int main(int argc, char *argv[])
   // divide issues 
   hand **hands = malloc(sizeof(hand *) * nplayers);
   hands[0] = make_hand();
+
+  /// separating first player from the others
   for (i = 1; i < INITIAL_PLAYER+1; i++) {
-    c = char_to_card(argv[i][0]);
+    c = char_to_card(argv[i+1][0]);
     add_card_to_hand(c, hands[0]);
   }
+
   for (i = 1; i < nplayers; i++) {
     hands[i] = make_hand();
     for (j = 0; j < INITIAL_OTHER; j++) {
@@ -105,18 +113,20 @@ int main(int argc, char *argv[])
     }
   }
   for (i = 0; i < nplayers; i++) {
+    printf("hand %d:\n", i);
     print_hand(hands[i]);
   }
   
-  // free everything here
+  /// freeing hands
   for (i = 0; i < nplayers; i++) 
-    free(hands[i]);
+    free_hand(hands[i]);
 
   free(hands);
 
   // starting deck code
   deck *d = make_deck(1, 13, RAZZ_REP);
-  print_deck(d);
+
+  test_random_card();
   free_deck(d);
 
   return 0;
@@ -124,6 +134,16 @@ int main(int argc, char *argv[])
 
 void start_game(int nplayer, hand **init_hands) {
 
+}
+
+void test_random_card() {
+  int i, c;
+  deck *d = make_deck(1, 5, 2);
+  for (i = 0; i < 8; i++) {
+    print_deck(d);
+    c = get_random_card_from_deck(d);
+    printf("at step %d got card %d\n", i, c);
+  }
 }
 
 card char_to_card(char c) {
@@ -161,7 +181,12 @@ int hand_is_full(hand *h) {
 void print_hand(hand *h) {
   int i;
   for (i = 0; i < RAZZ_CARDS; i++)
-    printf("%d:\t%d\n", IDX_TO_CARD(i), h->cards[i]);
+    if (h->cards[i] > 0)
+      printf("%d:\t%d\n", IDX_TO_CARD(i), h->cards[i]);
+}
+
+void normalize_hand(hand *h) {
+  
 }
 
 void free_hand(hand *h) {
@@ -196,8 +221,9 @@ deck *make_deck(const int start, const int end, const int rep) {
 void print_deck(deck *deck) {
   int i;
   for (i = 0; i < deck->len; i++) {
-    printf("%d -> %d\n", i, deck->cards[i]);
+    printf("%d,",  deck->cards[i]);
   }
+  printf("\n");
 }
 
 // Given we only need to remove certain cards in the round 0 even better would be
@@ -210,7 +236,7 @@ void remove_card_from_deck(card c, deck *deck) {
   // Is this a fair algorithm given the uniform distribution I should have?
   int i;
   for (i = 0; i < deck->len; i++) {
-    if (deck[i] == c) {
+    if (deck->cards[i] == c) {
       swap_cards(i, deck->len-1, deck->cards);
       deck->len--;
       return;
@@ -220,9 +246,11 @@ void remove_card_from_deck(card c, deck *deck) {
 }
 
 card get_random_card_from_deck(deck *deck) {
-  int pos = random() % deck->len;
+  int pos = lrand48() % deck->len;
+  card c = deck->cards[pos];
   swap_cards(pos, deck->len-1, deck->cards);
   deck->len--;
+  return c;
 }
 
 void swap_cards(int c1_idx, int c2_idx, card *cards) {
@@ -233,7 +261,6 @@ void swap_cards(int c1_idx, int c2_idx, card *cards) {
 }
 
 void free_deck(deck *deck) {
-  printf("freeing the deck\n");
   free(deck->cards);
   free(deck);
 }
