@@ -6,8 +6,9 @@
 # - use multiprocessing to split the work from http://docs.python.org/dev/library/multiprocessing.html
 # - shuffling the deck every time is very costly but the only way to get a real randomization
 
-from random import shuffle
+from random import choice
 from sys import argv
+from itertools import permutations
 
 NROUNDS = 100 * 1000
 RAZZ_CARDS = dict(A = 1, J = 11, Q = 12, K = 13)
@@ -56,7 +57,6 @@ class Deck(object):
     def __init__(self, cards):
         # this copy is necessary otherwise we modify the DECK_CARDS given in input
         self.cards = cards[:]
-        shuffle(self.cards)
         
     def __str__(self):
         return str(self.cards)
@@ -66,18 +66,15 @@ class Deck(object):
 
     def remove(self, card_list):
         for c in card_list:
-            self.getCard(c) # discarding the output in this case
-
-    def getCard(self, card):
-        "Returns one card or delete the entry when they're finished"
-        if card in self.cards:
-            self.cards.remove(card)
-            return card
+            self.cards.remove(c)
 
     # This is the function which must be maximally fast
     def getRandomCard(self):
         "Returns a card randomly from the deck, assuming it's already in random order"
-        return self.cards.pop()
+        c = choice(self.cards)
+        # check that I'm actually removing the first one
+        self.cards.remove(c)
+        return c
 
     def addCard(self, card):
         self.cards.append(card)
@@ -202,7 +199,7 @@ def loop(times, nplayers, init_cards, full = False):
 
 def get_rank5_tuples():
     rank5 = set()
-    for n in range(10000):
+    for n in range(100 * 1000):
         d = Deck(DECK_CARDS)
         r = RazzGame(1, d, {0 :[1, 2, 3]})
         r.play()
@@ -212,6 +209,21 @@ def get_rank5_tuples():
             rank5.add(h)
     return rank5
         
+def try_with_allcombinations():
+    ranks = {}
+    # we should in this way generate all the possible combinations
+    # it is a way too slow even with 4 cards only taken 52! / (52-4)! or 49! / (49-4)!
+    # if we remove first all the initial cards as it should be.
+    for comb in permutations(range(5)*4, 4):
+        d = Deck(list(comb))
+        r = RazzGame(1, d, {0 :[1, 2, 3]})
+        r.play()
+        got_rank = r.getHand(0).rank()
+        if ranks.has_key(got_rank):
+            ranks[got_rank] += 1
+        else:
+            ranks[got_rank] = 1
+    return ranks
 
 def main():
     if len(argv) == 1:

@@ -71,6 +71,15 @@ def test_Ranking5WorksCorrectly():
     ]
     for tup in l:
         assert(RazzHand(tup).rank() == 5)
+
+def test_RankNegativeWorks():
+    l = [
+        [1, 1, 2, 2, 2, 3, 4],
+        [10, 10, 10, 1, 1, 4, 5],
+    ]
+    for tup in l:
+        assert(RazzHand(tup).rank() == -1)
+
     
 if __name__ == '__main__':
     unittest.main()

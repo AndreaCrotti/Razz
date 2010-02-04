@@ -16,8 +16,17 @@
   t0 -> t1;
 }
 #+end_src
-  
+
   [[file:prob1.pdf]]
+
+** Approaches
+   One possible idea was to generate all the possible decks, this unfortunately is not possible, since they would be:
+   $52! / 4!$
+   which is a way too big.
+
+   So we end up simulating a large number of possible games and collecting the ranks given.
+
+   If anyway I only consider that I need the first 4 cards in the simplified case and 4 + (6*nplayers) in the real case I could probably generate the whole set of cards I could get.
 
 * Rules
   In Razz, there are 5 rounds.                                                                                                           
