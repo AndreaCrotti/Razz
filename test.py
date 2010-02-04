@@ -15,22 +15,12 @@ class TestRazzHand(unittest.TestCase):
 
     def test_PairHasDuplicates(self):
         p1 = RazzHand([13, 13, 7, 6, 2])
-        p1.normalize()
         self.assertEqual(p1.has_duplicates(), True)
 
     def test_pokerLoseAgainstLowHand(self):
         pok = [6, 6, 6, 6, 3]
         low = [8, 4, 3, 2, 1]
         self.assertTrue(RazzHand(pok) < RazzHand(low))
-
-    # adding some testing about normalization and more
-    def test_NormalizeAlwaysGiveRightNumberOfCards(self):
-        hand = RazzHand([1,2,2,3,4,5,5])
-        hand2 = RazzHand([1,2,2,3,3])
-        hand.normalize()
-        hand2.normalize()
-        self.assertTrue(len(hand) == hand.EVAL_CARDS)
-        self.assertTrue(len(hand2) == hand2.EVAL_CARDS)
 
     def test_RazzHandRanksCorrectly(self):
         hand = RazzHand([6,4,3,2,1])
