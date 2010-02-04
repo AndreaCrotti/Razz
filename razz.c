@@ -37,6 +37,9 @@
 #define RAZZ_CARDS 13
 #define RAZZ_REP 4
 
+#define CARD_TO_IDX(x) (x - 1)
+#define IDX_TO_CARD(x) (x + 1)
+
 // A card is just an integer
 typedef int card;
 typedef char rem;
@@ -47,8 +50,7 @@ typedef struct deck {
 } deck;
 
 typedef struct hand {
-  // this is small can be allocated in stack memory
-  card cards[RAZZ_HAND];
+  card cards[RAZZ_CARDS]; /**< dictionary idx -> occurrences */
   int actual_len;
 } hand;
 
@@ -72,7 +74,7 @@ int main(int argc, char *argv[])
   char c;
 
   nplayers = atoi(argv[1]);
-  if (nplayers > 8 || nplayers < 2) {
+  if (nplayers > 8 || nplayers < 1) {
     printf("wrong number of arguments\n");
     exit(EXIT_FAILURE);
   }
@@ -140,26 +142,24 @@ card char_to_card(char c) {
 }
 
 hand *make_hand() {
+  int i;
   hand *h = malloc(sizeof(hand));
   h -> actual_len = 0;
+  for (i = 0; i < RAZZ_CARDS; i++) {
+    h->cards[i] = 0;
+  }
   return h;
 }
 
 void add_card_to_hand(card c, hand *h) {
-  if (h->actual_len == RAZZ_HAND)
-    printf("error");
-  // FIXME: actual_len is not done correctly
-  else {
-    (h->cards)[h->actual_len] = c;
-    h->actual_len++;
-  }
+  h->cards[CARD_TO_IDX(c)]++;
+  h->actual_len++;
 }
 
 void print_hand(hand *h) {
   int i;
-  for (i = 0; i < h->actual_len; i++) 
-    printf("%d ", h->cards[i]);
-  printf("\n");
+  for (i = 0; i < RAZZ_CARDS; i++)
+    printf("%d:\t%d\n", IDX_TO_CARD(i), h->cards[i]);
 }
 
 // we can avoid to call an external add_card_to_deck given that we
