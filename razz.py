@@ -5,6 +5,7 @@
 # - decouple RazzHand and Deck since they have different usage
 # - use multiprocessing to split the work from http://docs.python.org/dev/library/multiprocessing.html
 # - shuffling the deck every time is very costly but the only way to get a real randomization
+# - try to prepare the deck already without the initial cards, deleting the ugly "remove" method
 
 from random import choice
 from sys import argv
@@ -76,9 +77,6 @@ class Deck(object):
         self.cards.remove(c)
         return c
 
-    def addCard(self, card):
-        self.cards.append(card)
-
 class RazzHand(object):
     """
     We don't take into account flush or straight
@@ -112,7 +110,7 @@ class RazzHand(object):
         for c, v in self.cards.items():
             l += [c] * v
         return l
-                
+
     def rank(self):
         "Returns the rank of a high value hand"
         self.normalize()
@@ -136,11 +134,9 @@ class RazzHand(object):
         removed = 0
         to_remove = len(self) - self.EVAL_CARDS
         cards = self.cards.keys()
-        # done = lambda : len(self) == self.EVAL_CARDS
 
         for k in cards:
             while self.cards[k] > 1:
-                # if done():
                 if removed == to_remove:
                     return
                 else:
@@ -213,7 +209,7 @@ def get_rank5_tuples():
         if got_rank == 5:
             rank5.add(h)
     return rank5
-        
+
 def try_with_allcombinations():
     ranks = {}
     # we should in this way generate all the possible combinations
