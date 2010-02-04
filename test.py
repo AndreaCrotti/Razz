@@ -52,6 +52,25 @@ def test_randChoiceWorkingForDeck():
     d = Deck(DECK_CARDS)
     for _ in range(100):
         assert(choice(d.cards) in d.cards)
+
+def test_Ranking5WorksCorrectly():
+    "Checking some possible where I should get a rank5"
+    l = [
+     [1, 1, 2, 3, 4, 5, 9],
+     [1, 1, 2, 3, 4, 5, 10],
+     [1, 1, 2, 3, 4, 5, 11],
+     [1, 1, 2, 3, 4, 5, 12],
+     [1, 1, 2, 3, 4, 5, 13],
+     [1, 2, 2, 2, 3, 4, 5],
+     [1, 2, 2, 3, 3, 4, 5],
+     [1, 2, 2, 3, 4, 4, 5],
+     [1, 2, 2, 3, 4, 5, 6],
+     [1, 2, 2, 3, 4, 5, 7],
+     [1, 2, 2, 3, 4, 5, 8],
+     [1, 2, 2, 3, 4, 5, 9],
+    ]
+    for tup in l:
+        assert(RazzHand(tup).rank() == 5)
     
 if __name__ == '__main__':
     unittest.main()
