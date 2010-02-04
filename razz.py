@@ -128,8 +128,11 @@ class RazzHand(object):
         return len(self) == self.TOT_CARDS
 
     def getCard(self, card):
-        self.cards[card] -= 1
-        return card
+        if self.cards[card] > 1:
+            self.cards[card] -= 1
+        else:
+            del(self.cards[card])
+            return card
 
     def normalize(self):
         "Remove all the pairs, we are sure we're not removing too much thanks to has_duplicates"
@@ -196,6 +199,19 @@ def loop(times, nplayers, init_cards, full = False):
         else:
             ranks[got_rank] = 1
     return ranks
+
+def get_rank5_tuples():
+    rank5 = set()
+    for n in range(10000):
+        d = Deck(DECK_CARDS)
+        r = RazzGame(1, d, {0 :[1, 2, 3]})
+        r.play()
+        h = tuple(r.getHand(0).to_list())
+        got_rank = r.getHand(0).rank()
+        if got_rank == 5:
+            rank5.add(h)
+    return rank5
+        
 
 def main():
     if len(argv) == 1:
