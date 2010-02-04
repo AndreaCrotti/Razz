@@ -10,7 +10,7 @@ from random import choice
 from sys import argv
 from itertools import permutations
 
-NROUNDS = 100 * 1000
+NROUNDS = 1000 * 100
 RAZZ_CARDS = dict(A = 1, J = 11, Q = 12, K = 13)
 NON_HIGH_CARD = -1
 DECK_CARDS = range(1, 14) * 4
@@ -133,25 +133,30 @@ class RazzHand(object):
 
     def normalize(self):
         "Remove all the pairs, we are sure we're not removing too much thanks to has_duplicates"
+        removed = 0
+        to_remove = len(self) - self.EVAL_CARDS
         cards = self.cards.keys()
-        done = lambda : len(self) == self.EVAL_CARDS
+        # done = lambda : len(self) == self.EVAL_CARDS
 
         for k in cards:
             while self.cards[k] > 1:
-                if done():
+                # if done():
+                if removed == to_remove:
                     return
                 else:
                     # is this way the best one?
                     self.getCard(k)
+                    removed += 1
 
         # duplicates are removed, now remove the highest cards
         cards.sort()
         # using cards.remove(r.max) looks a bit faster but if there are more
         # cards to remove the sorting must be done only once
-        while not(done()):
+        while removed != to_remove:
             # removing higher cards as much as possible
             c = cards.pop()
             self.getCard(c)
+            removed += 1
 
     def has_duplicates(self):
         "Return if there is at least one duplicate card"
