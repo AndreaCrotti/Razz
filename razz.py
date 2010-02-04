@@ -111,14 +111,6 @@ class RazzHand(object):
             l += [c] * v
         return l
 
-    def rank(self):
-        "Returns the rank of a high value hand"
-        self.normalize()
-        if self.has_duplicates():
-            return NON_HIGH_CARD
-        else:
-            return max(self.cards.keys())
-
     def is_full(self):
         return len(self) == self.TOT_CARDS
 
@@ -129,41 +121,25 @@ class RazzHand(object):
             del(self.cards[card])
             return card
 
-    def normalize(self):
-        "Remove all the pairs, we are sure we're not removing too much thanks to has_duplicates"
+    def rank(self):
         removed = 0
         to_remove = len(self) - self.EVAL_CARDS
         cards = self.cards.keys()
 
+        # here we could optimize it, if we still find duplicates it's surely rank == -1
         for k in cards:
             while self.cards[k] > 1:
                 if removed == to_remove:
-                    return
+                    return NON_HIGH_CARD
                 else:
                     # is this way the best one?
                     self.getCard(k)
                     removed += 1
 
-        # duplicates are removed, now remove the highest cards
+        # sorting the card and returning the last after slicing only what we want
         cards.sort()
-        # using cards.remove(r.max) looks a bit faster but if there are more
-        # cards to remove the sorting must be done only once
-        while removed != to_remove:
-            # removing higher cards as much as possible
-            c = cards.pop()
-            self.getCard(c)
-            removed += 1
-
-    def has_duplicates(self):
-        "Return if there is at least one duplicate card"
-        #####################################################################
-        # this form appear the fastest, faster then using                   #
-        # any(map(lambda x: operator.gt(x, 1), d.values()))                 #
-        # and also of a short circuiting function that quits at first entry #
-        #####################################################################
-        return any(map(lambda x: x > 1, self.cards.values()))
-
-
+        return cards[:self.EVAL_CARDS][-1]
+        
 def str_to_RazzCard(s):
     if s.isdigit():
         return int(s)
