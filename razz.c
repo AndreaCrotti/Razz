@@ -23,6 +23,8 @@
 #define RAZZ_HAND 7
 #define RAZZ_EVAL 5
 
+#define NON_HIGH_HAND (-1)
+
 #define INITIAL_PLAYER 3
 #define INITIAL_OTHER 1
 
@@ -32,6 +34,8 @@
 /// those two macro makes the mapping index->card for the pseudo dictionary hand structure
 #define CARD_TO_IDX(x) (x - 1)
 #define IDX_TO_CARD(x) (x + 1)
+
+int i;
 
 // A card is just an integer
 typedef int card;
@@ -55,11 +59,13 @@ void free_deck(deck *);
 card get_random_card_from_deck(deck *);
 
 void test_random_card();
+void test_hand_ranking();
 
 hand *make_hand();
 void add_card_to_hand(card, hand *);
 void print_hand(hand *);
 void free_hand(hand *);
+card rank_hand(hand *);
 
 card char_to_card(char);
 
@@ -127,6 +133,7 @@ int main(int argc, char *argv[])
   deck *d = make_deck(1, 13, RAZZ_REP);
 
   test_random_card();
+  test_hand_ranking();
   free_deck(d);
 
   return 0;
@@ -137,13 +144,26 @@ void start_game(int nplayer, hand **init_hands) {
 }
 
 void test_random_card() {
-  int i, c;
+  int c;
   deck *d = make_deck(1, 5, 2);
   for (i = 0; i < 8; i++) {
     print_deck(d);
     c = get_random_card_from_deck(d);
     printf("at step %d got card %d\n", i, c);
   }
+}
+
+void test_hand_ranking() {
+  hand *h = make_hand();
+  for (i = 1; i < 4; i++) {
+    add_card_to_hand(i, h);
+  }
+  add_card_to_hand(8, h);
+  add_card_to_hand(10, h);
+  add_card_to_hand(10, h);
+  add_card_to_hand(5, h);
+  print_hand(h);
+  printf("rank = %d\n", rank_hand(h));
 }
 
 card char_to_card(char c) {
@@ -157,7 +177,6 @@ card char_to_card(char c) {
 }
 
 hand *make_hand() {
-  int i;
   hand *h = malloc(sizeof(hand));
   h -> len = 0;
   for (i = 0; i < RAZZ_CARDS; i++) {
@@ -179,14 +198,39 @@ int hand_is_full(hand *h) {
 }
 
 void print_hand(hand *h) {
-  int i;
   for (i = 0; i < RAZZ_CARDS; i++)
     if (h->cards[i] > 0)
       printf("%d:\t%d\n", IDX_TO_CARD(i), h->cards[i]);
 }
 
-void normalize_hand(hand *h) {
-  
+card rank_hand(hand *h) {
+  int to_remove = h->len - RAZZ_EVAL;
+
+  /// here we don't need the CARD_TO_IDX macro since we only check for duplicates
+  for (i = 0; i < RAZZ_CARDS; i++) {
+    while (h->cards[i] > 1) {
+      if (to_remove == 0)
+        return NON_HIGH_HAND;
+      
+      h->cards[i]--;
+      h->len--;
+      to_remove--;
+    }
+  }
+
+  /// scan the whole array from the end and grab the to_remove_th element
+  for (i = RAZZ_CARDS-1; i > 0; i--) {
+    assert(h->cards[i] < 2); /**< if failing means that the previous part didn't work correctly */
+    if (h->cards[i] > 0) {
+
+      if (to_remove == 0)
+        return IDX_TO_CARD(i);
+      else
+        to_remove--;
+    }
+    /// when equal to 0 implicitly go to previous card
+  }
+  return 0; /// never getting here
 }
 
 void free_hand(hand *h) {
@@ -197,7 +241,7 @@ void free_hand(hand *h) {
 // we can avoid to call an external add_card_to_deck given that we
 // only add card here, after we remove only
 deck *make_deck(const int start, const int end, const int rep) {
-  int i, j, idx;
+  int j, idx;
   int range_len = end - start;
   int len = range_len * rep;
 
@@ -219,7 +263,6 @@ deck *make_deck(const int start, const int end, const int rep) {
 // and putting a 0 to the card will make 
 
 void print_deck(deck *deck) {
-  int i;
   for (i = 0; i < deck->len; i++) {
     printf("%d,",  deck->cards[i]);
   }
@@ -234,7 +277,6 @@ void remove_card_from_deck(card c, deck *deck) {
   // - decrease the array by 1
   // not assuming any order and doing a brute force scan could also work
   // Is this a fair algorithm given the uniform distribution I should have?
-  int i;
   for (i = 0; i < deck->len; i++) {
     if (deck->cards[i] == c) {
       swap_cards(i, deck->len-1, deck->cards);
