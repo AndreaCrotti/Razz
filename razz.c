@@ -1,15 +1,4 @@
 // -*- compile-command: "gcc -o  razz -Wall razz.c" -*-
-
-/**
- * @file   razz.c
- * @author Andrea Crotti <andrea.crotti@rwth-aache.de>
- * @date   Wed Feb  3 12:56:52 2010
- * 
- * @brief  
- * 
- * 
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,6 +14,7 @@
   - Using const whenever possible will increase the performances?
   - see if using static stuff could somehow help
   - use smaller types, like http://linux.die.net/man/3/uint8_t
+  - fix problem with 10
  */
 
 #define N_SIM 1000 * 100
@@ -51,16 +41,21 @@ typedef struct deck {
 
 typedef struct hand {
   card cards[RAZZ_CARDS]; /**< dictionary idx -> occurrences */
-  int actual_len;
+  int len;
 } hand;
 
+void swap_cards(int, int, card *);
 
 deck *make_deck(const int, const int, const int);
 void print_deck(deck *);
 void free_deck(deck *);
+card get_random_card_from_deck(deck *);
+
 hand *make_hand();
 void add_card_to_hand(card, hand *);
 void print_hand(hand *);
+void free_hand(hand *);
+
 card char_to_card(char);
 
 
@@ -144,7 +139,7 @@ card char_to_card(char c) {
 hand *make_hand() {
   int i;
   hand *h = malloc(sizeof(hand));
-  h -> actual_len = 0;
+  h -> len = 0;
   for (i = 0; i < RAZZ_CARDS; i++) {
     h->cards[i] = 0;
   }
@@ -153,13 +148,25 @@ hand *make_hand() {
 
 void add_card_to_hand(card c, hand *h) {
   h->cards[CARD_TO_IDX(c)]++;
-  h->actual_len++;
+  h->len++;
+}
+
+int hand_is_full(hand *h) {
+  if (h->len == RAZZ_HAND)
+    return 0;
+  else
+    return 1;
 }
 
 void print_hand(hand *h) {
   int i;
   for (i = 0; i < RAZZ_CARDS; i++)
     printf("%d:\t%d\n", IDX_TO_CARD(i), h->cards[i]);
+}
+
+void free_hand(hand *h) {
+  // nothing else because the array of cards is an automatic variable
+  free(h);
 }
 
 // we can avoid to call an external add_card_to_deck given that we
@@ -193,16 +200,36 @@ void print_deck(deck *deck) {
   }
 }
 
+// Given we only need to remove certain cards in the round 0 even better would be
+// to generate directly the deck without them, keeping it sorted
 void remove_card_from_deck(card c, deck *deck) {
-  // we can assume it's sorted in inverse order
-  
+  // A nice way to do this could be
+  // - swap the found card with the last card
+  // - decrease the array by 1
+  // not assuming any order and doing a brute force scan could also work
+  // Is this a fair algorithm given the uniform distribution I should have?
+  int i;
+  for (i = 0; i < deck->len; i++) {
+    if (deck[i] == c) {
+      swap_cards(i, deck->len-1, deck->cards);
+      deck->len--;
+      return;
+    }
+  }
+  printf("we should never reach this point, card %d not found\n", c);
 }
 
-// use the bsearch native implementation instead
-card bin_search(card c, deck *deck) {
-  int i = 0;
-  int j = deck->len;
-  int mid = (i + j) / 2;
+card get_random_card_from_deck(deck *deck) {
+  int pos = random() % deck->len;
+  swap_cards(pos, deck->len-1, deck->cards);
+  deck->len--;
+}
+
+void swap_cards(int c1_idx, int c2_idx, card *cards) {
+  card tmp;
+  tmp = cards[c1_idx];
+  cards[c1_idx] = cards[c2_idx];
+  cards[c2_idx] = tmp;
 }
 
 void free_deck(deck *deck) {
