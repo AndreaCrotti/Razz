@@ -3,12 +3,13 @@
 # - see if using a queue or a heap could be better for performances
 # - write documentation in RST syntax for sphinx
 # - decouple RazzHand and Deck since they have different usage
+# - use multiprocessing to split the work from http://docs.python.org/dev/library/multiprocessing.html
+# - shuffling the deck every time is very costly but the only way to get a real randomization
 
 from random import shuffle
 from sys import argv
-#from copy import deepcopy
 
-NROUNDS = 100000
+NROUNDS = 100 * 1000
 RAZZ_CARDS = dict(A = 1, J = 11, Q = 12, K = 13)
 NON_HIGH_CARD = -1
 DECK_CARDS = range(1, 14) * 4
@@ -20,10 +21,10 @@ class RazzGame(object):
     in the end we just care about the rank given by only one of
     the players
     """
-    def __init__(self, nplayers, init_cards):
+    def __init__(self, nplayers, deck, init_cards):
         self.nplayers = nplayers
         self.hands = {}
-        self.deck = Deck(DECK_CARDS)
+        self.deck = deck
 
         for p, h in init_cards.items():
             self.hands[p] = RazzHand(h)
@@ -53,7 +54,7 @@ class RazzGame(object):
 
 class Deck(object):
     def __init__(self, cards):
-        # this copy is necessary or we modify the DECK_CARDS given in input
+        # this copy is necessary otherwise we modify the DECK_CARDS given in input
         self.cards = cards[:]
         shuffle(self.cards)
         
@@ -61,7 +62,7 @@ class Deck(object):
         return str(self.cards)
 
     def __len__(self):
-        return sum(self.cards)
+        return len(self.cards)
 
     def remove(self, card_list):
         for c in card_list:
@@ -98,6 +99,9 @@ class RazzHand(object):
 
     def __str__(self):
         return str(self.cards)
+
+    def __cmp__(self, other):
+        return cmp(self.rank(), other.rank())
 
     def addCard(self, card):
         if card in self.cards:
@@ -179,9 +183,11 @@ def makeHistogram(values):
 def loop(times, nplayers, init_cards, full = False):
     # at every loop it should restart from scratch
     ranks = {}
+
     for n in range(times):
         # every time creating a new object
-        r = RazzGame(nplayers, init_cards)
+        d = Deck(DECK_CARDS)
+        r = RazzGame(nplayers, d, init_cards)
         r.play(full)
         got_rank = r.getHand(0).rank()
 

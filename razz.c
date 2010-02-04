@@ -1,8 +1,20 @@
 // -*- compile-command: "gcc -o  razz -Wall razz.c" -*-
+
+/**
+ * @file   razz.c
+ * @author Andrea Crotti <andrea.crotti@rwth-aache.de>
+ * @date   Wed Feb  3 12:56:52 2010
+ * 
+ * @brief  
+ * 
+ * 
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <sysexits.h>
 #include "razz.h"
 
 /*
@@ -11,10 +23,11 @@
   - see how random could work on that structure in an efficient way
   - use assertions
   - Using const whenever possible will increase the performances?
-
+  - see if using static stuff could somehow help
+  - use smaller types, like http://linux.die.net/man/3/uint8_t
  */
 
-#define N_SIM 1000 * 1000
+#define N_SIM 1000 * 100
 #define RAZZ_HAND 7
 #define RAZZ_EVAL 5
 
@@ -59,12 +72,16 @@ int main(int argc, char *argv[])
   char c;
 
   nplayers = atoi(argv[1]);
+  if (nplayers > 8 || nplayers < 2) {
+    printf("wrong number of arguments\n");
+    exit(EXIT_FAILURE);
+  }
   exp_args = INITIAL_PLAYER + (INITIAL_OTHER * (nplayers - 1)) + 2;
-
+  
   // checking consistency between number of players and arguments
   if (exp_args != argc) {
     printf("wrong number of arguments, should be %d and its %d\n", exp_args, argc);
-    exit(EXIT_FAILURE);
+    exit(EX_USAGE);
   }
 
   // FIXME: not handling correctly the 10!!!
@@ -72,7 +89,7 @@ int main(int argc, char *argv[])
   for (i = 1; i < argc; i++) {
     if (strlen(argv[i]) > 1) {
       printf("use J, Q, K instead of 11, 12 or 13\n");
-      exit(EXIT_FAILURE);
+      exit(EX_USAGE);
     }
   }
 
@@ -190,10 +207,6 @@ card bin_search(card c, deck *deck) {
 
 void free_deck(deck *deck) {
   printf("freeing the deck\n");
-  /* int i; */
-  // couples is not anymore a pointer no need to free it
-  /* for (i = 0; i < deck->len; i++) { */
-  /*   free(deck->couples[i]); */
-  /* } */
+  free(deck->cards);
   free(deck);
 }

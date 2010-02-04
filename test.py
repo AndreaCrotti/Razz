@@ -1,5 +1,6 @@
 import unittest
-from razz import *
+from random import choice
+from razz import RazzHand, Deck, DECK_CARDS, NON_HIGH_CARD
 
 class TestRazzHand(unittest.TestCase):
     def test_highCardValues(self):
@@ -47,21 +48,10 @@ class TestDeck(unittest.TestCase):
             self.assertTrue(r.getRandomCard() > 0)
             i += 1
 
-def test_wChoiceGivingRightValues():
-    d = [(0, 0.3), (1, 0.4), (2, 0.299999999)]
-    for _ in range(100):
-        assert(w_choice(d) in range(3))
-
-def test_wChoiceWorkingForDeck():
-    d = Deck(DECK_CARDS)
-    weights = [(k, float(v) / len(d)) for k,v in d.cards.items() ]
-    for _ in range(100):
-        assert(w_choice(weights) in d.cards)
-
 def test_randChoiceWorkingForDeck():
     d = Deck(DECK_CARDS)
     for _ in range(100):
-        assert(choice(d.toList()) in d.cards)
+        assert(choice(d.cards) in d.cards)
     
 if __name__ == '__main__':
     unittest.main()
