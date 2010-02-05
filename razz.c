@@ -20,11 +20,13 @@
   - use j = 1 + (int) (10.0 * (rand() / (RAND_MAX + 1.0))) and not the modulo for the random
   - computing the cards WHILE I'm adding cards to the deck
   - things must be cleared after they've been used in the same place
+  - move to the header
  */
 
 #define N_SIM (1000 * 10000)
 #define RAZZ_HAND 7
 #define RAZZ_EVAL 5
+#define MAX_COUPLES (RAZZ_HAND - RAZZ_EVAL)
 
 #define NON_HIGH_HAND (-1)
 
@@ -38,8 +40,6 @@
 #define CARD_TO_IDX(x) (x - 1)
 #define IDX_TO_CARD(x) (x + 1)
 
-int i;
-
 // A card is just an integer
 typedef int card;
 typedef char rem;
@@ -52,6 +52,8 @@ typedef struct deck {
 typedef struct hand {
   card cards[RAZZ_CARDS]; /**< dictionary idx -> occurrences */
   int len;
+  int rank;
+  int num_couples;
 } hand;
 
 void swap_cards(int, int, card *);
@@ -147,8 +149,10 @@ void start_game(int nplayer, hand **init_hands) {
   card c;
   deck *d = make_deck(1, 14, 4);
   hand *h0 = init_hands[0];
+
   print_deck(d);
   print_hand(h0);
+
   printf("len of deck = %d\n", d->len);
   for (i = 0; i < nplayer; i++) {
     remove_hand_from_deck(init_hands[i], d);
@@ -177,6 +181,7 @@ void test_random_card() {
 }
 
 void test_hand_ranking() {
+  int i;
   hand *h = make_hand();
   for (i = 1; i < 4; i++) {
     add_card_to_hand(i, h);
@@ -199,38 +204,6 @@ card char_to_card(char c) {
     }
 }
 
-// FIXME: ugly global variable
-long count = 0;
-
-void play() {
-  deck *d = make_deck(1, 13, RAZZ_REP);
-  hand *h = make_hand();
-  card c;
-
-  print_deck(d);
-  while (hand_is_full(h)) {
-    c = get_random_card_from_deck(d);
-    add_card_to_hand(c, h);
-  }
-  if (rank_hand(h) == 5)
-    count++;
-  //printf("rank obtained = %d\n", rank_hand(h));
-  
-  free_deck(d);
-  free_hand(h);
-}
-
-void loop() {
-  int i;
-  for (i = 0; i < N_SIM; i++){
-    //    printf("%d\n", i);
-    play();
-    //    printf("%ld\n", play());
-  }
-  printf("tot = %ld\n", count);
-  
-}
-
 hand *make_hand() {
   int i;
   hand *h = malloc(sizeof(hand));
@@ -241,7 +214,10 @@ hand *make_hand() {
   return h;
 }
 
+/// modify the ranking inside here directly
 void add_card_to_hand(card c, hand *h) {
+  /// 
+  if (h->num_couples) 
   h->cards[CARD_TO_IDX(c)]++;
   h->len++;
 }
@@ -262,6 +238,7 @@ void print_hand(hand *h) {
 
 /// even faster, goes backward in the array and grab the first one
 card rank_hand(hand *h) {
+  int i;
   int to_remove = h->len - RAZZ_EVAL;
 
   int higher=0;
@@ -302,7 +279,7 @@ void remove_hand_from_deck(hand *h, deck *d) {
 // we can avoid to call an external add_card_to_deck given that we
 // only add card here, after we remove only
 deck *make_deck(const int start, const int end, const int rep) {
-  int j, idx;
+  int i, j, idx;
   int range_len = end - start;
   int len = range_len * rep;
 
