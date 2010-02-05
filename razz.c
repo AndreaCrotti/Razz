@@ -21,65 +21,8 @@
   - computing the cards WHILE I'm adding cards to the deck
   - things must be cleared after they've been used in the same place
   - move to the header
+  - use memset to setup initial values
  */
-
-#define N_SIM (1000 * 10000)
-#define RAZZ_HAND 7
-#define RAZZ_EVAL 5
-#define MAX_COUPLES (RAZZ_HAND - RAZZ_EVAL)
-
-#define NON_HIGH_HAND (-1)
-
-#define INITIAL_PLAYER 3
-#define INITIAL_OTHER 1
-
-#define RAZZ_CARDS 13
-#define RAZZ_REP 4
-
-/// those two macro makes the mapping index->card for the pseudo dictionary hand structure
-#define CARD_TO_IDX(x) (x - 1)
-#define IDX_TO_CARD(x) (x + 1)
-
-// A card is just an integer
-typedef int card;
-typedef char rem;
-
-typedef struct deck {
-  card *cards;
-  int len;
-} deck;
-
-typedef struct hand {
-  card cards[RAZZ_CARDS]; /**< dictionary idx -> occurrences */
-  int len;
-  int rank;
-  int num_couples;
-} hand;
-
-void swap_cards(int, int, card *);
-
-deck *make_deck(const int, const int, const int);
-void print_deck(deck *);
-void free_deck(deck *);
-card get_random_card_from_deck(deck *);
-void remove_card_from_deck(card, deck *);
-void remove_hand_from_deck(hand *, deck *);
-
-void test_random_card();
-void test_hand_ranking();
-void play();
-void loop();
-
-hand *make_hand();
-void add_card_to_hand(card, hand *);
-void print_hand(hand *);
-int hand_is_full(hand *);
-void free_hand(hand *);
-card rank_hand(hand *);
-
-card char_to_card(char);
-
-void start_game(int, hand **);
 
 
 int main(int argc, char *argv[])
@@ -134,40 +77,44 @@ int main(int argc, char *argv[])
     }
   }
   
-
-  //loop();
-  start_game(nplayers, hands);
+  /* test_random_card(); */
+  /* start_game(nplayers, hands); */
   /// freeing hands
+  loop(nsims, nplayers, hands);
   for (i = 0; i < nplayers; i++)
     free_hand(hands[i]);
 
   return 0;
 }
 
-void start_game(int nplayer, hand **init_hands) {
-  int i;
-  card c;
+void loop(long simulations, int nplayers, hand **init_hands) {
   deck *d = make_deck(1, 14, 4);
-  hand *h0 = init_hands[0];
-
-  print_deck(d);
-  print_hand(h0);
-
-  printf("len of deck = %d\n", d->len);
-  for (i = 0; i < nplayer; i++) {
-    remove_hand_from_deck(init_hands[i], d);
+  long counter = 0, i;
+  
+  /// the deck I want to use is always without the initial hands, just do it
+  for (i = 0; i < simulations; i++) {
+    d->len = d->orig_len;
+    if ((play(d, nplayers, init_hands[0])) == 10)
+      counter++;
   }
+
+  printf("finally got %ld\n", counter);
+  free(d);
+}
+
+card play(deck *d, int nplayer, hand *h0) {
+  card c;
+
+  /* printf("len of deck = %d\n", d->len); */
+  remove_hand_from_deck(h0, d);
 
   
   while (hand_is_full(h0)) {
     c = get_random_card_from_deck(d);
     add_card_to_hand(c, h0);
   }
-  printf("rank obtained %d\n", rank_hand(h0));
 
-  free_deck(d);
-  print_hand(h0);
-
+  return rank_hand(h0);
 }
 
 void test_random_card() {
@@ -205,20 +152,16 @@ card char_to_card(char c) {
 }
 
 hand *make_hand() {
-  int i;
   hand *h = malloc(sizeof(hand));
   h -> len = 0;
-  for (i = 0; i < RAZZ_CARDS; i++) {
-    h->cards[i] = 0;
-  }
+  memset(h->cards, 0, sizeof(card) * RAZZ_CARDS);
   return h;
 }
 
 /// modify the ranking inside here directly
 void add_card_to_hand(card c, hand *h) {
   /// 
-  if (h->num_couples) 
-  h->cards[CARD_TO_IDX(c)]++;
+  h->cards[c]++;
   h->len++;
 }
 
@@ -233,7 +176,7 @@ void print_hand(hand *h) {
   int i;
   for (i = 0; i < RAZZ_CARDS; i++)
     if (h->cards[i] > 0)
-      printf("%d:\t%d\n", IDX_TO_CARD(i), h->cards[i]);
+      printf("%d:\t%d\n", i, h->cards[i]);
 }
 
 /// even faster, goes backward in the array and grab the first one
@@ -255,7 +198,7 @@ card rank_hand(hand *h) {
       higher = i;
     }
   }
-  return IDX_TO_CARD(higher);
+  return higher;
 }
 
 void free_hand(hand *h) {
@@ -271,7 +214,7 @@ void remove_hand_from_deck(hand *h, deck *d) {
   /// it could also keep a counter and only remove until LEN
   for (i = 0; i < RAZZ_CARDS; i++) {
     for (j = 0; j < h->cards[i]; j++) {
-      remove_card_from_deck(IDX_TO_CARD(i), d);
+      remove_card_from_deck(i, d);
     }
   }
 }
@@ -286,7 +229,7 @@ deck *make_deck(const int start, const int end, const int rep) {
   deck *deck = malloc(sizeof(deck));
   deck->cards = malloc(sizeof(card) * len);
   deck->len = len;
-
+  deck->orig_len = len;
   
   idx = 0;
   for (i = start; i < end; i++) {

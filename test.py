@@ -13,10 +13,6 @@ class TestRazzHand(unittest.TestCase):
         p2 = RazzHand([10, 7, 3, 2, 1])
         self.assertTrue(p1 < p2)
 
-    def test_PairHasDuplicates(self):
-        p1 = RazzHand([13, 13, 7, 6, 2])
-        self.assertEqual(p1.has_duplicates(), True)
-
     def test_pokerLoseAgainstLowHand(self):
         pok = [6, 6, 6, 6, 3]
         low = [8, 4, 3, 2, 1]
