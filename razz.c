@@ -1,3 +1,13 @@
+/**
+ * @file   razz.c
+ * @author Andrea Crotti <andrea.crotti.0@gmail.com>
+ * @date   Fri Feb  5 00:58:49 2010
+ * 
+ * @brief  This is a razz simulation
+ * 
+ * 
+ */
+
 // -*- compile-command: "gcc -o  razz -Wall razz.c" -*-
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,7 +29,7 @@
   - decide which random generator to use (lrand, rand, random)
  */
 
-#define N_SIM 1000 * 100
+#define N_SIM 1000 * 10000
 #define RAZZ_HAND 7
 #define RAZZ_EVAL 5
 
@@ -60,10 +70,13 @@ card get_random_card_from_deck(deck *);
 
 void test_random_card();
 void test_hand_ranking();
+void play();
+void loop();
 
 hand *make_hand();
 void add_card_to_hand(card, hand *);
 void print_hand(hand *);
+int hand_is_full(hand *);
 void free_hand(hand *);
 card rank_hand(hand *);
 
@@ -120,7 +133,6 @@ int main(int argc, char *argv[])
   }
   for (i = 0; i < nplayers; i++) {
     printf("hand %d:\n", i);
-    print_hand(hands[i]);
   }
   
   /// freeing hands
@@ -129,12 +141,9 @@ int main(int argc, char *argv[])
 
   free(hands);
 
-  // starting deck code
-  deck *d = make_deck(1, 13, RAZZ_REP);
-
-  test_random_card();
-  test_hand_ranking();
-  free_deck(d);
+  /* test_random_card(); */
+  /* test_hand_ranking(); */
+  loop();
 
   return 0;
 }
@@ -163,7 +172,7 @@ void test_hand_ranking() {
   add_card_to_hand(10, h);
   add_card_to_hand(5, h);
   print_hand(h);
-  printf("rank = %d\n", rank_hand(h));
+  //  printf("rank = %d\n", rank_hand(h));
 }
 
 card char_to_card(char c) {
@@ -174,6 +183,29 @@ card char_to_card(char c) {
       case 'K': return 13;
       default : return (c - '0');
     }
+}
+
+void play() {
+  deck *d = make_deck(1, 13, RAZZ_REP);
+  hand *h = make_hand();
+  card c;
+
+  while (hand_is_full(h)) {
+    c = get_random_card_from_deck(d);
+    add_card_to_hand(c, h);
+  }
+  //printf("rank obtained = %d\n", rank_hand(h));
+  
+  free_deck(d);
+  free_hand(h);
+}
+
+void loop() {
+  int i;
+  for (i = 0; i < N_SIM; i++){
+    //    printf("%d\n", i);
+    play();
+  }
 }
 
 hand *make_hand() {
@@ -230,6 +262,7 @@ card rank_hand(hand *h) {
     }
     /// when equal to 0 implicitly go to previous card
   }
+
   return 0; /// never getting here
 }
 
