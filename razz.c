@@ -29,7 +29,7 @@
   - decide which random generator to use (lrand, rand, random)
  */
 
-#define N_SIM 1000 * 10000
+#define N_SIM (1000 * 100)
 #define RAZZ_HAND 7
 #define RAZZ_EVAL 5
 
@@ -131,9 +131,6 @@ int main(int argc, char *argv[])
       add_card_to_hand(c, hands[i]);
     }
   }
-  for (i = 0; i < nplayers; i++) {
-    printf("hand %d:\n", i);
-  }
   
   /// freeing hands
   for (i = 0; i < nplayers; i++) 
@@ -153,7 +150,7 @@ void start_game(int nplayer, hand **init_hands) {
 }
 
 void test_random_card() {
-  int c;
+  int c, i;
   deck *d = make_deck(1, 5, 2);
   for (i = 0; i < 8; i++) {
     print_deck(d);
@@ -185,6 +182,9 @@ card char_to_card(char c) {
     }
 }
 
+// FIXME: ugly global variable
+long count = 0;
+
 void play() {
   deck *d = make_deck(1, 13, RAZZ_REP);
   hand *h = make_hand();
@@ -194,6 +194,8 @@ void play() {
     c = get_random_card_from_deck(d);
     add_card_to_hand(c, h);
   }
+  if (rank_hand(h) == 5)
+    count++;
   //printf("rank obtained = %d\n", rank_hand(h));
   
   free_deck(d);
@@ -205,10 +207,14 @@ void loop() {
   for (i = 0; i < N_SIM; i++){
     //    printf("%d\n", i);
     play();
+    //    printf("%ld\n", play());
   }
+  printf("tot = %ld\n", count);
+  
 }
 
 hand *make_hand() {
+  int i;
   hand *h = malloc(sizeof(hand));
   h -> len = 0;
   for (i = 0; i < RAZZ_CARDS; i++) {
@@ -230,12 +236,14 @@ int hand_is_full(hand *h) {
 }
 
 void print_hand(hand *h) {
+  int i;
   for (i = 0; i < RAZZ_CARDS; i++)
     if (h->cards[i] > 0)
       printf("%d:\t%d\n", IDX_TO_CARD(i), h->cards[i]);
 }
 
 card rank_hand(hand *h) {
+  int i;
   int to_remove = h->len - RAZZ_EVAL;
 
   /// here we don't need the CARD_TO_IDX macro since we only check for duplicates
@@ -296,6 +304,7 @@ deck *make_deck(const int start, const int end, const int rep) {
 // and putting a 0 to the card will make 
 
 void print_deck(deck *deck) {
+  int i;
   for (i = 0; i < deck->len; i++) {
     printf("%d,",  deck->cards[i]);
   }
@@ -305,11 +314,12 @@ void print_deck(deck *deck) {
 // Given we only need to remove certain cards in the round 0 even better would be
 // to generate directly the deck without them, keeping it sorted
 void remove_card_from_deck(card c, deck *deck) {
-  // A nice way to do this could be
+  int i;
   // - swap the found card with the last card
   // - decrease the array by 1
   // not assuming any order and doing a brute force scan could also work
-  // Is this a fair algorithm given the uniform distribution I should have?
+  // Is this a fair algorithm given the uniform distribution I should have in theory?
+
   for (i = 0; i < deck->len; i++) {
     if (deck->cards[i] == c) {
       swap_cards(i, deck->len-1, deck->cards);
