@@ -12,5 +12,5 @@ doc:
 	doxygen
 
 clean:
-	rm -vf *.o
+	rm -vf *.o razz razz_prof
 
