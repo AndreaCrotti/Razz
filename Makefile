@@ -1,7 +1,16 @@
-all: clean razz
+all: clean razz razzProf
+
+PROFILE=-pg -g
 
 razz:
-	cc -Wall -o razz razz.c
+	gcc -Wall -o razz razz.c
+
+razzProf:
+	gcc $(PROFILE) -Wall -o razz_prof razz.c
+
+doc:
+	doxygen
 
 clean:
 	rm -vf *.o
+
