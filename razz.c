@@ -1,14 +1,4 @@
-/**
- * @file   razz.c
- * @author Andrea Crotti <andrea.crotti.0@gmail.com>
- * @date   Fri Feb  5 00:58:49 2010
- * 
- * @brief  This is a razz simulation
- * 
- * 
- */
-
-// -*- compile-command: "gcc -o  razz -Wall razz.c" -*-
+// -*- compile-command: "make" -*-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,9 +17,11 @@
   - fix problem with 10
   - see for example here http://stanford.edu/~blp/writings/clc/shuffle.html for array shuffling
   - decide which random generator to use (lrand, rand, random)
+  - use j = 1 + (int) (10.0 * (rand() / (RAND_MAX + 1.0))) and not the modulo for the random
+  - computing the cards WHILE I'm adding cards to the deck
  */
 
-#define N_SIM (1000 * 100)
+#define N_SIM (1000 * 10000)
 #define RAZZ_HAND 7
 #define RAZZ_EVAL 5
 
@@ -242,36 +234,25 @@ void print_hand(hand *h) {
       printf("%d:\t%d\n", IDX_TO_CARD(i), h->cards[i]);
 }
 
+/// even faster, goes backward in the array and grab the first one
 card rank_hand(hand *h) {
-  int i;
   int to_remove = h->len - RAZZ_EVAL;
 
-  /// here we don't need the CARD_TO_IDX macro since we only check for duplicates
+  int higher=0;
   for (i = 0; i < RAZZ_CARDS; i++) {
-    while (h->cards[i] > 1) {
-      if (to_remove == 0)
+    if (h->cards[i] > 1) {
+      if (h->cards[i] > to_remove) {
+        h->cards[i] -= to_remove;
         return NON_HIGH_HAND;
-      
-      h->cards[i]--;
-      h->len--;
-      to_remove--;
+      }
+      else {
+        to_remove -= h->cards[i]-1;
+        h->cards[i] = 1;
+      }
+      higher = i;
     }
   }
-
-  /// scan the whole array from the end and grab the to_remove_th element
-  for (i = RAZZ_CARDS-1; i > 0; i--) {
-    assert(h->cards[i] < 2); /**< if failing means that the previous part didn't work correctly */
-    if (h->cards[i] > 0) {
-
-      if (to_remove == 0)
-        return IDX_TO_CARD(i);
-      else
-        to_remove--;
-    }
-    /// when equal to 0 implicitly go to previous card
-  }
-
-  return 0; /// never getting here
+  return IDX_TO_CARD(higher);
 }
 
 void free_hand(hand *h) {
