@@ -74,9 +74,8 @@ int main(int argc, char *argv[])
     }
   }
   
-  test_result();
-  /// freeing hands
-  result *result = loop(nsims, nplayers, hands);
+  long *result = malloc(sizeof(long) *POSSIBLE_RANKS);
+  loop(nsims, nplayers, hands, result);
   output_result(result);
   
   free(result);
@@ -87,37 +86,17 @@ int main(int argc, char *argv[])
   return 0;
 }
 
-result *make_result() {
-  int i;
-  result *result = malloc(sizeof(result));
-  for (i = 0; i < POSSIBLE_RANKS; i++) {
-    result->ranks[i] = 0;
-  }
-  /* memset(result->ranks, 0, sizeof(int) * (POSSIBLE_RANKS)); */
-  return result;
-}
-  
 
-void output_result(result *result) {
+void output_result(long *result) {
   int i;
   for (i = 0; i < POSSIBLE_RANKS; i++)
-    printf("%d:\t%ld\n", idx_to_rank(i), result->ranks[i]);
+    printf("%d:\t%ld\n", idx_to_rank(i), result[i]);
 }
 
-// result appears to work by itself
-void test_result() {
-  result *r = make_result();
-  r->ranks[rank_to_result_idx(5)]++;
-  r->ranks[rank_to_result_idx(13)] = 4;
-  r->ranks[0]++;
-  output_result(r);
-  free(r);
-}
 
-result *loop(long simulations, int nplayers, hand **init_hands) {
+void loop(long simulations, int nplayers, hand **init_hands, long *result) {
   int i, rank, idx;
   deck *d = make_deck(0, 13, 4); // remember to use the index not the start/end card
-  result *result = make_result();
 
   /// the deck I want to use is always without the initial hands, just do it
   for (i = 0; i < simulations; i++) {
@@ -130,19 +109,11 @@ result *loop(long simulations, int nplayers, hand **init_hands) {
     rank = play(d, nplayers, h0);
     idx = rank_to_result_idx(rank);
 
-    /* printf("got rank %d, adding to index %d\n", rank, idx); */
-
-    // strange bug, result struct is set up correctly, and the increment seems correct
-    // but I get strange values incremented
     free_hand(h0);
-    // could it maybe some stupid memory bug
-    /* output_result(result); */
-    result->ranks[idx]++;
-    /* output_result(result); */
+    result[idx]++;
   }
 
   free_deck(d);
-  return result;
 }
 
 hand *copy_hand(hand *h) {

@@ -1,8 +1,10 @@
-all: clean doc razz razz_prof razz_fast
+all: clean razz razz_prof razz_fast
 # assserts make code slower, remove them with -DNDEBUG
 
 PROFILE=-pg -g
 FAST=-DNDEBUG -O3
+FILES=razz.c razz.py Makefile
+FNAME=andrea_crotti.tar.gz
 
 razz:
 	gcc -Wall -o razz razz.c
@@ -15,6 +17,9 @@ razz_prof:
 
 doc:
 	doxygen
+
+dist:
+	tar -cvzf $(FNAME) $(FILES)
 
 clean:
 	rm -vf *.o razz razz_prof

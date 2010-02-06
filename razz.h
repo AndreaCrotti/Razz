@@ -60,7 +60,7 @@ void remove_hand_from_deck(hand *, deck *);
 void test_random_card();
 void test_hand_ranking();
 card play(deck *, int, hand *);
-result *loop();
+void loop(long, int, hand **, long *);
 
 hand *make_hand();
 hand *copy_hand(hand *);
@@ -70,11 +70,9 @@ int hand_is_full(hand *);
 void free_hand(hand *);
 card rank_hand(hand *);
 
-result *make_result();
-
 int char_to_card_idx(char);
 
 int rank_to_result_idx(int);
 int idx_to_rank(int);
 
-void output_result(result *);
+void output_result(long *);
