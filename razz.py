@@ -9,7 +9,6 @@
 
 from random import choice
 from sys import argv
-from itertools import permutations
 
 NROUNDS = 1000 * 1000
 RAZZ_CARDS = dict(A = 1, J = 11, Q = 12, K = 13)
@@ -87,7 +86,7 @@ class RazzHand(object):
     def __init__(self, card_list):
         self.cards = {}
         for c in card_list:
-            self.addCard(c)
+            self.addCard(c) # check if this would be possible self.cards.setdefault(c, 1).__add__(1)
 
     def __len__(self):
         return sum(self.cards.values())
@@ -98,7 +97,7 @@ class RazzHand(object):
     def __cmp__(self, other):
         return cmp(self.rank(), other.rank())
 
-    # rank calculation should be done here instead!
+    # ranking directly here turned out to be too complicated and also slower
     def addCard(self, card):
         if card in self.cards:
             self.cards[card] += 1
@@ -115,13 +114,6 @@ class RazzHand(object):
     def is_full(self):
         return len(self) == self.TOT_CARDS
 
-    def getCard(self, card):
-        if self.cards[card] > 1:
-            self.cards[card] -= 1
-        else:
-            del(self.cards[card])
-            return card
-
     def rank(self):
         removed = 0
         to_remove = len(self) - self.EVAL_CARDS
@@ -132,8 +124,7 @@ class RazzHand(object):
                 if removed == to_remove:
                     return NON_HIGH_CARD
                 else:
-                    # is this way the best one?
-                    self.getCard(k)
+                    self.cards[k] -= 1
                     removed += 1
 
         # sorting the card and returning the last after slicing only what we want
@@ -147,7 +138,7 @@ def str_to_RazzCard(s):
         s = s.upper()
         return RAZZ_CARDS[s] # not handling exceptions here?
 
-def makeHistogram(values):
+def output_ranks(values):
     cell = 10
     print "RANK".ljust(cell) + "TIMES".ljust(cell)
     for k, v in values.items():
@@ -211,8 +202,8 @@ def main():
     other players cards: %s""" % (nplayers, str(my_cards), str(other_cards))
     print s
 
-    hist = loop(num_simulations, nplayers, init_cards)
-    makeHistogram(hist)
+    ranks = loop(num_simulations, nplayers, init_cards)
+    output_ranks(ranks)
     
 if __name__ == '__main__':
     main()
