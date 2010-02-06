@@ -60,20 +60,22 @@ int main(int argc, char *argv[])
 
   /// separating first player from the others
   for (i = 1; i < INITIAL_PLAYER+1; i++) {
-    c = char_to_card(argv[i+2][0]);
+    c = char_to_card_idx(argv[i+2][0]);
     add_card_to_hand(c, hands[0]);
   }
 
   for (i = 1; i < nplayers; i++) {
     hands[i] = make_hand();
     for (j = 0; j < INITIAL_OTHER; j++) {
-      c = char_to_card(argv[i + INITIAL_PLAYER + 2][0]);
+      c = char_to_card_idx(argv[i + INITIAL_PLAYER + 2][0]);
       add_card_to_hand(c, hands[i]);
     }
   }
   
   /* test_random_card(); */
   /* start_game(nplayers, hands); */
+  add_card_to_hand(12, hands[0]);
+  print_hand(hands[0]);
   /// freeing hands
   loop(nsims, nplayers, hands);
   for (i = 0; i < nplayers; i++)
@@ -98,15 +100,15 @@ void loop(long simulations, int nplayers, hand **init_hands) {
 }
 
 card play(deck *d, int nplayer, hand *h0) {
-  card c;
+  int card_idx;
 
   /* printf("len of deck = %d\n", d->len); */
   remove_hand_from_deck(h0, d);
 
   
   while (hand_is_full(h0)) {
-    c = get_random_card_from_deck(d);
-    add_card_to_hand(c, h0);
+    card_idx = get_random_card_from_deck(d);
+    add_card_to_hand(card_idx, h0);
   }
 
   return rank_hand(h0);
@@ -114,7 +116,7 @@ card play(deck *d, int nplayer, hand *h0) {
 
 void test_random_card() {
   int c, i;
-  deck *d = make_deck(1, 5, 2);
+  deck *d = make_deck(0, 4, 2);
   for (i = 0; i < 8; i++) {
     print_deck(d);
     c = get_random_card_from_deck(d);
@@ -125,7 +127,7 @@ void test_random_card() {
 void test_hand_ranking() {
   int i;
   hand *h = make_hand();
-  for (i = 1; i < 4; i++) {
+  for (i = 0; i < 3; i++) {
     add_card_to_hand(i, h);
   }
   add_card_to_hand(8, h);
@@ -136,13 +138,13 @@ void test_hand_ranking() {
   printf("rank = %d\n", rank_hand(h));
 }
 
-card char_to_card(char c) {
+int char_to_card_idx(char c) {
     switch ( c ) {
-      case 'A': return 1;
-      case 'J': return 11;
-      case 'Q': return 12;
-      case 'K': return 13;
-      default : return (c - '0');
+      case 'A': return 0;
+      case 'J': return 10;
+      case 'Q': return 11;
+      case 'K': return 12;
+      default : return CARD_TO_IDX(c - '0');
     }
 }
 
@@ -186,12 +188,11 @@ int hand_is_full(hand *h) {
     return 1;
 }
 
-// FIXME: without conversions with macros 13 would not be printed
 void print_hand(hand *h) {
   int i;
   for (i = 0; i < RAZZ_CARDS; i++)
     if (h->cards[i] > 0)
-      printf("%d:\t%d\n", i, h->cards[i]);
+      printf("%d:\t%d\n", IDX_TO_CARD(i), h->cards[i]);
 }
 
 /// even faster, goes backward in the array and grab the first one
@@ -205,7 +206,7 @@ card rank_hand(hand *h) {
   /*   if (h->cards[i] > 1) { */
   /*     if (h->cards[i] > to_remove) { */
   /*       h->cards[i] -= to_remove; */
-  /*       return NON_HIGH_HAND; */
+  /*       return NONHIGH_HAND; */
   /*     } */
   /*     else { */
   /*       to_remove -= h->cards[i]-1; */
@@ -215,8 +216,8 @@ card rank_hand(hand *h) {
   /*   } */
   /* } */
   /* return higher; */
-}
 
+}
 void free_hand(hand *h) {
   // nothing else because the array of cards is an automatic variable
   free(h);

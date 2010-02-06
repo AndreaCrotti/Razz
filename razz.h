@@ -9,8 +9,6 @@
  * 
  */
 
-
-#define N_SIM (1000 * 10000)
 #define RAZZ_HAND 7
 #define RAZZ_EVAL 5
 #define MAX_COUPLES (RAZZ_HAND - RAZZ_EVAL)
@@ -29,7 +27,6 @@
 
 // A card is just an integer
 typedef int card;
-typedef char rem;
 
 typedef struct deck {
   card *cards;
@@ -65,4 +62,4 @@ int hand_is_full(hand *);
 void free_hand(hand *);
 card rank_hand(hand *);
 
-card char_to_card(char);
+int char_to_card_idx(char);
