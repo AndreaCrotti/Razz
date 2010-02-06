@@ -8,20 +8,15 @@
 
 /*
   Problems:
-  - see how to keep the structure of the deck
   - see how random could work on that structure in an efficient way
-  - use assertions
   - Using const whenever possible will increase the performances?
   - see if using static stuff could somehow help
   - use smaller types, like http://linux.die.net/man/3/uint8_t
   - fix problem with 10
-  - see for example here http://stanford.edu/~blp/writings/clc/shuffle.html for array shuffling
   - decide which random generator to use (lrand, rand, random)
   - use j = 1 + (int) (10.0 * (rand() / (RAND_MAX + 1.0))) and not the modulo for the random
   - computing the cards WHILE I'm adding cards to the deck
   - things must be cleared after they've been used in the same place
-  - move to the header
-  - use memset to setup initial values
  */
 
 
@@ -153,16 +148,35 @@ card char_to_card(char c) {
 
 hand *make_hand() {
   hand *h = malloc(sizeof(hand));
-  h -> len = 0;
+  h->len = 0;
   memset(h->cards, 0, sizeof(card) * RAZZ_CARDS);
+  h->diffs = 0;
+  h->rank = 0;
   return h;
 }
 
 /// modify the ranking inside here directly
 void add_card_to_hand(card c, hand *h) {
-  /// 
   h->cards[c]++;
   h->len++;
+
+  if (h->cards[c] > 0) {
+    h->diffs++;
+  }
+
+  /// if we've never set the rank and we're full there are not enough different cards
+  if (hand_is_full(h) && (!h->rank))
+    h->rank = NON_HIGH_HAND;
+
+  /// before we have enough different cards we take the max
+  /// after we take the minimum (implicit discard of the higher cards)
+  if (h->diffs < RAZZ_EVAL) {
+    if (c > h->rank)
+      h->rank = c;
+  }
+  else
+    if (c < h->rank)
+      h->rank = c;
 }
 
 int hand_is_full(hand *h) {
@@ -172,6 +186,7 @@ int hand_is_full(hand *h) {
     return 1;
 }
 
+// FIXME: without conversions with macros 13 would not be printed
 void print_hand(hand *h) {
   int i;
   for (i = 0; i < RAZZ_CARDS; i++)
@@ -181,24 +196,25 @@ void print_hand(hand *h) {
 
 /// even faster, goes backward in the array and grab the first one
 card rank_hand(hand *h) {
-  int i;
-  int to_remove = h->len - RAZZ_EVAL;
+  return h->rank;
+  /* int i; */
+  /* int to_remove = h->len - RAZZ_EVAL; */
 
-  int higher=0;
-  for (i = 0; i < RAZZ_CARDS; i++) {
-    if (h->cards[i] > 1) {
-      if (h->cards[i] > to_remove) {
-        h->cards[i] -= to_remove;
-        return NON_HIGH_HAND;
-      }
-      else {
-        to_remove -= h->cards[i]-1;
-        h->cards[i] = 1;
-      }
-      higher = i;
-    }
-  }
-  return higher;
+  /* int higher=0; */
+  /* for (i = 0; i < RAZZ_CARDS; i++) { */
+  /*   if (h->cards[i] > 1) { */
+  /*     if (h->cards[i] > to_remove) { */
+  /*       h->cards[i] -= to_remove; */
+  /*       return NON_HIGH_HAND; */
+  /*     } */
+  /*     else { */
+  /*       to_remove -= h->cards[i]-1; */
+  /*       h->cards[i] = 1; */
+  /*     } */
+  /*     higher = i; */
+  /*   } */
+  /* } */
+  /* return higher; */
 }
 
 void free_hand(hand *h) {
@@ -268,7 +284,6 @@ void remove_card_from_deck(card c, deck *deck) {
       return;
     }
   }
-  //printf("we should never reach this point, card %d not found\n", c);
 }
 
 card get_random_card_from_deck(deck *deck) {

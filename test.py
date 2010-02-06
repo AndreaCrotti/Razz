@@ -1,6 +1,6 @@
 import unittest
 from random import choice
-from razz import RazzHand, Deck, DECK_CARDS, NON_HIGH_CARD
+from razz import RazzHand, Deck, DECK_CARDS, NON_HIGH_CARD, loop
 
 class TestRazzHand(unittest.TestCase):
     def test_highCardValues(self):
@@ -33,6 +33,26 @@ class TestDeck(unittest.TestCase):
         while i < len(r):
             self.assertTrue(r.getRandomCard() > 0)
             i += 1
+
+# some longer tests should not be started automatically with the rests
+def test_ProbAlwaysSimilar():
+    nsims = 10000
+    threshold = nsims * 2 /100 # 2 % of difference is allowed
+    ranks = loop(10000, 1, {0:[1,2,3]})
+    right = {-1: 292,
+             5: 692,
+             6: 1170,
+             7: 1473,
+             8: 1563,
+             9: 1414,
+             10: 1252,
+             11: 932,
+             12: 743,
+             13: 469}
+
+    for r in ranks.keys():
+        assert(abs(ranks[r] - right[r]) < threshold)
+            # print ranks[r], right[r]
 
 def test_randChoiceWorkingForDeck():
     d = Deck(DECK_CARDS)

@@ -41,7 +41,7 @@ typedef struct hand {
   card cards[RAZZ_CARDS]; /**< dictionary idx -> occurrences */
   int len;
   int rank;
-  int num_couples;
+  int diffs;
 } hand;
 
 void swap_cards(int, int, card *);

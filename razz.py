@@ -11,7 +11,7 @@ from random import choice
 from sys import argv
 from itertools import permutations
 
-NROUNDS = 1000 * 100
+NROUNDS = 1000 * 1000
 RAZZ_CARDS = dict(A = 1, J = 11, Q = 12, K = 13)
 NON_HIGH_CARD = -1
 DECK_CARDS = range(1, 14) * 4
@@ -98,6 +98,7 @@ class RazzHand(object):
     def __cmp__(self, other):
         return cmp(self.rank(), other.rank())
 
+    # rank calculation should be done here instead!
     def addCard(self, card):
         if card in self.cards:
             self.cards[card] += 1
@@ -126,7 +127,6 @@ class RazzHand(object):
         to_remove = len(self) - self.EVAL_CARDS
         cards = self.cards.keys()
 
-        # here we could optimize it, if we still find duplicates it's surely rank == -1
         for k in cards:
             while self.cards[k] > 1:
                 if removed == to_remove:
@@ -174,33 +174,17 @@ def loop(times, nplayers, init_cards, full = False):
             ranks[got_rank] = 1
     return ranks
 
-def get_rank5_tuples():
-    rank5 = set()
+def get_rankn_tuples(rank):
+    tuples = set()
     for n in range(100 * 1000):
         d = Deck(DECK_CARDS)
         r = RazzGame(1, d, {0 :[1, 2, 3]})
         r.play()
         h = tuple(r.getHand(0).to_list())
         got_rank = r.getHand(0).rank()
-        if got_rank == 5:
-            rank5.add(h)
-    return rank5
-
-def try_with_allcombinations():
-    ranks = {}
-    # we should in this way generate all the possible combinations
-    # it is a way too slow even with 4 cards only taken 52! / (52-4)! or 49! / (49-4)!
-    # if we remove first all the initial cards as it should be.
-    for comb in permutations(range(5)*4, 4):
-        d = Deck(list(comb))
-        r = RazzGame(1, d, {0 :[1, 2, 3]})
-        r.play()
-        got_rank = r.getHand(0).rank()
-        if ranks.has_key(got_rank):
-            ranks[got_rank] += 1
-        else:
-            ranks[got_rank] = 1
-    return ranks
+        if got_rank == rank:
+            tuples.add(h)
+    return tuples
 
 def main():
     if len(argv) == 1:
@@ -209,9 +193,10 @@ def main():
         nose.run()
         return
 
-    nplayers = int(argv[1])
-    my_cards = map(str_to_RazzCard, argv[2 : 5])
-    other_cards = map(str_to_RazzCard, argv[5 : 5 + nplayers])
+    num_simulations = long(argv[1])
+    nplayers = int(argv[2])
+    my_cards = map(str_to_RazzCard, argv[3 : 6])
+    other_cards = map(str_to_RazzCard, argv[6 : 6 + nplayers])
     # I can concatenate the initial cards in one hand only
     # for performance reasons
     init_cards = {}
@@ -226,7 +211,7 @@ def main():
     other players cards: %s""" % (nplayers, str(my_cards), str(other_cards))
     print s
 
-    hist = loop(NROUNDS, nplayers, init_cards)
+    hist = loop(num_simulations, nplayers, init_cards)
     makeHistogram(hist)
     
 if __name__ == '__main__':
