@@ -19,6 +19,7 @@
   - computing the cards WHILE I'm adding cards to the deck
   - things must be cleared after they've been used in the same place
  */
+void test_result();
 
 
 int main(int argc, char *argv[])
@@ -73,9 +74,11 @@ int main(int argc, char *argv[])
     }
   }
   
+  test_result();
   /// freeing hands
   result *result = loop(nsims, nplayers, hands);
   output_result(result);
+  
   free(result);
 
   for (i = 0; i < nplayers; i++)
@@ -98,14 +101,24 @@ result *make_result() {
 void output_result(result *result) {
   int i;
   for (i = 0; i < POSSIBLE_RANKS; i++)
-    printf("%d:\t%d\n", idx_to_rank(i), result->ranks[i]);
+    printf("%d:\t%ld\n", idx_to_rank(i), result->ranks[i]);
+}
+
+// result appears to work by itself
+void test_result() {
+  result *r = make_result();
+  r->ranks[rank_to_result_idx(5)]++;
+  r->ranks[rank_to_result_idx(13)] = 4;
+  r->ranks[0]++;
+  output_result(r);
+  free(r);
 }
 
 result *loop(long simulations, int nplayers, hand **init_hands) {
   int i, rank, idx;
   deck *d = make_deck(0, 13, 4); // remember to use the index not the start/end card
   result *result = make_result();
-  output_result(result);
+
   /// the deck I want to use is always without the initial hands, just do it
   for (i = 0; i < simulations; i++) {
     /// trick, don't reallocate or reset anything, just move to original position the length
@@ -116,14 +129,16 @@ result *loop(long simulations, int nplayers, hand **init_hands) {
     hand *h0 = copy_hand(init_hands[0]);
     rank = play(d, nplayers, h0);
     idx = rank_to_result_idx(rank);
-    printf("got rank %d, adding to index %d\n", rank, idx);
+
+    /* printf("got rank %d, adding to index %d\n", rank, idx); */
 
     // strange bug, result struct is set up correctly, and the increment seems correct
     // but I get strange values incremented
     free_hand(h0);
-    output_result(result);
+    // could it maybe some stupid memory bug
+    /* output_result(result); */
     result->ranks[idx]++;
-    output_result(result);
+    /* output_result(result); */
   }
 
   free_deck(d);

@@ -39,7 +39,7 @@ typedef struct deck {
 } deck;
 
 typedef struct result {
-  int ranks[POSSIBLE_RANKS];
+  long ranks[POSSIBLE_RANKS];
 } result;
 
 typedef struct hand {
