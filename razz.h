@@ -21,6 +21,8 @@
 #define RAZZ_CARDS 13
 #define RAZZ_REP 4
 
+#define MIN_RANK 5
+
 /// those two macro makes the mapping index->card for the pseudo dictionary hand structure
 #define CARD_TO_IDX(x) (x - 1)
 #define IDX_TO_CARD(x) (x + 1)
@@ -33,6 +35,10 @@ typedef struct deck {
   int len;
   int orig_len;
 } deck;
+
+typedef struct result {
+  long ranks[RAZZ_CARDS - MIN_RANK];
+} result;
 
 typedef struct hand {
   card cards[RAZZ_CARDS]; /**< dictionary idx -> occurrences */
@@ -53,7 +59,7 @@ void remove_hand_from_deck(hand *, deck *);
 void test_random_card();
 void test_hand_ranking();
 card play(deck *, int, hand *);
-void loop();
+result *loop();
 
 hand *make_hand();
 void add_card_to_hand(card, hand *);
@@ -63,3 +69,8 @@ void free_hand(hand *);
 card rank_hand(hand *);
 
 int char_to_card_idx(char);
+
+int rank_to_result_idx(int);
+int idx_to_rank(int);
+
+void output_result(result *);
