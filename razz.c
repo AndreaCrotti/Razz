@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <assert.h>
 #include <sysexits.h>
 #include "razz.h"
@@ -74,6 +75,7 @@ int main(int argc, char *argv[])
   
   /* test_random_card(); */
   /* start_game(nplayers, hands); */
+  /* test_hand_ranking(); */
   /* add_card_to_hand(12, hands[0]); */
   /* print_hand(hands[0]); */
   /// freeing hands
@@ -85,6 +87,7 @@ int main(int argc, char *argv[])
 
   return 0;
 }
+
 
 void output_result(result *result) {
   int i;
@@ -101,13 +104,29 @@ result *loop(long simulations, int nplayers, hand **init_hands) {
   /// the deck I want to use is always without the initial hands, just do it
   for (i = 0; i < simulations; i++) {
     /// trick, don't reallocate or reset anything, just move to original position the length
+    /* srand48 (time (NULL)); /// every time reseeding or we always get the same game */
     d->len = d->orig_len;
-    rank = play(d, nplayers, init_hands[0]);
+    // copy the initial hands somewhere or we get always the same game
+    // better is to be able to create new hands from initial values (like the python program)
+    hand *h0 = copy_hand(init_hands[0]);
+    rank = play(d, nplayers, h0);
+    free_hand(h0);
+
     result->ranks[rank_to_result_idx(rank)]++;
   }
 
   free_deck(d);
   return result;
+}
+
+hand *copy_hand(hand *h) {
+  int i;
+  hand *new = make_hand();
+  for (i = 0; i < RAZZ_CARDS; i++) {
+    new->cards[i] = h->cards[i];
+  }
+  new->len = h->len;
+  return new;
 }
 
 card play(deck *d, int nplayer, hand *h0) {
@@ -120,8 +139,8 @@ card play(deck *d, int nplayer, hand *h0) {
     card_idx = get_random_card_from_deck(d);
     add_card_to_hand(card_idx, h0);
   }
-  print_hand(h0);
-  printf("lenght of the hand = %d, rank = %d\n", h0->len, rank_hand(h0));
+  /* print_hand(h0); */
+  /* printf("lenght of the hand = %d, rank = %d\n", h0->len, rank_hand(h0)); */
 
   return rank_hand(h0);
 }
@@ -148,6 +167,7 @@ void test_hand_ranking() {
   add_card_to_hand(5, h);
   print_hand(h);
   printf("rank = %d\n", rank_hand(h));
+  free_hand(h);
 }
 
 int rank_to_result_idx(int rank) {
@@ -179,7 +199,6 @@ hand *make_hand() {
   h->len = 0;
   memset(h->cards, 0, sizeof(card) * RAZZ_CARDS);
   h->diffs = 0;
-  h->rank = 0;
   return h;
 }
 
@@ -229,21 +248,28 @@ card rank_hand(hand *h) {
 
   int higher = 0;
   for (i = 0; i < RAZZ_CARDS; i++) {
-    if (h->cards[i] > 1) {
+    /* printf("diff = %d, to_remove = %d, h->cards[i] = %d, i = %d\n", diffs, to_remove,h->cards[i], i) */;
+
+    if (h->cards[i]) {
+      /* printf("seeing card %d\n", IDX_TO_CARD(i)); */
       if (h->cards[i] > to_remove + 1) {
-        // h->cards[i] -= to_remove; not really needed
         return NON_HIGH_HAND;
       }
+        
       else {
         to_remove -= h->cards[i]-1;
-        h->cards[i] = 1;
       }
+      h->diffs++;
+      higher = i;
     }
-    higher = i;
-  }
-  return higher;
+    
+    if (h->diffs == RAZZ_EVAL)
+      return IDX_TO_CARD(higher);
 
+  }
+  return IDX_TO_CARD(higher);
 }
+
 void free_hand(hand *h) {
   // nothing else because the array of cards is an automatic variable
   free(h);

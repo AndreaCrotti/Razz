@@ -43,7 +43,6 @@ typedef struct result {
 typedef struct hand {
   card cards[RAZZ_CARDS]; /**< dictionary idx -> occurrences */
   int len;
-  int rank;
   int diffs;
 } hand;
 
@@ -62,6 +61,7 @@ card play(deck *, int, hand *);
 result *loop();
 
 hand *make_hand();
+hand *copy_hand(hand *);
 void add_card_to_hand(card, hand *);
 void print_hand(hand *);
 int hand_is_full(hand *);
