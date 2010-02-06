@@ -73,34 +73,39 @@ int main(int argc, char *argv[])
     }
   }
   
-  /* test_random_card(); */
-  /* start_game(nplayers, hands); */
-  /* test_hand_ranking(); */
-  /* add_card_to_hand(12, hands[0]); */
-  /* print_hand(hands[0]); */
   /// freeing hands
   result *result = loop(nsims, nplayers, hands);
   output_result(result);
-  
+  free(result);
+
   for (i = 0; i < nplayers; i++)
     free_hand(hands[i]);
 
   return 0;
 }
 
+result *make_result() {
+  int i;
+  result *result = malloc(sizeof(result));
+  for (i = 0; i < POSSIBLE_RANKS; i++) {
+    result->ranks[i] = 0;
+  }
+  /* memset(result->ranks, 0, sizeof(int) * (POSSIBLE_RANKS)); */
+  return result;
+}
+  
 
 void output_result(result *result) {
   int i;
-  for (i = 0; i < (RAZZ_CARDS - MIN_RANK); i++)
-    printf("%d:\t%ld\n", idx_to_rank(i), result->ranks[i]);
+  for (i = 0; i < POSSIBLE_RANKS; i++)
+    printf("%d:\t%d\n", idx_to_rank(i), result->ranks[i]);
 }
 
 result *loop(long simulations, int nplayers, hand **init_hands) {
-  int i;
+  int i, rank, idx;
   deck *d = make_deck(0, 13, 4); // remember to use the index not the start/end card
-  int rank;
-  result *result = malloc(sizeof(result));
-  
+  result *result = make_result();
+  output_result(result);
   /// the deck I want to use is always without the initial hands, just do it
   for (i = 0; i < simulations; i++) {
     /// trick, don't reallocate or reset anything, just move to original position the length
@@ -110,9 +115,15 @@ result *loop(long simulations, int nplayers, hand **init_hands) {
     // better is to be able to create new hands from initial values (like the python program)
     hand *h0 = copy_hand(init_hands[0]);
     rank = play(d, nplayers, h0);
-    free_hand(h0);
+    idx = rank_to_result_idx(rank);
+    printf("got rank %d, adding to index %d\n", rank, idx);
 
-    result->ranks[rank_to_result_idx(rank)]++;
+    // strange bug, result struct is set up correctly, and the increment seems correct
+    // but I get strange values incremented
+    free_hand(h0);
+    output_result(result);
+    result->ranks[idx]++;
+    output_result(result);
   }
 
   free_deck(d);
