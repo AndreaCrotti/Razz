@@ -22,5 +22,5 @@ dist:
 	tar -cvzf $(FNAME) $(FILES)
 
 clean:
-	rm -vf *.o razz razz_prof
+	rm -vf *.o razz razz_prof razz_fast
 

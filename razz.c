@@ -91,7 +91,8 @@ int main(int argc, char *argv[])
   return 0;
 }
 
-void loop(long simulations, int nplayers, Hand **init_hands, long *result) {
+void
+loop(long simulations, int nplayers, Hand **init_hands, long *result) {
   int i, rank, idx;
   Deck *d = make_deck(0, 13, 4); // remember to use the index not the start/end card
 
@@ -114,7 +115,8 @@ void loop(long simulations, int nplayers, Hand **init_hands, long *result) {
 }
 
 /// FIXME: this should not be needed, or find a faster way to copy two hands together
-Hand *copy_hand(Hand *h) {
+Hand *
+copy_hand(Hand *h) {
   int i;
   Hand *new = make_hand();
   for (i = 0; i < RAZZ_CARDS; i++) {
@@ -124,7 +126,8 @@ Hand *copy_hand(Hand *h) {
   return new;
 }
 
-card play(Deck *d, int nplayer, Hand *h0) {
+Card
+play(Deck *d, int nplayer, Hand *h0) {
   int card_idx;
 
   /* printf("len of deck = %d\n", d->len); */
@@ -140,21 +143,24 @@ card play(Deck *d, int nplayer, Hand *h0) {
   return rank_hand(h0);
 }
 
-int rank_to_result_idx(int rank) {
+int
+rank_to_result_idx(int rank) {
   switch (rank) {
   case -1: return 0;
   default : return (rank - MIN_RANK + 1);
   }
 }
 
-int idx_to_rank(int idx) {
+int
+idx_to_rank(int idx) {
   switch (idx) {
   case 0: return -1;
   default : return (idx + MIN_RANK -1);
   }
 }
 
-int char_to_card_idx(char c) {
+int
+char_to_card_idx(char c) {
     switch ( c ) {
       case 'A': return 0;
       case 'J': return 10;
@@ -164,16 +170,18 @@ int char_to_card_idx(char c) {
     }
 }
 
-Hand *make_hand() {
+Hand *
+make_hand() {
   Hand *h = malloc(sizeof(Hand));
   h->len = 0;
-  memset(h->cards, 0, sizeof(card) * RAZZ_CARDS);
+  memset(h->cards, 0, sizeof(Card) * RAZZ_CARDS);
   h->diffs = 0;
   return h;
 }
 
 /// modify the ranking inside here directly
-void add_card_to_hand(card c, Hand *h) {
+void
+add_card_to_hand(Card c, Hand *h) {
   h->cards[c]++;
   h->len++;
 
@@ -196,14 +204,16 @@ void add_card_to_hand(card c, Hand *h) {
   /*     h->rank = c; */
 }
 
-int hand_is_full(Hand *h) {
+int
+hand_is_full(Hand *h) {
   if (h->len == RAZZ_HAND)
     return 1;
   else
     return 0;
 }
 
-void print_hand(Hand *h) {
+void
+print_hand(Hand *h) {
   int i;
   for (i = 0; i < RAZZ_CARDS; i++)
     if (h->cards[i] > 0)
@@ -211,7 +221,8 @@ void print_hand(Hand *h) {
 }
 
 /// even faster, goes backward in the array and grab the first one
-card rank_hand(Hand *h) {
+Card
+rank_hand(Hand *h) {
   /* return h->rank; */
   int i;
   int to_remove = h->len - RAZZ_EVAL;
@@ -247,7 +258,8 @@ void free_hand(Hand *h) {
 
 /// This function has to know both the details of hand and deck
 /// trying to decouple it would be better 
-void remove_hand_from_deck(Hand *h, Deck *d) {
+void
+remove_hand_from_deck(Hand *h, Deck *d) {
   int i, j;
   /// Double for loop removing the cards,
   /// it could also keep a counter and only remove until LEN
@@ -260,13 +272,14 @@ void remove_hand_from_deck(Hand *h, Deck *d) {
 
 // we can avoid to call an external add_card_to_deck given that we
 // only add card here, after we remove only
-Deck *make_deck(const int start, const int end, const int rep) {
+Deck
+*make_deck(const int start, const int end, const int rep) {
   int i, j, idx;
   int range_len = end - start;
   int len = range_len * rep;
 
   Deck *deck = malloc(sizeof(Deck));
-  deck->cards = malloc(sizeof(card) * len);
+  deck->cards = malloc(sizeof(Card) * len);
   deck->len = len;
   deck->orig_len = len;
   
@@ -282,7 +295,8 @@ Deck *make_deck(const int start, const int end, const int rep) {
 
 // deck should be kept ordered in reverse order
 // and putting a 0 to the card will make 
-void print_deck(Deck *deck) {
+void
+print_deck(Deck *deck) {
   int i;
   for (i = 0; i < deck->len; i++) {
     printf("%d,",  deck->cards[i]);
@@ -292,7 +306,8 @@ void print_deck(Deck *deck) {
 
 // Given we only need to remove certain cards in the round 0 even better would be
 // to generate directly the deck without them, keeping it sorted
-void remove_card_from_deck(card c, Deck *deck) {
+void
+remove_card_from_deck(Card c, Deck *deck) {
   int i;
   // - swap the found card with the last card
   // - decrease the array by 1
@@ -309,33 +324,38 @@ void remove_card_from_deck(card c, Deck *deck) {
 }
 
 // FIXME: using lower order bits, check if still ok
-card get_random_card_from_deck(Deck *deck) {
+Card
+get_random_card_from_deck(Deck *deck) {
   int pos = lrand48() % deck->len;
-  card c = deck->cards[pos];
+  Card c = deck->cards[pos];
   swap_cards(pos, deck->len-1, deck->cards);
   deck->len--;
   return c;
 }
 
-void swap_cards(int c1_idx, int c2_idx, card *cards) {
-  card tmp;
+void
+swap_cards(int c1_idx, int c2_idx, Card *cards) {
+  Card tmp;
   tmp = cards[c1_idx];
   cards[c1_idx] = cards[c2_idx];
   cards[c2_idx] = tmp;
 }
 
-void free_deck(Deck *deck) {
+void
+free_deck(Deck *deck) {
   free(deck->cards);
   free(deck);
 }
 
-void output_result(long *result) {
+void
+output_result(long *result) {
   int i;
   for (i = 0; i < POSSIBLE_RANKS; i++)
     printf("%d:\t%ld\n", idx_to_rank(i), result[i]);
 }
 
-void merge_results(long *res1, long *res2) {
+void
+merge_results(long *res1, long *res2) {
   int i;
   for (i = 0; i < POSSIBLE_RANKS; i++)
     res1[i] += res2[i];

@@ -30,41 +30,41 @@
 #define IDX_TO_CARD(x) (x + 1)
 
 // A card is just an integer
-typedef int card;
+typedef int Card;
 typedef struct Deck Deck;
 typedef struct Hand Hand;
 
 struct Deck {
-  card *cards;
+  Card *cards;
   int len;
   int orig_len;
 };
 
 struct Hand {
-  card cards[RAZZ_CARDS]; /**< dictionary idx -> occurrences */
+  Card cards[RAZZ_CARDS]; /**< dictionary idx -> occurrences */
   int len;
   int diffs;
 };
 
-void swap_cards(int, int, card *);
+void swap_cards(int, int, Card *);
 
 Deck *make_deck(const int, const int, const int);
 void print_deck(Deck *);
 void free_deck(Deck *);
-card get_random_card_from_deck(Deck *);
-void remove_card_from_deck(card, Deck *);
+Card get_random_card_from_deck(Deck *);
+void remove_card_from_deck(Card, Deck *);
 void remove_hand_from_deck(Hand *, Deck *);
 
-card play(Deck *, int, Hand *);
+Card play(Deck *, int, Hand *);
 void loop(long, int, Hand **, long *);
 
 Hand *make_hand();
 Hand *copy_hand(Hand *);
-void add_card_to_hand(card, Hand *);
+void add_card_to_hand(Card, Hand *);
 void print_hand(Hand *);
 int hand_is_full(Hand *);
 void free_hand(Hand *);
-card rank_hand(Hand *);
+Card rank_hand(Hand *);
 
 int char_to_card_idx(char);
 
