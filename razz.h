@@ -35,15 +35,15 @@ typedef struct Deck Deck;
 typedef struct Hand Hand;
 
 struct Deck {
-  Card *cards;
-  int len;
-  int orig_len;
+     Card *cards;
+     int len;
+     int orig_len;
 };
 
 struct Hand {
-  Card cards[RAZZ_CARDS]; /**< dictionary idx -> occurrences */
-  int len;
-  int diffs;
+     Card cards[RAZZ_CARDS]; /**< dictionary idx -> occurrences */
+     int len;
+     int diffs;
 };
 
 void swap_cards(int, int, Card *);
