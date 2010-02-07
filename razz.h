@@ -31,44 +31,40 @@
 
 // A card is just an integer
 typedef int card;
+typedef struct Deck Deck;
+typedef struct Hand Hand;
 
-typedef struct deck {
+struct Deck {
   card *cards;
   int len;
   int orig_len;
-} deck;
+};
 
-typedef struct result {
-  long ranks[POSSIBLE_RANKS];
-} result;
-
-typedef struct hand {
+struct Hand {
   card cards[RAZZ_CARDS]; /**< dictionary idx -> occurrences */
   int len;
   int diffs;
-} hand;
+};
 
 void swap_cards(int, int, card *);
 
-deck *make_deck(const int, const int, const int);
-void print_deck(deck *);
-void free_deck(deck *);
-card get_random_card_from_deck(deck *);
-void remove_card_from_deck(card, deck *);
-void remove_hand_from_deck(hand *, deck *);
+Deck *make_deck(const int, const int, const int);
+void print_deck(Deck *);
+void free_deck(Deck *);
+card get_random_card_from_deck(Deck *);
+void remove_card_from_deck(card, Deck *);
+void remove_hand_from_deck(Hand *, Deck *);
 
-void test_random_card();
-void test_hand_ranking();
-card play(deck *, int, hand *);
-void loop(long, int, hand **, long *);
+card play(Deck *, int, Hand *);
+void loop(long, int, Hand **, long *);
 
-hand *make_hand();
-hand *copy_hand(hand *);
-void add_card_to_hand(card, hand *);
-void print_hand(hand *);
-int hand_is_full(hand *);
-void free_hand(hand *);
-card rank_hand(hand *);
+Hand *make_hand();
+Hand *copy_hand(Hand *);
+void add_card_to_hand(card, Hand *);
+void print_hand(Hand *);
+int hand_is_full(Hand *);
+void free_hand(Hand *);
+card rank_hand(Hand *);
 
 int char_to_card_idx(char);
 
