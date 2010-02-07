@@ -3,17 +3,18 @@ all: clean razz razz_prof razz_fast
 
 PROFILE=-pg -g
 FAST=-DNDEBUG -O3
+OPT=-lm -Wall
 FILES=razz.c razz.py Makefile
 FNAME=andrea_crotti.tar.gz
 
 razz:
-	gcc -Wall -o razz razz.c
+	gcc $(OPT) -o razz razz.c
 
 razz_fast:
-	gcc $(FAST) -Wall -o razz_fast razz.c
+	gcc $(FAST) $(OPT) -o razz_fast razz.c
 
 razz_prof:
-	gcc $(PROFILE) -Wall -o razz_prof razz.c
+	gcc $(PROFILE) $(OPT) -o razz_prof razz.c
 
 doc:
 	doxygen

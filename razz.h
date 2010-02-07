@@ -72,3 +72,4 @@ int rank_to_result_idx(int);
 int idx_to_rank(int);
 
 void output_result(long *);
+void usage();

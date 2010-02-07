@@ -2,15 +2,12 @@
 # Some ideas:
 # - see if using a queue or a heap could be better for performances
 # - write documentation in RST syntax for sphinx
-# - decouple RazzHand and Deck since they have different usage
 # - use multiprocessing to split the work from http://docs.python.org/dev/library/multiprocessing.html
-# - shuffling the deck every time is very costly but the only way to get a real randomization
 # - try to prepare the deck already without the initial cards, deleting the ugly "remove" method
 
 from random import choice
 from sys import argv
 
-NROUNDS = 1000 * 1000
 RAZZ_CARDS = dict(A = 1, J = 11, Q = 12, K = 13)
 NON_HIGH_CARD = -1
 DECK_CARDS = range(1, 14) * 4
@@ -85,6 +82,7 @@ class RazzHand(object):
     EVAL_CARDS = 5
     def __init__(self, card_list):
         self.cards = {}
+        self.len = 0
         for c in card_list:
             self.addCard(c) # check if this would be possible self.cards.setdefault(c, 1).__add__(1)
 
@@ -103,6 +101,7 @@ class RazzHand(object):
             self.cards[card] += 1
         else:
             self.cards[card] = 1
+        self.len += 1
 
     # use sum or lambda instead
     def to_list(self):
@@ -112,11 +111,11 @@ class RazzHand(object):
         return l
 
     def is_full(self):
-        return len(self) == self.TOT_CARDS
+        return self.len == self.TOT_CARDS
 
     def rank(self):
         removed = 0
-        to_remove = len(self) - self.EVAL_CARDS
+        to_remove = self.len - self.EVAL_CARDS
         cards = self.cards.keys()
 
         for k in cards:
@@ -165,17 +164,8 @@ def loop(times, nplayers, init_cards, full = False):
             ranks[got_rank] = 1
     return ranks
 
-def get_rankn_tuples(rank):
-    tuples = set()
-    for n in range(100 * 1000):
-        d = Deck(DECK_CARDS)
-        r = RazzGame(1, d, {0 :[1, 2, 3]})
-        r.play()
-        h = tuple(r.getHand(0).to_list())
-        got_rank = r.getHand(0).rank()
-        if got_rank == rank:
-            tuples.add(h)
-    return tuples
+def usage():
+    pass
 
 def main():
     if len(argv) == 1:
@@ -184,7 +174,7 @@ def main():
         nose.run()
         return
 
-    num_simulations = long(argv[1])
+    num_simulations = 10 ** int(argv[1])
     nplayers = int(argv[2])
     my_cards = map(str_to_RazzCard, argv[3 : 6])
     other_cards = map(str_to_RazzCard, argv[6 : 6 + nplayers])

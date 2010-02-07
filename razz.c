@@ -41,23 +41,20 @@ int main(int argc, char *argv[])
      nplayers = atoi(argv[2]);
 
      if (nplayers > 8 || nplayers < 1) {
-          printf("wrong number of arguments\n");
-          exit(EX_USAGE);
+          usage();
      }
      exp_args = INITIAL_PLAYER + (INITIAL_OTHER * (nplayers - 1)) + 3;
   
      // checking consistency between number of players and arguments
      if (exp_args != argc) {
-          printf("wrong number of arguments, should be %d and its %d\n", exp_args, argc);
-          exit(EX_USAGE);
+          usage();
      }
 
      // FIXME: not handling correctly the 10!!!
      // creating a new deck here 
      for (i = 2; i < argc; i++) {
           if (strlen(argv[i]) > 1) {
-               printf("use J, Q, K instead of 11, 12 or 13\n");
-               exit(EX_USAGE);
+               usage();
           }
      }
 
@@ -89,6 +86,11 @@ int main(int argc, char *argv[])
           free_hand(hands[i]);
 
      return 0;
+}
+
+void usage() {
+     fprintf(stderr, "usage error\n");
+     exit(EX_USAGE);
 }
 
 void
