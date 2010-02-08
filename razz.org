@@ -1,8 +1,30 @@
+RAZZ SIMULATION
+#+OPTIONS: toc:nil num:nil
 # Look in the bayesian formula to see how to get the probabilities correctly
 
 * Problem
-  Given an initial configuration (3 initial cards for player 1 and 1 for each other player) simulate a very large number of games.
+  Given an initial configuration (3 initial cards for player 1 and 1 for each other player) simulate a very large number of games. \\
   For every game get the rank obtained by player 1, where poker and flushes are discarded and the rank is computed with the rules of razz.
+
+  For example running
+#+begin_src sh
+  ./razz 3 1 A 2 3
+#+end_src
+  Will run 10^3 simulations with only one player which has as initial cards Ace, 2 and 3.
+  
+This would be the output
+#+begin_src sh
+-1:	35
+5:	77
+6:	112
+7:	138
+8:	132
+9:	159
+10:	124
+11:	103
+12:	76
+13:	44
+#+end_src
   
 * Implentation
 
