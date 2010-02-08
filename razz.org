@@ -42,7 +42,7 @@ This would be the output
      Different considerations on sorting are done later
 
    - Hand
-     On every hand we need to be able to
+     A hand is simply a set of card that each player has in every stage of the game, we must be able to:
      + add cards
      + compute the rank
      
@@ -53,8 +53,31 @@ This would be the output
    We use data structures for 
    
 ** C
-   
-   
+   To make C code run as fast as possible we should avoid every expansive operation, like allocation of data structures at every cycle.
+
+*** Deck
+    The deck is a structure containing:
+    - array of cards
+    - original length
+    - current length
+
+    To get a real simulation we should shuffle the whole deck at every game, but that's too expansive.
+    Another way is picking random cards with a random index in the range of the length. \\
+    To avoid picking the same card twice I shrink the array every time, swapping the selected card with the last one.
+
+    For example: \\
+    [1, 2, 4, 3] \\
+
+    We pick index 1, so 2 must be extracted \\
+    [1, 3, 4 | 2] \\
+    
+    We swapped 2 with 3 and decremented the actual length.
+
+    Keeping the original deck as it is and just moving one index is very useful because to reset the deck we just need to put it back \\
+    *deck->len = deck->orig\_len;*
+    
+*** Hand
+    
 
 * Objectives
 ** Design a nice structure

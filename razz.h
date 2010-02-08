@@ -1,3 +1,4 @@
+
 /**
  * @file   razz.h
  * @author Andrea Crotti <andrea.crotti.0@gmail.com>
@@ -17,6 +18,7 @@
 
 #define INITIAL_PLAYER 3
 #define INITIAL_OTHER 1
+#define INITIAL_CARDS(x) (INITIAL_PLAYER + (INITIAL_OTHER * (x - 1)))
 
 #define RAZZ_CARDS 13
 #define RAZZ_REP 4
@@ -33,6 +35,7 @@
 typedef int Card;
 typedef struct Deck Deck;
 typedef struct Hand Hand;
+typedef struct MaxStack MaxStack;
 
 struct Deck {
      Card *cards;
@@ -45,6 +48,12 @@ struct Hand {
      int len;
      int diffs;
      int card_list[RAZZ_HAND];
+     MaxStack *max_stack;
+};
+
+struct MaxStack {
+     int max_stack[RAZZ_HAND - RAZZ_EVAL];
+     int stack_idx;
 };
 
 void swap_cards(int, int, Card *);
@@ -53,11 +62,9 @@ Deck *make_deck(int, int, int, Card *, int);
 void print_deck(Deck *);
 void free_deck(Deck *);
 Card get_random_card_from_deck(Deck *);
-void remove_card_from_deck(Card, Deck *);
-void remove_hand_from_deck(Hand *, Deck *);
 
 Card play(Deck *, int, Hand *);
-void loop(long, int, Hand **, long *);
+void loop(long, int, Hand **, long *, Card *);
 
 Hand *make_hand();
 void copy_hand(Hand *, Hand *);
@@ -79,3 +86,11 @@ void usage();
 
 int intcmp(const void *, const void *);
 void qsort(void *, size_t, size_t, int (*compar)(const void *, const void *));
+
+// stack functions
+
+MaxStack *make_max_stack();
+void push(MaxStack *, int);
+int pop(MaxStack *);
+int top(MaxStack *);
+int is_empty(MaxStack *);

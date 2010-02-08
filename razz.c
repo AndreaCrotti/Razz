@@ -62,6 +62,9 @@ int main(int argc, char *argv[])
                usage();
           }
      }
+     
+     Card *to_remove = malloc(sizeof(Card) * INITIAL_CARDS(nplayers));
+     int rem_idx = 0;
 
      // divide issues 
      Hand **hands = malloc(sizeof(Hand *) * nplayers);
@@ -71,6 +74,7 @@ int main(int argc, char *argv[])
      for (i = 1; i < INITIAL_PLAYER+1; i++) {
           c = char_to_card_idx(argv[i+2][0]);
           add_card_to_hand(c, hands[0]);
+          to_remove[rem_idx++] = c;
      }
 
      for (i = 1; i < nplayers; i++) {
@@ -78,11 +82,12 @@ int main(int argc, char *argv[])
           for (j = 0; j < INITIAL_OTHER; j++) {
                c = char_to_card_idx(argv[i + INITIAL_PLAYER + 2][0]);
                add_card_to_hand(c, hands[i]);
+               to_remove[rem_idx++] = c;
           }
      }
-  
+
      long *result = malloc(sizeof(long) *POSSIBLE_RANKS);
-     loop(nsims, nplayers, hands, result);
+     loop(nsims, nplayers, hands, result, to_remove);
      output_result(result);
   
      free(result);
@@ -90,6 +95,7 @@ int main(int argc, char *argv[])
      for (i = 0; i < nplayers; i++)
           free_hand(hands[i]);
 
+     free(to_remove);
      return 0;
 }
 
@@ -121,16 +127,14 @@ void usage() {
 }
 
 void
-loop(long simulations, int nplayers, Hand **init_hands, long *result) {
+loop(long simulations, int nplayers, Hand **init_hands, long *result, Card *to_remove) {
      int i, rank, idx;
      
-     Card *to_remove = hands_to_array(init_hands, nplayers);
      // now our wonderful deck already have deleted the unwanted cards
-     Deck *d = make_deck(0, 13, 4, to_remove, INITIAL_PLAYER + (INITIAL_OTHER * (nplayers - 1)));
+     Deck *d = make_deck(0, 13, 4, to_remove, INITIAL_CARDS(nplayers));
 
      Hand *h0 = make_hand();
      
-     free(to_remove);
      /// the deck I want to use is always without the initial hands, just do it
      for (i = 0; i < simulations; i++) {
           d->len = d->orig_len;
@@ -202,15 +206,28 @@ make_hand() {
      Hand *h = malloc(sizeof(Hand));
      h->len = 0;
      h->diffs = 0;
+     h->max_stack = make_max_stack();
 
      memset(h->cards, 0, sizeof(Card) * RAZZ_CARDS);
-     memset(h->card_list, 0, sizeof(int) * RAZZ_HAND);
+     memset(h->card_list, 0, sizeof(int) * RAZZ_HAND); // is this really necessary?
      return h;
 }
 
-/// modify the ranking inside here directly
+// a possible nice solution to rank inside here directly would be to
+// keep a stack of last maximums, when it's empty just keep the rank
+// otherwise you can pop many times
 void
 add_card_to_hand(Card c, Hand *h) {
+     if (!h->cards[c]) {
+          h->card_list[h->diffs++] = c;
+     }
+     h->cards[c]++;
+     h->len++;
+}
+
+// operations are push, top, pop
+void
+add_card_to_hand_and_update_rank(Card c, Hand *h) {
      if (!h->cards[c]) {
           h->card_list[h->diffs++] = c;
      }
@@ -238,6 +255,7 @@ print_hand(Hand *h) {
                printf("%d:\t%d\n", IDX_TO_CARD(i), h->cards[i]);
 }
 
+
 Card
 rank_hand(Hand *h) {
      int rank_idx;
@@ -251,30 +269,6 @@ rank_hand(Hand *h) {
 
 void free_hand(Hand *h) {
      free(h);
-}
-
-Card *
-hands_to_array(Hand **hands, int num_hands) {
-     int i, k, counter;
-     int j = 0;
-     int len = 0;
-     
-     for (i = 0; i < num_hands; i++) {
-          len += hands[i]->len;
-     }
-     
-     Card *cards = malloc(sizeof(Card) * len);
-
-     // maybe you could also try to insert smartly without sorting after
-     for (k = 0; k < num_hands; k++) {
-          for (i = 0; i < RAZZ_CARDS; i++) {
-               for (counter = hands[k]->cards[i]; counter > 0; counter--) {
-                    cards[j++] = i;
-               }
-          }
-     }
-     qsort(cards, len, sizeof(Card), intcmp);
-     return cards;
 }
 
 int intcmp(const void *v1, const void *v2)
@@ -334,26 +328,6 @@ print_deck(Deck *deck) {
      printf("\n");
 }
 
-// Given we only need to remove certain cards in the round 0 even better would be
-// to generate directly the deck without them, keeping it sorted
-void
-remove_card_from_deck(Card c, Deck *deck) {
-     int i;
-     // - swap the found card with the last card
-     // - decrease the array by 1
-     // not assuming any order and doing a brute force scan could also work
-     // Is this a fair algorithm given the uniform distribution I should have in theory?
-
-     // FIXME: better maybe to keep it sorted somehow and use a binary search
-     for (i = 0; i < deck->len; i++) {
-          if (deck->cards[i] == c) {
-               swap_cards(i, deck->len-1, deck->cards);
-               deck->len--;
-               return;
-          }
-     }
-}
-
 void
 free_deck(Deck *deck) {
      free(deck->cards);
@@ -390,4 +364,38 @@ merge_results(long *res1, long *res2) {
      int i;
      for (i = 0; i < POSSIBLE_RANKS; i++)
           res1[i] += res2[i];
+}
+
+MaxStack *
+make_max_stack() {
+     MaxStack *stack = malloc(sizeof(MaxStack));
+     stack->stack_idx = 0;
+     return stack;
+}
+
+void
+push(MaxStack *stack, int value) {
+     stack->max_stack[stack->stack_idx++] = value;
+}
+
+int
+pop(MaxStack *stack) {
+     int c = top(stack);
+     stack->stack_idx--;
+     return c;
+}
+
+int
+top(MaxStack *stack) {
+     return stack->max_stack[stack->stack_idx];
+}
+
+int
+is_empty(MaxStack *stack) {
+     return stack->stack_idx;
+}
+
+int
+is_full(MaxStack *stack) {
+     return (stack->stack_idx - (RAZZ_HAND - RAZZ_EVAL));
 }
