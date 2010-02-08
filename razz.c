@@ -128,41 +128,33 @@ loop(long simulations, int nplayers, Hand **init_hands, long *result) {
      // now our wonderful deck already have deleted the unwanted cards
      Deck *d = make_deck(0, 13, 4, to_remove, INITIAL_PLAYER + (INITIAL_OTHER * (nplayers - 1)));
 
-     /* Hand *h0 = make_hand(); */
-
+     Hand *h0 = make_hand();
+     
      free(to_remove);
      /// the deck I want to use is always without the initial hands, just do it
      for (i = 0; i < simulations; i++) {
-          /// trick, don't reallocate or reset anything, just move to original position the length
-          /* srand48 (time (NULL)); /// every time reseeding or we always get the same game */
           d->len = d->orig_len;
-          // copy the initial hands somewhere or we get always the same game
-          // better is to be able to create new hands from initial values (like the python program)
-          /* copy_hand(init_hands[0], h0); */
-          Hand *h0 = copy_hand(init_hands[0]);
+
+          copy_hand(init_hands[0], h0);
           rank = play(d, nplayers, h0);
           idx = rank_to_result_idx(rank);
           result[idx]++;
-          free_hand(h0);
      }
+     free_hand(h0);
      free_deck(d);
 }
 
-// TODO: make it void and write directly to the structure instead, much faster
-Hand *
-copy_hand(Hand *h1/* , Hand *h2 */) {
+void
+copy_hand(Hand *h1, Hand *h2) {
      int i;
-     Hand *new = make_hand();
      for (i = 0; i < RAZZ_CARDS; i++) {
-          new->cards[i] = h1->cards[i];
+          h2->cards[i] = h1->cards[i];
      }
-     new->len = h1->len;
-     new->diffs = h1->diffs;
+     h2->len = h1->len;
+     h2->diffs = h1->diffs;
 
      for (i = 0; i < h1->diffs; i++)
-          new->card_list[i] = h1->card_list[i];
-     /* new->card_list = h1->card_list; */
-     return new;
+          h2->card_list[i] = h1->card_list[i];
 }
 
 /// FIXME: now it's only taking h0, put also the various rounds

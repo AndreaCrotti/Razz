@@ -60,7 +60,7 @@ Card play(Deck *, int, Hand *);
 void loop(long, int, Hand **, long *);
 
 Hand *make_hand();
-Hand * copy_hand(Hand */* , Hand * */);
+void copy_hand(Hand *, Hand *);
 void add_card_to_hand(Card, Hand *);
 Card *hands_to_array(Hand **, int);
 
