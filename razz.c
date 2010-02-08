@@ -156,9 +156,6 @@ copy_hand(Hand *h1, Hand *h2) {
      }
      h2->len = h1->len;
      h2->diffs = h1->diffs;
-
-     for (i = 0; i < h1->diffs; i++)
-          h2->card_list[i] = h1->card_list[i];
 }
 
 /// FIXME: now it's only taking h0, put also the various rounds
@@ -170,7 +167,7 @@ play(Deck *d, int nplayer, Hand *h0) {
           card_idx = get_random_card_from_deck(d);
           add_card_to_hand(card_idx, h0);
      }
-
+     
      return rank_hand(h0);
 }
 
@@ -206,10 +203,8 @@ make_hand() {
      Hand *h = malloc(sizeof(Hand));
      h->len = 0;
      h->diffs = 0;
-     h->max_stack = make_max_stack();
 
      memset(h->cards, 0, sizeof(Card) * RAZZ_CARDS);
-     memset(h->card_list, 0, sizeof(int) * RAZZ_HAND); // is this really necessary?
      return h;
 }
 
@@ -219,17 +214,7 @@ make_hand() {
 void
 add_card_to_hand(Card c, Hand *h) {
      if (!h->cards[c]) {
-          h->card_list[h->diffs++] = c;
-     }
-     h->cards[c]++;
-     h->len++;
-}
-
-// operations are push, top, pop
-void
-add_card_to_hand_and_update_rank(Card c, Hand *h) {
-     if (!h->cards[c]) {
-          h->card_list[h->diffs++] = c;
+          h->diffs++;
      }
      h->cards[c]++;
      h->len++;
@@ -246,10 +231,6 @@ hand_is_full(Hand *h) {
 void
 print_hand(Hand *h) {
      int i;
-     printf("--\ndiffs = %d\nArray=\n", h->diffs);
-     for (i = 0; i < h->diffs; i++)
-          printf("%d,", h->card_list[i]);
-     printf("\n");
      for (i = 0; i < RAZZ_CARDS; i++)
           if (h->cards[i] > 0)
                printf("%d:\t%d\n", IDX_TO_CARD(i), h->cards[i]);
@@ -258,13 +239,19 @@ print_hand(Hand *h) {
 
 Card
 rank_hand(Hand *h) {
-     int rank_idx;
      if (h->diffs < RAZZ_EVAL)
           return NON_HIGH_HAND;
-     
-     qsort(h->card_list, h->diffs, sizeof(Card), intcmp);
-     rank_idx = h->diffs - (h->diffs - RAZZ_EVAL + 1);
-     return IDX_TO_CARD(h->card_list[rank_idx]);
+
+     int rank_idx, i;
+     rank_idx = 0;
+     for (i = 0; i < RAZZ_CARDS; i++)  {
+          if (h->cards[i])
+               rank_idx++;
+          
+          if (rank_idx == RAZZ_EVAL)
+               break;
+     }
+     return IDX_TO_CARD(i);
 }
 
 void free_hand(Hand *h) {
@@ -364,38 +351,4 @@ merge_results(long *res1, long *res2) {
      int i;
      for (i = 0; i < POSSIBLE_RANKS; i++)
           res1[i] += res2[i];
-}
-
-MaxStack *
-make_max_stack() {
-     MaxStack *stack = malloc(sizeof(MaxStack));
-     stack->stack_idx = 0;
-     return stack;
-}
-
-void
-push(MaxStack *stack, int value) {
-     stack->max_stack[stack->stack_idx++] = value;
-}
-
-int
-pop(MaxStack *stack) {
-     int c = top(stack);
-     stack->stack_idx--;
-     return c;
-}
-
-int
-top(MaxStack *stack) {
-     return stack->max_stack[stack->stack_idx];
-}
-
-int
-is_empty(MaxStack *stack) {
-     return stack->stack_idx;
-}
-
-int
-is_full(MaxStack *stack) {
-     return (stack->stack_idx - (RAZZ_HAND - RAZZ_EVAL));
 }

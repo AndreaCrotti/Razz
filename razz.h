@@ -35,7 +35,6 @@
 typedef int Card;
 typedef struct Deck Deck;
 typedef struct Hand Hand;
-typedef struct MaxStack MaxStack;
 
 struct Deck {
      Card *cards;
@@ -47,13 +46,6 @@ struct Hand {
      Card cards[RAZZ_CARDS]; /**< dictionary idx -> occurrences */
      int len;
      int diffs;
-     int card_list[RAZZ_HAND];
-     MaxStack *max_stack;
-};
-
-struct MaxStack {
-     int max_stack[RAZZ_HAND - RAZZ_EVAL];
-     int stack_idx;
 };
 
 void swap_cards(int, int, Card *);
@@ -86,11 +78,3 @@ void usage();
 
 int intcmp(const void *, const void *);
 void qsort(void *, size_t, size_t, int (*compar)(const void *, const void *));
-
-// stack functions
-
-MaxStack *make_max_stack();
-void push(MaxStack *, int);
-int pop(MaxStack *);
-int top(MaxStack *);
-int is_empty(MaxStack *);
