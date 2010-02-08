@@ -48,7 +48,7 @@ struct Hand {
 
 void swap_cards(int, int, Card *);
 
-Deck *make_deck(const int, const int, const int);
+Deck *make_deck(int, int, int, Card *, int);
 void print_deck(Deck *);
 void free_deck(Deck *);
 Card get_random_card_from_deck(Deck *);
@@ -61,6 +61,8 @@ void loop(long, int, Hand **, long *);
 Hand *make_hand();
 Hand *copy_hand(Hand *);
 void add_card_to_hand(Card, Hand *);
+Card *hands_to_array(Hand **, int);
+
 void print_hand(Hand *);
 int hand_is_full(Hand *);
 void free_hand(Hand *);

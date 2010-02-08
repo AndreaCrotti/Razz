@@ -125,8 +125,12 @@ void usage() {
 void
 loop(long simulations, int nplayers, Hand **init_hands, long *result) {
      int i, rank, idx;
-     Deck *d = make_deck(0, 13, 4); // remember to use the index not the start/end card
+     
+     Card *to_remove = hands_to_array(init_hands, nplayers);
+     // now our wonderful deck already have deleted the unwanted cards
+     Deck *d = make_deck(0, 13, 4, to_remove, INITIAL_PLAYER + (INITIAL_OTHER * (nplayers - 1)));
 
+     free(to_remove);
      /// the deck I want to use is always without the initial hands, just do it
      for (i = 0; i < simulations; i++) {
           /// trick, don't reallocate or reset anything, just move to original position the length
@@ -157,12 +161,10 @@ copy_hand(Hand *h) {
      return new;
 }
 
+/// FIXME: now it's only taking h0, put also the various rounds
 Card
 play(Deck *d, int nplayer, Hand *h0) {
      int card_idx;
-
-     /* printf("len of deck = %d\n", d->len); */
-     remove_hand_from_deck(h0, d);
   
      while (! hand_is_full(h0)) {
           card_idx = get_random_card_from_deck(d);
@@ -285,38 +287,55 @@ void free_hand(Hand *h) {
      free(h);
 }
 
-/// This function has to know both the details of hand and deck
-/// trying to decouple it would be better 
-void
-remove_hand_from_deck(Hand *h, Deck *d) {
-     int i, j;
-     /// Double for loop removing the cards,
-     /// it could also keep a counter and only remove until LEN
-     for (i = 0; i < RAZZ_CARDS; i++) {
-          for (j = 0; j < h->cards[i]; j++) {
-               remove_card_from_deck(i, d);
+Card *
+hands_to_array(Hand **hands, int num_hands) {
+     int i, k, counter;
+     int j = 0;
+     int len = 0;
+     
+     for (i = 0; i < num_hands; i++) {
+          len += hands[i]->len;
+     }
+     
+     Card *cards = malloc(sizeof(Card) * len);
+
+     for (k = 0; k < num_hands; k++) {
+          for (i = 0; i < RAZZ_CARDS; i++) {
+               for (counter = hands[k]->cards[i]; counter > 0; counter--) {
+                    cards[j++] = i;
+               }
           }
      }
+
+     return cards;
 }
 
 // we can avoid to call an external add_card_to_deck given that we
 // only add card here, after we remove only
-Deck
-*make_deck(const int start, const int end, const int rep) {
-     int i, j, idx;
+Deck *
+make_deck(int start, int end, int rep, Card init_cards[], int to_remove) {
+     int i, j, idx, init_idx;
+     idx = init_idx = 0;
+
      int range_len = end - start;
-     int len = range_len * rep;
+     int len = range_len * rep - to_remove;
 
      Deck *deck = malloc(sizeof(Deck));
-     deck->cards = malloc(sizeof(Card) * len);
+     deck->cards = malloc(sizeof(Card) * len); // not allocating useless space
+
      deck->len = len;
      deck->orig_len = len;
   
-     idx = 0;
-     for (i = start; i < end; i++) {
-          for (j = 0; j < rep; j++) {
-               deck->cards[idx] = i;
-               idx++;
+     for (j = 0; j < rep; j++) {
+          for (i = start; i < end; i++) {
+               if (to_remove && (i == init_cards[init_idx])) {
+                    to_remove--;
+                    init_idx++;
+               }
+               else {
+                    deck->cards[idx] = i;
+                    idx++;
+               }
           }
      }
      return deck;
