@@ -10,18 +10,16 @@
 
 /*
   Problems:
-  - see how random could work on that structure in an efficient way
   - Using const whenever possible will increase the performances?
   - see if using static stuff could somehow help
-  - use smaller types, like http://linux.die.net/man/3/uint8_t
   - fix problem with 10
-  - decide which random generator to use (lrand, rand, random)
   - use j = 1 + (int) (10.0 * (rand() / (RAND_MAX + 1.0))) and not the modulo for the random
-  - computing the cards WHILE I'm adding cards to the deck
+  - computing the rank WHILE I'm adding cards to the deck
   - things must be cleared after they've been used in the same place
   - make it multithreading, see http://softpixel.com/~cwright/programming/threads/threads.c.php
   - who allocates the memory should be the same that deallocate it (or use make/free for that purpose)
-  - see if worthy to put incapsulate result somewhere else
+  - check for correct freeing mallocs are needed?
+  - find where the 4 stupid bytes are  lost 
 */
 
 #define TO_EXP(x) powl(10, (x))
@@ -130,6 +128,8 @@ loop(long simulations, int nplayers, Hand **init_hands, long *result) {
      // now our wonderful deck already have deleted the unwanted cards
      Deck *d = make_deck(0, 13, 4, to_remove, INITIAL_PLAYER + (INITIAL_OTHER * (nplayers - 1)));
 
+     /* Hand *h0 = make_hand(); */
+
      free(to_remove);
      /// the deck I want to use is always without the initial hands, just do it
      for (i = 0; i < simulations; i++) {
@@ -138,26 +138,30 @@ loop(long simulations, int nplayers, Hand **init_hands, long *result) {
           d->len = d->orig_len;
           // copy the initial hands somewhere or we get always the same game
           // better is to be able to create new hands from initial values (like the python program)
+          /* copy_hand(init_hands[0], h0); */
           Hand *h0 = copy_hand(init_hands[0]);
           rank = play(d, nplayers, h0);
           idx = rank_to_result_idx(rank);
-
-          free_hand(h0);
           result[idx]++;
+          free_hand(h0);
      }
-
      free_deck(d);
 }
 
-/// FIXME: this should not be needed, or find a faster way to copy two hands together
+// TODO: make it void and write directly to the structure instead, much faster
 Hand *
-copy_hand(Hand *h) {
+copy_hand(Hand *h1/* , Hand *h2 */) {
      int i;
      Hand *new = make_hand();
      for (i = 0; i < RAZZ_CARDS; i++) {
-          new->cards[i] = h->cards[i];
+          new->cards[i] = h1->cards[i];
      }
-     new->len = h->len;
+     new->len = h1->len;
+     new->diffs = h1->diffs;
+
+     for (i = 0; i < h1->diffs; i++)
+          new->card_list[i] = h1->card_list[i];
+     /* new->card_list = h1->card_list; */
      return new;
 }
 
@@ -205,34 +209,21 @@ Hand *
 make_hand() {
      Hand *h = malloc(sizeof(Hand));
      h->len = 0;
-     memset(h->cards, 0, sizeof(Card) * RAZZ_CARDS);
      h->diffs = 0;
+
+     memset(h->cards, 0, sizeof(Card) * RAZZ_CARDS);
+     memset(h->card_list, 0, sizeof(int) * RAZZ_HAND);
      return h;
 }
 
 /// modify the ranking inside here directly
 void
 add_card_to_hand(Card c, Hand *h) {
+     if (!h->cards[c]) {
+          h->card_list[h->diffs++] = c;
+     }
      h->cards[c]++;
      h->len++;
-
-     /* if (h->cards[c] > 0) { */
-     /*   h->diffs++; */
-     /* } */
-
-     /* /// if we've never set the rank and we're full there are not enough different cards */
-     /* if (hand_is_full(h) && (!h->rank)) */
-     /*   h->rank = NON_HIGH_HAND; */
-
-     /* /// before we have enough different cards we take the max */
-     /* /// after we take the minimum (implicit discard of the higher cards) */
-     /* if (h->diffs < RAZZ_EVAL) { */
-     /*   if (c > h->rank) */
-     /*     h->rank = c; */
-     /* } */
-     /* else */
-     /*   if (c < h->rank) */
-     /*     h->rank = c; */
 }
 
 int
@@ -246,44 +237,27 @@ hand_is_full(Hand *h) {
 void
 print_hand(Hand *h) {
      int i;
+     printf("--\ndiffs = %d\nArray=\n", h->diffs);
+     for (i = 0; i < h->diffs; i++)
+          printf("%d,", h->card_list[i]);
+     printf("\n");
      for (i = 0; i < RAZZ_CARDS; i++)
           if (h->cards[i] > 0)
                printf("%d:\t%d\n", IDX_TO_CARD(i), h->cards[i]);
 }
 
-/// even faster, goes backward in the array and grab the first one
 Card
 rank_hand(Hand *h) {
-     /* return h->rank; */
-     int i;
-     int to_remove = h->len - RAZZ_EVAL;
-
-     int higher = 0;
-     for (i = 0; i < RAZZ_CARDS; i++) {
-          /* printf("diff = %d, to_remove = %d, h->cards[i] = %d, i = %d\n", diffs, to_remove,h->cards[i], i) */;
-
-          if (h->cards[i]) {
-               /* printf("seeing card %d\n", IDX_TO_CARD(i)); */
-               if (h->cards[i] > to_remove + 1) {
-                    return NON_HIGH_HAND;
-               }
-        
-               else {
-                    to_remove -= h->cards[i]-1;
-               }
-               h->diffs++;
-               higher = i;
-          }
-    
-          if (h->diffs == RAZZ_EVAL)
-               return IDX_TO_CARD(higher);
-
-     }
-     return IDX_TO_CARD(higher);
+     int rank_idx;
+     if (h->diffs < RAZZ_EVAL)
+          return NON_HIGH_HAND;
+     
+     qsort(h->card_list, h->diffs, sizeof(Card), intcmp);
+     rank_idx = h->diffs - (h->diffs - RAZZ_EVAL + 1);
+     return IDX_TO_CARD(h->card_list[rank_idx]);
 }
 
 void free_hand(Hand *h) {
-     // nothing else because the array of cards is an automatic variable
      free(h);
 }
 
@@ -299,6 +273,7 @@ hands_to_array(Hand **hands, int num_hands) {
      
      Card *cards = malloc(sizeof(Card) * len);
 
+     // maybe you could also try to insert smartly without sorting after
      for (k = 0; k < num_hands; k++) {
           for (i = 0; i < RAZZ_CARDS; i++) {
                for (counter = hands[k]->cards[i]; counter > 0; counter--) {
@@ -306,14 +281,22 @@ hands_to_array(Hand **hands, int num_hands) {
                }
           }
      }
-
+     qsort(cards, len, sizeof(Card), intcmp);
      return cards;
 }
+
+int intcmp(const void *v1, const void *v2)
+{
+     return (*(int *)v1 - *(int *)v2);
+}
+
 
 // we can avoid to call an external add_card_to_deck given that we
 // only add card here, after we remove only
 Deck *
 make_deck(int start, int end, int rep, Card init_cards[], int to_remove) {
+     assert(to_remove < 5);
+
      int i, j, idx, init_idx;
      idx = init_idx = 0;
 
@@ -326,16 +309,23 @@ make_deck(int start, int end, int rep, Card init_cards[], int to_remove) {
      deck->len = len;
      deck->orig_len = len;
   
-     for (j = 0; j < rep; j++) {
-          for (i = start; i < end; i++) {
-               if (to_remove && (i == init_cards[init_idx])) {
-                    to_remove--;
+     // FIXME: if cards to remove more than 4 could have problems
+     for (i = start; i < end; i++) {
+          j = 0;
+          for (;;) {
+               while (i == init_cards[init_idx]) {
+                    j++;
                     init_idx++;
                }
-               else {
+
+               assert(j <= rep);
+               if (j < rep) {
                     deck->cards[idx] = i;
                     idx++;
+                    j++;
                }
+               else
+                    break;
           }
      }
      return deck;

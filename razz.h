@@ -44,6 +44,7 @@ struct Hand {
      Card cards[RAZZ_CARDS]; /**< dictionary idx -> occurrences */
      int len;
      int diffs;
+     int card_list[RAZZ_HAND];
 };
 
 void swap_cards(int, int, Card *);
@@ -59,7 +60,7 @@ Card play(Deck *, int, Hand *);
 void loop(long, int, Hand **, long *);
 
 Hand *make_hand();
-Hand *copy_hand(Hand *);
+Hand * copy_hand(Hand */* , Hand * */);
 void add_card_to_hand(Card, Hand *);
 Card *hands_to_array(Hand **, int);
 
@@ -75,3 +76,6 @@ int idx_to_rank(int);
 
 void output_result(long *);
 void usage();
+
+int intcmp(const void *, const void *);
+void qsort(void *, size_t, size_t, int (*compar)(const void *, const void *));
