@@ -12,6 +12,22 @@ init_cards = {0:[1,2,3]}
 
 # the "join" actually waits until the process actually terminates
 
+# take this code for example http://www.mockingeye.com/index.php/2008/02/05/merging-dictionaries-and-lists-in-python/
+#
+#################################################################################
+# def merge_lists(*lists):                                                      #
+#     return reduce(lambda x, y: x+y,lists)                                     #
+#
+# use maybe extend or itertools.chain for this?
+# def merge_dicts(*dictionaries):                                               #
+#     result = {}                                                               #
+#                                                                               #
+#     for key in set(merge_lists([d.keys() for d in dictionaries])):            #
+#         result[key] = merge_lists([d[key] for d in dictionaries if key in d]) #
+#                                                                               #
+#     return result                                                             #
+#################################################################################
+
 def dict_merge(dicts):
     ret = {}
     for k in dicts[0].keys():
@@ -19,6 +35,7 @@ def dict_merge(dicts):
     return ret
 
 if __name__ == '__main__':
+    # maybe better to create a class wrapping the Pool and use Manage for shared variables somehow
     pool = Pool(processes = cpus)
     dicts = []
     workers = [pool.apply_async(loop, [SIMS / cpus, nplayers, init_cards]) for _ in range(cpus)]

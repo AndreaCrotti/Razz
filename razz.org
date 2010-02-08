@@ -1,88 +1,38 @@
 # Look in the bayesian formula to see how to get the probabilities correctly
 
-* Math
-  We can analyze the probabilities to see if we can simplify the problem.
+* Problem
+  Given an initial configuration (3 initial cards for player 1 and 1 for each other player) simulate a very large number of games.
+  For every game get the rank obtained by player 1, where poker and flushes are discarded and the rank is computed with the rules of razz.
+  
+* Implentation
 
-  We take a smaller deck, in this simplified game we have
-  - 5 cards
-  - 2 decks
-  Which in total give 10 cards.
+** General considerations
+   The most important thing to get a fast and well written program is to select the right data structure.
+   We can consider those entities:
+   - Card
+     simply an integer, we don't need to keep track of the suit also.
+   - Deck
+     On a deck we must be able to
+     + remove given cards (from 3 up to 10 in initialization phase only)
+     + select and remove random cards (4 in simplified case up to 46 in the completely fair version)
+     
+     For this structure I chose a list/array, 52 Integers is really small and the access is always linear.
+     Different considerations on sorting are done later
 
-  The probability of getting two consecutive equal cards is
-#+begin_src dot :file prob1.pdf :cmdline -Tpdf :exports none :results silent
-  digraph g {
-  t0 [ label = "x (2/10)" ];
-  t1 [ label = "x (1/9)" ];
-  t0 -> t1;
-}
-#+end_src
-
-  [[file:prob1.pdf]]
-
-** Approaches
-   One possible idea was to generate all the possible decks, this unfortunately is not possible, since they would be:
-   $52! / 4!$
-   which is a way too big.
-
-   So we end up simulating a large number of possible games and collecting the ranks given.
-
-   If anyway I only consider that I need the first 4 cards in the simplified case and 4 + (6*nplayers) in the real case I could probably generate the whole set of cards I could get.
-
-* Rules
-  In Razz, there are 5 rounds.                                                                                                           
-  Beside you as a player, the number of your opponents vary from 1 to 7.                                                                
-  So, the maximum number of players sitting at a table is 8.                                                                            
-  In round 0, each player is dealt 3 cards: 2 for each player's eyes only and 1 for everyone's eyes.                                    
-  In round 0, your program should let the cards dealt for each player be determined by the user that runs the simulation.               
-  IOW, the cards in round 0 are not drawn at random.                                                                                    
-  In round 1, 2 and 3, each player is dealt one open card.                                                                              
-  In the last round, each player is dealt 1 card for each player's eyes only.                                                           
-  The user of the simulation should be able to specify a rank.                                                                          
-  This rank is only a single rank: A, 2, 3, ..., K.                                                                                     
-  There are no two pairs and the like.                                                                                                  
-  Your simulation should simulate the game for n times (1 time == a complete round).                                                    
-  Upon completing n times simulation, your program should report the number of hands that you have whose rank is <= the specified rank. 
-  That's all.                                                                                                                           
-
-  HINT:                                                                                                                                 
-  In round 0, all of the cards are preselected by the user.                                                                             
-  Let's say that in round 0 there are X players.
-  TIn the subsequent round, you only need to deal 1 card from (52 - X) cards (i.e., you don't deal your opponents any card at all because this won't change  the probability). 
-  For example, X is 5.                                                                                                                                                                                   
-  In round 0, 3 is for you and 4 is for your opponents (the hidden cards are not dealt).                                                                                                                 
-  So, in the deck, there is 52 - 3 - 4 cards left.                                                                                                                                                       
-  In round 1, you dealt 1 from 55.                                                                                                                                                                       
-  In round 2, you dealt 1 from 54.
-  And so on.
-  You deal no card for your opponent.
-  Why? Because your opponent cards won't change your odds, you just simply don't deal them for the sake of simplicity.
-  That's all to it
-
-  The problem should be called as
-  ./razz_simulation DESIRED_RANK NUM_OF_GAMES MY_FIRST_CARD MY_SECOND_CARD MY_THIRD_CARD THE_OPEN_CARD_OF_OPPONENT_1..THE_OPEN_CARD_OF_OPPONENT_7
-
-* Real implementation stuff
-  - When finding at least one pair after normalization just discard the hand
-  - From the deck the operation you do most of the time is selecting a random card and removing
-  - From the hand the primary operation is adding cards and sorting
+   - Hand
+     On every hand we need to be able to
+     + add cards
+     + compute the rank
+     
+     Here I chose a dictionary, which maps every card to the number of occurrences in the hand.
+     Adding a card is just a *dict[x]++* and ranking is also very fast.
 
 ** Python
-# write what has been experimented and the results we've got from the testing
-   One nice idea was to use a weighted choice instead of reconstructing the whole list given the dictionary every time.
-
-
-#+begin_src python
-def w_choice(lst):
-    """weighted probability, for example
-    x = w_choice( [('one',0.25), ('two',0.25), ('three',0.5)] )"""
-
-    n = uniform(0, 1)
-    for item, weight in lst:
-        if n < weight:
-            break
-        n = n - weight
-    return item
-#+end_src
+   We use data structures for 
+   
+** C
+   
+   
 
 * Objectives
 ** Design a nice structure
@@ -97,10 +47,6 @@ def w_choice(lst):
    A nice metric would be the
    #simulations / seconds
    The output could be equal for all the different languages and still parsable and analyzable automatically.
-
-#+begin_src R :colnames t :exports both
-  t(sort(table(tolower(scan("org-babel.org", what="", na.strings="|"))), decreasing=TRUE)[1:10])
-#+end_src
 
 * Speed comparison
 

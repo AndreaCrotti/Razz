@@ -25,6 +25,9 @@ class TestRazzHand(unittest.TestCase):
     def test_RankPairIsCorrect(self):
         self.assertEqual(RazzHand([1,1,2,2,2,5,6]).rank(), NON_HIGH_CARD)
 
+    def test_lenAttributeWorkingCorrectly(self):
+        self.assertEqual(RazzHand([1,1,3,3,4,5,5]).len, 7)
+
 class TestDeck(unittest.TestCase):
     def test_RandomIsAlwaysGettingACard(self):
         r = Deck(DECK_CARDS)
@@ -77,6 +80,8 @@ def test_Ranking5WorksCorrectly():
     ]
     for tup in l:
         assert(RazzHand(tup).rank() == 5)
+
+
 
 def test_RankNegativeWorks():
     l = [

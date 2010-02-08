@@ -23,6 +23,7 @@ class RazzGame(object):
         self.nplayers = nplayers
         self.hands = {}
         self.deck = deck
+        self.stages = range(3, 8)
 
         for p, h in init_cards.items():
             self.hands[p] = RazzHand(h)
@@ -31,21 +32,26 @@ class RazzGame(object):
     def __str__(self):
         return "\n".join(map(str, self.hands.values()))
 
-    # TODO: insert 3 ways of playing, fair (with rounds), partial and fast
-    def play(self, full = False):
-        """ Run the game and return the rank of my local hand
-        If full actually play the whole game not just my player.
-        """
+    # cards are given until the stage is completed
+    def give_cards(self, full = False):
+
         if full:
             playing = self.nplayers
         else:
             playing = 1
 
-        # this way is linear
-        for n in xrange(playing):
-            h = self.hands[n]
-            while not(h.is_full()):
-                h.addCard(self.deck.getRandomCard())
+        for stage_cards in self.stages:
+            for n in xrange(playing):
+                h = self.hands[n]
+                while len(h) < stage_cards:
+                    h.addCard(self.deck.getRandomCard())
+                    
+    # Stages:
+    # 0 -> 3 cards each (give 2 to other players)
+    # 1,2,3 -> 1 card each
+    # 4 -> 1 final card
+    # every time remove the cards from the deck
+    # We must first remove the cards, for fun determine also whos the winner of the game
 
     def getHand(self, player):
         return self.hands[player]
@@ -86,14 +92,14 @@ class RazzHand(object):
         for c in card_list:
             self.addCard(c) # check if this would be possible self.cards.setdefault(c, 1).__add__(1)
 
-    def __len__(self):
-        return sum(self.cards.values())
-
     def __str__(self):
         return str(self.cards)
 
     def __cmp__(self, other):
         return cmp(self.rank(), other.rank())
+
+    def __len__(self):
+        return self.len
 
     # ranking directly here turned out to be too complicated and also slower
     def addCard(self, card):
@@ -129,6 +135,17 @@ class RazzHand(object):
         # sorting the card and returning the last after slicing only what we want
         cards.sort()
         return cards[:self.EVAL_CARDS][-1]
+
+class Result(object):
+    def __init__(self):
+        self.result = {}
+
+    def __str__(self):
+        return str(self.result)
+
+    def extend(self):
+        "Extend the result with new data coming in"
+        pass
         
 def str_to_RazzCard(s):
     if s.isdigit():
@@ -155,7 +172,7 @@ def loop(times, nplayers, init_cards, full = False):
         # every time creating a new object
         d = Deck(DECK_CARDS)
         r = RazzGame(nplayers, d, init_cards)
-        r.play(full)
+        r.give_cards()
         got_rank = r.getHand(0).rank()
 
         if ranks.has_key(got_rank):
@@ -194,6 +211,15 @@ def main():
 
     ranks = loop(num_simulations, nplayers, init_cards)
     output_ranks(ranks)
+
+def parse_args():
+    """Parsing arguments and returning them as a configuration"""
+    pass
+    # options to add
+    # - parallel
+    # - verbose (use logging maybe)
+    # - level of realism (full / not full)
+
     
 if __name__ == '__main__':
     main()

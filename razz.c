@@ -26,12 +26,19 @@
 
 #define TO_EXP(x) powl(10, (x))
 
+int getopt(int, char * const argv[], const char *);
+extern char *optarg;
+
+void parse_args(int, char * argv[]);
+
 int main(int argc, char *argv[])
 {
-     if (argc < 4) {
-          exit(EXIT_FAILURE); // check the correct code
-     }
-
+ 
+     /* if (argc < 4) { */
+     /*      exit(EXIT_FAILURE); // check the correct code */
+     /* } */
+     /* parse_args(argc, argv); */
+  
      int nplayers, i, j, exp_args;
      long nsims;
      char c;
@@ -88,6 +95,28 @@ int main(int argc, char *argv[])
      return 0;
 }
 
+void
+parse_args(int argc, char *argv[]) {
+  int ch;
+  int verbose = 0;
+  int n_threads = 1;
+
+  const char optstring[] = "j:v";
+  while ((ch = getopt(argc, argv, optstring))) {
+
+    switch (ch) {
+    case 'v':
+      verbose = 1 ;
+      break;
+    case 'j':
+      n_threads = atoi(optarg);
+      break;
+    default:
+        usage();
+    }
+  }
+}
+
 void usage() {
      fprintf(stderr, "usage error\n");
      exit(EX_USAGE);
@@ -139,8 +168,6 @@ play(Deck *d, int nplayer, Hand *h0) {
           card_idx = get_random_card_from_deck(d);
           add_card_to_hand(card_idx, h0);
      }
-     /* print_hand(h0); */
-     /* printf("lenght of the hand = %d, rank = %d\n", h0->len, rank_hand(h0)); */
 
      return rank_hand(h0);
 }
@@ -316,6 +343,7 @@ remove_card_from_deck(Card c, Deck *deck) {
      // not assuming any order and doing a brute force scan could also work
      // Is this a fair algorithm given the uniform distribution I should have in theory?
 
+     // FIXME: better maybe to keep it sorted somehow and use a binary search
      for (i = 0; i < deck->len; i++) {
           if (deck->cards[i] == c) {
                swap_cards(i, deck->len-1, deck->cards);
@@ -323,6 +351,12 @@ remove_card_from_deck(Card c, Deck *deck) {
                return;
           }
      }
+}
+
+void
+free_deck(Deck *deck) {
+     free(deck->cards);
+     free(deck);
 }
 
 // FIXME: using lower order bits, check if still ok
@@ -341,12 +375,6 @@ swap_cards(int c1_idx, int c2_idx, Card *cards) {
      tmp = cards[c1_idx];
      cards[c1_idx] = cards[c2_idx];
      cards[c2_idx] = tmp;
-}
-
-void
-free_deck(Deck *deck) {
-     free(deck->cards);
-     free(deck);
 }
 
 void
