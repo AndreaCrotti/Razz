@@ -4,8 +4,8 @@ all: clean razz razz_prof razz_fast
 
 PROFILE=-pg -g
 FAST=-DNDEBUG -O3
-OPT=-lm -Wall
-FILES=razz.c razz.py Makefile
+OPT=-lm -Wall -std=c99 --pedantic # not using ansi C
+FILES=razz.c razz.h razz.py Makefile
 FNAME=andrea_crotti.tar.gz
 
 razz:
@@ -23,6 +23,9 @@ doc:
 dist:
 	tar -cvzf $(FNAME) $(FILES)
 
+nose:
+	nosetests-2.6
+
 clean:
-	rm -vf *.o razz razz_prof razz_fast
+	rm -f *.o razz razz_prof razz_fast
 

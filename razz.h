@@ -37,7 +37,7 @@ typedef struct Deck Deck;
 typedef struct Hand Hand;
 
 struct Deck {
-     Card *cards;
+     Card cards[RAZZ_CARDS * RAZZ_REP];
      int len;
      int orig_len;
 };
@@ -78,3 +78,5 @@ void usage();
 
 int intcmp(const void *, const void *);
 void qsort(void *, size_t, size_t, int (*compar)(const void *, const void *));
+long lrand48(void);
+

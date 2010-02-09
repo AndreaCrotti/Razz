@@ -33,17 +33,11 @@ void parse_args(int, char * argv[]);
 
 int main(int argc, char *argv[])
 {
- 
-     /* if (argc < 4) { */
-     /*      exit(EXIT_FAILURE); // check the correct code */
-     /* } */
-     /* parse_args(argc, argv); */
-  
      int nplayers, i, j, exp_args;
-     long nsims;
-     char c;
+     Card card;
+     // skip the program name
 
-     nsims = TO_EXP(atol(argv[1]));
+     long num_sims = TO_EXP(atol(argv[1]));
 
      nplayers = atoi(argv[2]);
 
@@ -74,23 +68,23 @@ int main(int argc, char *argv[])
 
      /// separating first player from the others
      for (i = 1; i < INITIAL_PLAYER+1; i++) {
-          c = char_to_card_idx(argv[i+2][0]);
-          add_card_to_hand(c, hands[0]);
-          to_remove[rem_idx++] = c;
+          card = char_to_card_idx(argv[i+2][0]);
+          add_card_to_hand(card, hands[0]);
+          to_remove[rem_idx++] = card;
      }
 
      for (i = 1; i < nplayers; i++) {
           hands[i] = make_hand();
           for (j = 0; j < INITIAL_OTHER; j++) {
-               c = char_to_card_idx(argv[i + INITIAL_PLAYER + 2][0]);
-               add_card_to_hand(c, hands[i]);
-               to_remove[rem_idx++] = c;
+               card = char_to_card_idx(argv[i + INITIAL_PLAYER + 2][0]);
+               add_card_to_hand(card, hands[i]);
+               to_remove[rem_idx++] = card;
           }
      }
 
      qsort(to_remove, INITIAL_CARDS(nplayers), sizeof(Card), intcmp);
      long *result = malloc(sizeof(long) *POSSIBLE_RANKS);
-     loop(nsims, nplayers, hands, result, to_remove);
+     loop(num_sims, nplayers, hands, result, to_remove);
      output_result(result);
   
      free(result);
@@ -260,14 +254,6 @@ void free_hand(Hand *h) {
      free(h);
 }
 
-int intcmp(const void *v1, const void *v2)
-{
-     return (*(int *)v1 - *(int *)v2);
-}
-
-
-// we can avoid to call an external add_card_to_deck given that we
-// only add card here, after we remove only
 Deck *
 make_deck(int start, int end, int rep, Card init_cards[], int to_remove) {
      int i, j, idx, init_idx;
@@ -276,7 +262,6 @@ make_deck(int start, int end, int rep, Card init_cards[], int to_remove) {
      int len = (end - start) * rep - to_remove;
 
      Deck *deck = malloc(sizeof(Deck));
-     deck->cards = malloc(sizeof(Card) * len); // not allocating useless space
 
      deck->len = deck->orig_len = len;
   
@@ -302,8 +287,6 @@ make_deck(int start, int end, int rep, Card init_cards[], int to_remove) {
      return deck;
 }
 
-// deck should be kept ordered in reverse order
-// and putting a 0 to the card will make 
 void
 print_deck(Deck *deck) {
      int i;
@@ -315,7 +298,7 @@ print_deck(Deck *deck) {
 
 void
 free_deck(Deck *deck) {
-     free(deck->cards);
+     /* free(deck->cards); */
      free(deck);
 }
 
@@ -350,3 +333,9 @@ merge_results(long *res1, long *res2) {
      for (i = 0; i < POSSIBLE_RANKS; i++)
           res1[i] += res2[i];
 }
+
+int intcmp(const void *v1, const void *v2)
+{
+     return (*(int *)v1 - *(int *)v2);
+}
+

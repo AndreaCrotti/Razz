@@ -2,8 +2,10 @@
 # Some ideas:
 # - see if using a queue or a heap could be better for performances
 # - write documentation in RST syntax for sphinx
-# - use multiprocessing to split the work from http://docs.python.org/dev/library/multiprocessing.html
-# - try to prepare the deck already without the initial cards, deleting the ugly "remove" method
+# - use multiprocessing to split the work
+#   from http://docs.python.org/dev/library/multiprocessing.html
+# - try to prepare the deck already without the initial cards,
+#   deleting the ugly "remove" method
 
 from random import choice
 from sys import argv
@@ -12,6 +14,10 @@ RAZZ_CARDS = dict(A = 1, J = 11, Q = 12, K = 13)
 NON_HIGH_CARD = -1
 DECK_CARDS = range(1, 14) * 4
 
+# Staged:
+# Actually do all the different stages giving cards as in real poker
+# Unstaged:
+# fill the player hand all in once
 class RazzGame(object):
     """
     Main class representing the status of our game
@@ -19,11 +25,22 @@ class RazzGame(object):
     in the end we just care about the rank given by only one of
     the players
     """
-    def __init__(self, nplayers, deck, init_cards):
+    STAGES = range(3, 8)
+    # FIXME: move out responsabilities
+    def __init__(self, nplayers, deck, init_cards, staged = True, full = False):
+        # FIXME: this init is doing a way too many things
         self.nplayers = nplayers
         self.hands = {}
         self.deck = deck
-        self.stages = range(3, 8)
+        if not(staged):
+            self.stages = [7]
+        else:
+            self.stages = range(3, 8)
+
+        if full:
+            self.playing = self.nplayers
+        else:
+            self.playing = 1
 
         for p, h in init_cards.items():
             self.hands[p] = RazzHand(h)
@@ -33,15 +50,10 @@ class RazzGame(object):
         return "\n".join(map(str, self.hands.values()))
 
     # cards are given until the stage is completed
-    def give_cards(self, full = False):
-
-        if full:
-            playing = self.nplayers
-        else:
-            playing = 1
-
+    def give_cards(self, staged = False):
+        ## staged and full should be given here not in the stupid init method
         for stage_cards in self.stages:
-            for n in xrange(playing):
+            for n in xrange(self.playing):
                 h = self.hands[n]
                 while h.len < stage_cards: # a bit dirtier than len() but 10% faster
                     h.addCard(self.deck.getRandomCard())
@@ -87,7 +99,7 @@ class RazzHand(object):
         self.cards = {}
         self.len = 0
         for c in card_list:
-            self.addCard(c) # check if this would be possible self.cards.setdefault(c, 1).__add__(1)
+            self.addCard(c)
 
     def __str__(self):
         return str(self.cards)

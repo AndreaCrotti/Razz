@@ -50,9 +50,29 @@ This would be the output
      Adding a card is just a *dict[x]++* and ranking is also very fast.
 
 ** Python
-   We use data structures for 
-   
+   In python I didn't try to optimize as much as in C, because the code would be much less clean and I wouldn't still get comparable performances.
+
+*** Deck
+    The deck is a list of integers, we need to remove a list of cards from it and to extract random cards.
+    Extraction is done picking one card with choice and removing it.
+    It's still much faster than shuffling the deck every time.
+
+#+begin_src python
+c = choice(self.cards)
+# check that I'm actually removing the first one
+self.cards.remove(c)
+#+end_src
+
+*** Hand
+    A hand is a dictionary \\
+    [card : occurrences]
+    Adding cards is straightforward and computing the rank is also very easy, we can simply
+    - sort the keys (which represent the different cards present)
+    - if they're less than necessary it's at least a couple and we discard it, otherwise we take the k_{th} card
+
+
 ** C
+   C code is written in c99 standard (not ansi).
    To make C code run as fast as possible we should avoid every expansive operation, like allocation of data structures at every cycle.
 
 *** Deck
@@ -78,6 +98,10 @@ This would be the output
     
 *** Hand
     
+* Testing
+  I used [fn:1] for testing python code, it looks in the current directory and try to run all the tests that it finds.
+
+* Timing/profiling
 
 * Objectives
 ** Design a nice structure
@@ -103,3 +127,8 @@ This would be the output
 
 * Links
   [[http://www.pokereagles.com/poker-rules/razz-rules.php][razz rules explained]]
+
+
+* Footnotes
+
+[fn:1] [[http://code.google.com/p/python-nose/][python nose]]
