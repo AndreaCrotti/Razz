@@ -31,6 +31,8 @@ extern char *optarg;
 
 void parse_args(int, char * argv[]);
 
+/* static Card global_hand[RAZZ_CARDS]; */
+
 int main(int argc, char *argv[])
 {
      int nplayers, i, j, exp_args;
@@ -145,14 +147,10 @@ loop(long simulations, int nplayers, Hand **init_hands, long *result, Card *to_r
      free_deck(d);
 }
 
+// write the content of h2 to h1, both must be already allocated
 void
 copy_hand(Hand *h1, Hand *h2) {
-     int i;
-     for (i = 0; i < RAZZ_CARDS; i++) {
-          h2->cards[i] = h1->cards[i];
-     }
-     h2->len = h1->len;
-     h2->diffs = h1->diffs;
+     memcpy(h2, h1, sizeof(Hand));
 }
 
 /// FIXME: now it's only taking h0, put also the various rounds
@@ -160,7 +158,7 @@ Card
 play(Deck *d, int nplayer, Hand *h0) {
      int card_idx;
   
-     while (! hand_is_full(h0)) {
+     while (h0->len < RAZZ_HAND) {
           card_idx = get_random_card_from_deck(d);
           add_card_to_hand(card_idx, h0);
      }
@@ -214,14 +212,6 @@ add_card_to_hand(Card c, Hand *h) {
      }
      h->cards[c]++;
      h->len++;
-}
-
-int
-hand_is_full(Hand *h) {
-     if (h->len == RAZZ_HAND)
-          return 1;
-     else
-          return 0;
 }
 
 void
