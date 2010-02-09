@@ -253,6 +253,7 @@ void free_hand(Hand *h) {
      free(h);
 }
 
+// removing this malloc in favour of a static variable doensn't help at all
 Deck *
 make_deck(int start, int end, int rep, Card init_cards[], int to_remove) {
      int i, j, idx, init_idx;
