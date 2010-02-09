@@ -35,6 +35,9 @@ void parse_args(int, char * argv[]);
 
 int main(int argc, char *argv[])
 {
+     if (argc < 6)
+          usage();
+
      int nplayers, i, j, exp_args;
      Card card;
      // skip the program name
@@ -122,12 +125,12 @@ parse_args(int argc, char *argv[]) {
 
 void usage() {
      fprintf(stderr, "Usage: ./razz <k> <n> <c1_1> <c1_2> <c1_3> <c2_1> .. <cn_1>\n");
-     fprintf(stderr, "k : exponent for number of simulations (10^k)\n");
-     fprintf(stderr, "n : number of players\n");
-     fprintf(stderr, "cx_y : yth card of xth player, player 1 wants 3 cards, other players only one.\n");
-     fprintf(stderr, "for example\n ./razz 6 2 A 2 3 4\nwill run 1 million simulations with 2 players\n");
-     fprintf(stderr, "with Ace,2,3 for player 1 and 4 for player 2\n");
-     fprintf(stderr, "the returned statistics represent the number of times for each ranking obtained by player 1\n");
+     fprintf(stderr, "\tk : exponent for number of simulations (10^k)\n");
+     fprintf(stderr, "\tn : number of players\n");
+     fprintf(stderr, "\tcx_y : yth card of xth player, player 1 wants 3 cards, other players only one.\n");
+     fprintf(stderr, "\tfor example\n ./razz 6 2 A 2 3 4\nwill run 1 million simulations with 2 players\n");
+     fprintf(stderr, "\twith Ace,2,3 for player 1 and 4 for player 2\n");
+     fprintf(stderr, "\tthe returned statistics represent the number of times for each ranking obtained by player 1\n");
      exit(EX_USAGE);
 }
 
