@@ -33,7 +33,7 @@ class TestDeck(unittest.TestCase):
         r = Deck(DECK_CARDS)
         i = 0
         # we get a card until the deck is empty
-        while i < len(r):
+        while i < len(r.cards):
             self.assertTrue(r.getRandomCard() > 0)
             i += 1
 

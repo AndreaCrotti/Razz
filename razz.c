@@ -19,7 +19,9 @@
   - make it multithreading, see http://softpixel.com/~cwright/programming/threads/threads.c.php
   - who allocates the memory should be the same that deallocate it (or use make/free for that purpose)
   - check for correct freeing mallocs are needed?
-  - find where the 4 stupid bytes are  lost 
+  - find where the 4 stupid bytes are  lost
+  - use static variable instead of all those macros
+  - use static deck and hand, no dynamic allocation needed
 */
 
 #define TO_EXP(x) powl(10, (x))
@@ -86,6 +88,7 @@ int main(int argc, char *argv[])
           }
      }
 
+     qsort(to_remove, INITIAL_CARDS(nplayers), sizeof(Card), intcmp);
      long *result = malloc(sizeof(long) *POSSIBLE_RANKS);
      loop(nsims, nplayers, hands, result, to_remove);
      output_result(result);
@@ -167,7 +170,6 @@ play(Deck *d, int nplayer, Hand *h0) {
           card_idx = get_random_card_from_deck(d);
           add_card_to_hand(card_idx, h0);
      }
-     
      return rank_hand(h0);
 }
 
@@ -268,21 +270,17 @@ int intcmp(const void *v1, const void *v2)
 // only add card here, after we remove only
 Deck *
 make_deck(int start, int end, int rep, Card init_cards[], int to_remove) {
-     assert(to_remove < 5);
-
      int i, j, idx, init_idx;
      idx = init_idx = 0;
 
-     int range_len = end - start;
-     int len = range_len * rep - to_remove;
+     int len = (end - start) * rep - to_remove;
 
      Deck *deck = malloc(sizeof(Deck));
      deck->cards = malloc(sizeof(Card) * len); // not allocating useless space
 
-     deck->len = len;
-     deck->orig_len = len;
+     deck->len = deck->orig_len = len;
   
-     // FIXME: if cards to remove more than 4 could have problems
+     // FIXME: very convoluted triple cicle, try to make it nicer
      for (i = start; i < end; i++) {
           j = 0;
           for (;;) {
@@ -291,7 +289,7 @@ make_deck(int start, int end, int rep, Card init_cards[], int to_remove) {
                     init_idx++;
                }
 
-               assert(j <= rep);
+               assert(j <= rep); // kind of repetitive maybe?
                if (j < rep) {
                     deck->cards[idx] = i;
                     idx++;

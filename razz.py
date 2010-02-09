@@ -43,7 +43,7 @@ class RazzGame(object):
         for stage_cards in self.stages:
             for n in xrange(playing):
                 h = self.hands[n]
-                while len(h) < stage_cards:
+                while h.len < stage_cards: # a bit dirtier than len() but 10% faster
                     h.addCard(self.deck.getRandomCard())
                     
     # Stages:
@@ -63,9 +63,6 @@ class Deck(object):
         
     def __str__(self):
         return str(self.cards)
-
-    def __len__(self):
-        return len(self.cards)
 
     def remove(self, card_list):
         for c in card_list:
@@ -116,25 +113,13 @@ class RazzHand(object):
             l += [c] * v
         return l
 
-    def is_full(self):
-        return self.len == self.TOT_CARDS
-
     def rank(self):
-        removed = 0
-        to_remove = self.len - self.EVAL_CARDS
         cards = self.cards.keys()
-
-        for k in cards:
-            while self.cards[k] > 1:
-                if removed == to_remove:
-                    return NON_HIGH_CARD
-                else:
-                    self.cards[k] -= 1
-                    removed += 1
-
-        # sorting the card and returning the last after slicing only what we want
-        cards.sort()
-        return cards[:self.EVAL_CARDS][-1]
+        if len(cards) < self.EVAL_CARDS:
+            return NON_HIGH_CARD
+        else:
+            cards.sort()
+            return cards[:self.EVAL_CARDS][-1]
 
 class Result(object):
     def __init__(self):
