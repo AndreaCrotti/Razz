@@ -97,6 +97,8 @@ self.cards.remove(c)
     *deck->len = deck->orig\_len;*
     
 *** Hand
+
+*** Using random and lrand48 gives exactly the same result (while rand differs).    And lrand48 is the slowest, also avoid using the modulo, is slower and it only uses least significant bits.
     
 * Testing
   I used [fn:1] for testing python code, it looks in the current directory and try to run all the tests that it finds.

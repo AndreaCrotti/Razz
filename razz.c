@@ -97,29 +97,28 @@ loop(Hand *hand_init, long *result, Card to_remove[]) {
      int i, rank;
      
      // We use only ONE deck!
-     Deck *d = &global_deck;
-     init_deck(d, 0, 13, 4, to_remove, INITIAL_CARDS(num_players));
+     Deck *deck = &global_deck;
+     init_deck(deck, 0, 13, 4, to_remove, INITIAL_CARDS(num_players));
 
      /// the deck I want to use is always without the initial hands, just do it
      for (i = 0; i < num_simulations; i++) {
-          d->len = d->orig_len;
+          deck->len = deck->orig_len;
           // restore the hand to the initial state at every loop
           hand_tmp = *hand_init;
-          rank = play(d, num_players, &hand_tmp);
+          rank = play(deck, num_players, &hand_tmp);
           result[rank_to_result_idx(rank)]++;
      }
 }
 
-/// FIXME: now it's only taking h0, put also the various rounds
 Card
-play(Deck *d, int nplayer, Hand *h0) {
+play(Deck *deck, int nplayer, Hand *hand) {
      int card_idx;
   
-     while (h0->len < RAZZ_HAND) {
-          card_idx = get_random_card_from_deck(d);
-          add_card_to_hand(card_idx, h0);
+     while (hand->len < RAZZ_HAND) {
+          card_idx = get_random_card_from_deck(deck);
+          add_card_to_hand(card_idx, hand);
      }
-     return rank_hand(h0);
+     return rank_hand(hand);
 }
 
 int
@@ -217,11 +216,10 @@ init_deck(Deck *deck, int start, int end, int rep, Card cards_to_remove[], int t
      }
 }
 
-// FIXME: using lower order bits, check if still ok
 Card
 get_random_card_from_deck(Deck *deck) {
-     /* int pos = lrand48() % deck->len; */
-     int pos = (int) (deck->len * (rand() / (RAND_MAX + 1.0))); // see which one is better, results differ a bit
+     // using this instead of % is 40% faster, but results differ a bit!, using random even faster!
+     int pos = (int) (deck->len * (random() / (RAND_MAX + 1.0)));
      Card c = deck->cards[pos];
      swap_cards(pos, deck->len-1, deck->cards);
      deck->len--;
