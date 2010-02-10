@@ -1,15 +1,3 @@
-
-/**
- * @file   razz.h
- * @author Andrea Crotti <andrea.crotti.0@gmail.com>
- * @date   Fri Feb  5 21:10:41 2010
- * 
- * @brief  Razz simulation
- * 
- * 
- * 
- */
-
 #define RAZZ_HAND 7
 #define RAZZ_EVAL 5
 #define MAX_COUPLES (RAZZ_HAND - RAZZ_EVAL)
@@ -56,7 +44,7 @@ void free_deck(Deck *);
 Card get_random_card_from_deck(Deck *);
 
 Card play(Deck *, int, Hand *);
-void loop(long, int, Hand **, long *, Card *);
+void loop(Hand *, long *, Card *);
 
 Hand *make_hand();
 void copy_hand(Hand *, Hand *);

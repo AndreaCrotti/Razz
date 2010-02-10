@@ -21,108 +21,65 @@
   - check for correct freeing mallocs are needed?
   - find where the 4 stupid bytes are  lost
   - use static variable instead of all those macros
-  - use static deck and hand, no dynamic allocation needed
 */
 
 #define TO_EXP(x) powl(10, (x))
 
 int getopt(int, char * const argv[], const char *);
-extern char *optarg;
-
-void parse_args(int, char * argv[]);
+void check_args(int, char **);
 
 static Deck global_deck;
+static int num_players;
+static int num_simulations;
+static Card *to_remove;
+static Hand *hand_player0;
+static long result[POSSIBLE_RANKS];
 
-/* static Card global_hand[RAZZ_CARDS]; */
 
 int main(int argc, char *argv[])
 {
-     if (argc < 6)
-          usage();
+     hand_player0 = make_hand();
+     to_remove = malloc(sizeof(Card) * INITIAL_CARDS(num_players));
+     check_args(argc, argv);
 
-     int nplayers, i, j, exp_args;
-     Card card;
-     // skip the program name
-
-     long num_sims = TO_EXP(atol(argv[1]));
-
-     nplayers = atoi(argv[2]);
-
-     if (nplayers > 8 || nplayers < 1) {
-          usage();
-     }
-     exp_args = INITIAL_PLAYER + (INITIAL_OTHER * (nplayers - 1)) + 3;
-  
-     // checking consistency between number of players and arguments
-     if (exp_args != argc) {
-          usage();
-     }
-
-     // FIXME: not handling correctly the 10!!!
-     // creating a new deck here 
-     for (i = 2; i < argc; i++) {
-          if (strlen(argv[i]) > 1) {
-               usage();
-          }
-     }
-     
-     Card *to_remove = malloc(sizeof(Card) * INITIAL_CARDS(nplayers));
-     int rem_idx = 0;
-
-     // divide issues 
-     Hand **hands = malloc(sizeof(Hand *) * nplayers);
-     hands[0] = make_hand();
-     
-     /// separating first player from the others
-     for (i = 1; i < INITIAL_PLAYER+1; i++) {
-          card = char_to_card_idx(argv[i+2][0]);
-          add_card_to_hand(card, hands[0]);
-          to_remove[rem_idx++] = card;
-     }
-
-     for (i = 1; i < nplayers; i++) {
-          hands[i] = make_hand();
-          for (j = 0; j < INITIAL_OTHER; j++) {
-               card = char_to_card_idx(argv[i + INITIAL_PLAYER + 2][0]);
-               add_card_to_hand(card, hands[i]);
-               to_remove[rem_idx++] = card;
-          }
-     }
-
-     qsort(to_remove, INITIAL_CARDS(nplayers), sizeof(Card), intcmp);
-     long *result = malloc(sizeof(long) *POSSIBLE_RANKS);
-     loop(num_sims, nplayers, hands, result, to_remove);
+     qsort(to_remove, INITIAL_CARDS(num_players), sizeof(Card), intcmp);
+     loop(hand_player0, result, to_remove);
      output_result(result);
-  
-     free(result);
-
-     for (i = 0; i < nplayers; i++)
-          free_hand(hands[i]);
 
      free(to_remove);
      return 0;
 }
 
-void
-parse_args(int argc, char *argv[]) {
-  int ch;
-  int verbose = 0;
-  int n_threads = 1;
+void check_args(int argc, char *argv[]) {
+     Card card;
+     int i, j;
 
-  const char optstring[] = "j:v";
-  while ((ch = getopt(argc, argv, optstring))) {
+     if (argc < 6)
+          usage();
 
-    switch (ch) {
-    case 'v':
-      verbose = 1 ;
-      break;
-    case 'j':
-      n_threads = atoi(optarg);
-      break;
-    default:
-        usage();
-    }
-  }
+     num_simulations = TO_EXP(atol(argv[1]));
+     num_players = atoi(argv[2]);
+
+     // max/min bound for players
+     if (num_players > 8 || num_players < 1) {
+          fprintf(stderr, "wrong number of players\n");
+          usage();
+     }
+     int exp_args = INITIAL_PLAYER + (INITIAL_OTHER * (num_players - 1)) + 3;
+  
+     // checking consistency between number of players and arguments
+     if (exp_args != argc) {
+          fprintf(stderr, "wrong number of cards given\n");
+          usage();
+     }
+
+     for (i = 3, j = 0; i < argc; i++) {
+          card = char_to_card_idx(argv[i][0]);
+          if (j++ < INITIAL_PLAYER)
+               add_card_to_hand(card, hand_player0);
+          
+          to_remove[i-3] = card;
+     }
 }
 
 void usage() {
@@ -136,31 +93,26 @@ void usage() {
      exit(EX_USAGE);
 }
 
+// see if some global variables would be so bad
 void
-loop(long simulations, int nplayers, Hand **init_hands, long *result, Card *to_remove) {
-     int i, rank, idx;
+loop(Hand *init_h0, long *result, Card to_remove[]) {
+     int i, rank;
      
+     // We use only ONE deck!
      Deck *d = &global_deck;
-     init_deck(d, 0, 13, 4, to_remove, INITIAL_CARDS(nplayers));
+     init_deck(d, 0, 13, 4, to_remove, INITIAL_CARDS(num_players));
 
      Hand *h0 = make_hand();
      
      /// the deck I want to use is always without the initial hands, just do it
-     for (i = 0; i < simulations; i++) {
+     for (i = 0; i < num_simulations; i++) {
           d->len = d->orig_len;
-
-          copy_hand(init_hands[0], h0);
-          rank = play(d, nplayers, h0);
-          idx = rank_to_result_idx(rank);
-          result[idx]++;
+          // restore the hand to the initial state at every loop
+          *h0 = *init_h0;
+          rank = play(d, num_players, h0);
+          result[rank_to_result_idx(rank)]++;
      }
-     free_hand(h0);
-}
-
-// write the content of h2 to h1, both must be already allocated
-void
-copy_hand(Hand *h1, Hand *h2) {
-     memcpy(h2, h1, sizeof(Hand));
+     free(h0);
 }
 
 /// FIXME: now it's only taking h0, put also the various rounds
@@ -225,15 +177,6 @@ add_card_to_hand(Card c, Hand *h) {
      h->len++;
 }
 
-void
-print_hand(Hand *h) {
-     int i;
-     for (i = 0; i < RAZZ_CARDS; i++)
-          if (h->cards[i] > 0)
-               printf("%d:\t%d\n", IDX_TO_CARD(i), h->cards[i]);
-}
-
-
 Card
 rank_hand(Hand *h) {
      if (h->diffs < RAZZ_EVAL)
@@ -249,10 +192,6 @@ rank_hand(Hand *h) {
                break;
      }
      return IDX_TO_CARD(i);
-}
-
-void free_hand(Hand *h) {
-     free(h);
 }
 
 // removing this malloc in favour of a static variable doensn't help at all
@@ -284,15 +223,6 @@ init_deck(Deck *deck, int start, int end, int rep, Card init_cards[], int to_rem
                     break;
           }
      }
-}
-
-void
-print_deck(Deck *deck) {
-     int i;
-     for (i = 0; i < deck->len; i++) {
-          printf("%d,",  deck->cards[i]);
-     }
-     printf("\n");
 }
 
 // FIXME: using lower order bits, check if still ok
