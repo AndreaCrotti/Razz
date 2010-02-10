@@ -194,7 +194,7 @@ rank_hand(Hand *h) {
 
 // removing this malloc in favour of a static variable doensn't help at all
 void
-init_deck(Deck *deck, int start, int end, int rep, Card init_cards[], int to_remove) {
+init_deck(Deck *deck, int start, int end, int rep, Card cards_to_remove[], int to_remove) {
      int i, j, idx, init_idx;
      idx = init_idx = 0;
 
@@ -206,7 +206,7 @@ init_deck(Deck *deck, int start, int end, int rep, Card init_cards[], int to_rem
      for (i = start; i < end; i++) {
           j = 0;
           for (;;) {
-               while (i == init_cards[init_idx]) {
+               while (i == cards_to_remove[init_idx]) {
                     j++;
                     init_idx++;
                }
