@@ -25,19 +25,13 @@
 
 #define TO_EXP(x) powl(10, (x))
 
-int getopt(int, char * const argv[], const char *);
-void check_args(int, char **);
-
-static Deck global_deck;
-
-static int num_players;
-static int num_simulations;
+static Deck  global_deck;
+static int   num_players;
+static int   num_simulations;
 static Card *to_remove;
-
-static Hand hand_init;
-static Hand hand_tmp;
-
-static long result[POSSIBLE_RANKS];
+static Hand  hand_init;
+static Hand  hand_tmp;
+static long  result[POSSIBLE_RANKS];
 
 
 int main(int argc, char *argv[])
@@ -99,7 +93,7 @@ void usage() {
 
 // see if some global variables would be so bad
 void
-loop(Hand *init_h0, long *result, Card to_remove[]) {
+loop(Hand *hand_init, long *result, Card to_remove[]) {
      int i, rank;
      
      // We use only ONE deck!
@@ -110,7 +104,7 @@ loop(Hand *init_h0, long *result, Card to_remove[]) {
      for (i = 0; i < num_simulations; i++) {
           d->len = d->orig_len;
           // restore the hand to the initial state at every loop
-          hand_tmp = *init_h0;
+          hand_tmp = *hand_init;
           rank = play(d, num_players, &hand_tmp);
           result[rank_to_result_idx(rank)]++;
      }
@@ -186,7 +180,7 @@ rank_hand(Hand *h) {
           if (h->cards[i])
                rank_idx++;
           
-          if (rank_idx == RAZZ_EVAL)
+          if (rank_idx == RAZZ_EVAL) //? rewrite better this cycle
                break;
      }
      return IDX_TO_CARD(i);
@@ -226,7 +220,8 @@ init_deck(Deck *deck, int start, int end, int rep, Card cards_to_remove[], int t
 // FIXME: using lower order bits, check if still ok
 Card
 get_random_card_from_deck(Deck *deck) {
-     int pos = lrand48() % deck->len;
+     /* int pos = lrand48() % deck->len; */
+     int pos = (int) (deck->len * (rand() / (RAND_MAX + 1.0))); // see which one is better, results differ a bit
      Card c = deck->cards[pos];
      swap_cards(pos, deck->len-1, deck->cards);
      deck->len--;

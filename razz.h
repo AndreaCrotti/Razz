@@ -39,8 +39,6 @@ struct Hand {
 void swap_cards(int, int, Card *);
 
 void init_deck(Deck *, int, int, int, Card *, int);
-void print_deck(Deck *);
-void free_deck(Deck *);
 Card get_random_card_from_deck(Deck *);
 
 Card play(Deck *, int, Hand *);
@@ -49,18 +47,15 @@ void loop(Hand *, long *, Card *);
 void init_hand(Hand *);
 void add_card_to_hand(Card, Hand *);
 
-void print_hand(Hand *);
-int hand_is_full(Hand *);
-void free_hand(Hand *);
 Card rank_hand(Hand *);
 
 int char_to_card_idx(char);
-
 int rank_to_result_idx(int);
 int idx_to_rank(int);
 
 void output_result(long *);
 void usage();
+void check_args(int, char **);
 
 int intcmp(const void *, const void *);
 void qsort(void *, size_t, size_t, int (*compar)(const void *, const void *));
