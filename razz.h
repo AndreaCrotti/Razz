@@ -46,10 +46,8 @@ Card get_random_card_from_deck(Deck *);
 Card play(Deck *, int, Hand *);
 void loop(Hand *, long *, Card *);
 
-Hand *make_hand();
-void copy_hand(Hand *, Hand *);
+void init_hand(Hand *);
 void add_card_to_hand(Card, Hand *);
-Card *hands_to_array(Hand **, int);
 
 void print_hand(Hand *);
 int hand_is_full(Hand *);

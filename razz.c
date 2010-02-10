@@ -29,21 +29,25 @@ int getopt(int, char * const argv[], const char *);
 void check_args(int, char **);
 
 static Deck global_deck;
+
 static int num_players;
 static int num_simulations;
 static Card *to_remove;
-static Hand *hand_player0;
+
+static Hand hand_init;
+static Hand hand_tmp;
+
 static long result[POSSIBLE_RANKS];
 
 
 int main(int argc, char *argv[])
 {
-     hand_player0 = make_hand();
+     init_hand(&hand_init);
      to_remove = malloc(sizeof(Card) * INITIAL_CARDS(num_players));
      check_args(argc, argv);
 
      qsort(to_remove, INITIAL_CARDS(num_players), sizeof(Card), intcmp);
-     loop(hand_player0, result, to_remove);
+     loop(&hand_init, result, to_remove);
      output_result(result);
 
      free(to_remove);
@@ -76,7 +80,7 @@ void check_args(int argc, char *argv[]) {
      for (i = 3, j = 0; i < argc; i++) {
           card = char_to_card_idx(argv[i][0]);
           if (j++ < INITIAL_PLAYER)
-               add_card_to_hand(card, hand_player0);
+               add_card_to_hand(card, &hand_init);
           
           to_remove[i-3] = card;
      }
@@ -102,17 +106,14 @@ loop(Hand *init_h0, long *result, Card to_remove[]) {
      Deck *d = &global_deck;
      init_deck(d, 0, 13, 4, to_remove, INITIAL_CARDS(num_players));
 
-     Hand *h0 = make_hand();
-     
      /// the deck I want to use is always without the initial hands, just do it
      for (i = 0; i < num_simulations; i++) {
           d->len = d->orig_len;
           // restore the hand to the initial state at every loop
-          *h0 = *init_h0;
-          rank = play(d, num_players, h0);
+          hand_tmp = *init_h0;
+          rank = play(d, num_players, &hand_tmp);
           result[rank_to_result_idx(rank)]++;
      }
-     free(h0);
 }
 
 /// FIXME: now it's only taking h0, put also the various rounds
@@ -155,14 +156,11 @@ char_to_card_idx(char c) {
      }
 }
 
-Hand *
-make_hand() {
-     Hand *h = malloc(sizeof(Hand));
-     h->len = 0;
-     h->diffs = 0;
-
-     memset(h->cards, 0, sizeof(Card) * RAZZ_CARDS);
-     return h;
+void
+init_hand(Hand *hand) {
+     hand->len = 0;
+     hand->diffs = 0;
+     memset(hand->cards, 0, sizeof(Card) * RAZZ_CARDS);
 }
 
 // a possible nice solution to rank inside here directly would be to
