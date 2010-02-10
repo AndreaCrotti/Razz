@@ -50,7 +50,7 @@ struct Hand {
 
 void swap_cards(int, int, Card *);
 
-Deck *make_deck(int, int, int, Card *, int);
+void init_deck(Deck *, int, int, int, Card *, int);
 void print_deck(Deck *);
 void free_deck(Deck *);
 Card get_random_card_from_deck(Deck *);

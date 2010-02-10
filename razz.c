@@ -31,6 +31,8 @@ extern char *optarg;
 
 void parse_args(int, char * argv[]);
 
+static Deck global_deck;
+
 /* static Card global_hand[RAZZ_CARDS]; */
 
 int main(int argc, char *argv[])
@@ -70,7 +72,7 @@ int main(int argc, char *argv[])
      // divide issues 
      Hand **hands = malloc(sizeof(Hand *) * nplayers);
      hands[0] = make_hand();
-
+     
      /// separating first player from the others
      for (i = 1; i < INITIAL_PLAYER+1; i++) {
           card = char_to_card_idx(argv[i+2][0]);
@@ -138,8 +140,8 @@ void
 loop(long simulations, int nplayers, Hand **init_hands, long *result, Card *to_remove) {
      int i, rank, idx;
      
-     // now our wonderful deck already have deleted the unwanted cards
-     Deck *d = make_deck(0, 13, 4, to_remove, INITIAL_CARDS(nplayers));
+     Deck *d = &global_deck;
+     init_deck(d, 0, 13, 4, to_remove, INITIAL_CARDS(nplayers));
 
      Hand *h0 = make_hand();
      
@@ -153,7 +155,6 @@ loop(long simulations, int nplayers, Hand **init_hands, long *result, Card *to_r
           result[idx]++;
      }
      free_hand(h0);
-     free_deck(d);
 }
 
 // write the content of h2 to h1, both must be already allocated
@@ -197,6 +198,7 @@ char_to_card_idx(char c) {
      case 'J': return 10;
      case 'Q': return 11;
      case 'K': return 12;
+     case '1' : return 9; // dirty trick, make sure we don't get 1 instead of A
      default : return CARD_TO_IDX(c - '0');
      }
 }
@@ -254,14 +256,12 @@ void free_hand(Hand *h) {
 }
 
 // removing this malloc in favour of a static variable doensn't help at all
-Deck *
-make_deck(int start, int end, int rep, Card init_cards[], int to_remove) {
+void
+init_deck(Deck *deck, int start, int end, int rep, Card init_cards[], int to_remove) {
      int i, j, idx, init_idx;
      idx = init_idx = 0;
 
      int len = (end - start) * rep - to_remove;
-
-     Deck *deck = malloc(sizeof(Deck));
 
      deck->len = deck->orig_len = len;
   
@@ -284,7 +284,6 @@ make_deck(int start, int end, int rep, Card init_cards[], int to_remove) {
                     break;
           }
      }
-     return deck;
 }
 
 void
@@ -294,12 +293,6 @@ print_deck(Deck *deck) {
           printf("%d,",  deck->cards[i]);
      }
      printf("\n");
-}
-
-void
-free_deck(Deck *deck) {
-     /* free(deck->cards); */
-     free(deck);
 }
 
 // FIXME: using lower order bits, check if still ok
