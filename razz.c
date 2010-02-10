@@ -1,4 +1,3 @@
-// -*- compile-command: "make" -*-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -91,16 +90,14 @@ void usage() {
      exit(EX_USAGE);
 }
 
-// see if some global variables would be so bad
 void
 loop(Hand *hand_init, long *result, Card to_remove[]) {
      int i, rank;
      
-     // We use only ONE deck!
+     // We use only ONE deck! Initialize it directly without the initial hand
      Deck *deck = &global_deck;
      init_deck(deck, 0, 13, 4, to_remove, INITIAL_CARDS(num_players));
 
-     /// the deck I want to use is always without the initial hands, just do it
      for (i = 0; i < num_simulations; i++) {
           deck->len = deck->orig_len;
           // restore the hand to the initial state at every loop
@@ -156,9 +153,6 @@ init_hand(Hand *hand) {
      memset(hand->cards, 0, sizeof(Card) * RAZZ_CARDS);
 }
 
-// a possible nice solution to rank inside here directly would be to
-// keep a stack of last maximums, when it's empty just keep the rank
-// otherwise you can pop many times
 void
 add_card_to_hand(Card c, Hand *h) {
      if (!h->cards[c]) {
@@ -188,31 +182,23 @@ rank_hand(Hand *h) {
 // removing this malloc in favour of a static variable doensn't help at all
 void
 init_deck(Deck *deck, int start, int end, int rep, Card cards_to_remove[], int to_remove) {
-     int i, j, idx, init_idx;
-     idx = init_idx = 0;
+     int i, j, idx, rem_idx;
+     idx = rem_idx = 0;
 
      int len = (end - start) * rep - to_remove;
-
      deck->len = deck->orig_len = len;
   
-     // FIXME: very convoluted triple cicle, try to make it nicer
      for (i = start; i < end; i++) {
-          j = 0;
-          for (;;) {
-               while (i == cards_to_remove[init_idx]) {
+          for (j = 0; j < rep; ) {
+               while ((rem_idx < to_remove) && (i == cards_to_remove[rem_idx])) { // ? infinite loop with a printf... strange, is that really sorted??
+                    assert(j < rep);
                     j++;
-                    init_idx++;
+                    rem_idx++;
                }
-
-               assert(j <= rep); // kind of repetitive maybe?
-               if (j < rep) {
-                    deck->cards[idx] = i;
-                    idx++;
-                    j++;
+               if (j++ < rep) {
+                    deck->cards[idx++] = i;
                }
-               else
-                    break;
-          }
+         }
      }
 }
 
