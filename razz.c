@@ -29,7 +29,6 @@ static Hand  hand_init;
 static Hand  hand_tmp;
 static long  result[POSSIBLE_RANKS];
 
-
 int main(int argc, char *argv[])
 {
      init_hand(&hand_init);
@@ -99,12 +98,13 @@ loop(Hand *hand_init, long *result, Card to_remove[]) {
           deck->len = deck->orig_len;
           // restore the hand to the initial state at every loop
           hand_tmp = *hand_init;
-          rank = play(deck, num_players, &hand_tmp);
+          play(deck, num_players, &hand_tmp);
+          rank = rank_hand(&hand_tmp);
           result[rank_to_result_idx(rank)]++;
      }
 }
 
-Card
+void
 play(Deck *deck, int nplayer, Hand *hand) {
      int card_idx;
   
@@ -112,7 +112,6 @@ play(Deck *deck, int nplayer, Hand *hand) {
           card_idx = get_random_card_from_deck(deck);
           add_card_to_hand(card_idx, hand);
      }
-     return rank_hand(hand);
 }
 
 int
@@ -160,14 +159,14 @@ add_card_to_hand(Card c, Hand *h) {
 }
 
 Card
-rank_hand(Hand *h) {
-     if (h->diffs < RAZZ_EVAL)
+rank_hand(Hand *hand) {
+     if (hand->diffs < RAZZ_EVAL)
           return NON_HIGH_HAND;
 
      int rank_idx, i;
      rank_idx = 0;
      for (i = 0; i < RAZZ_CARDS; i++)  {
-          if (h->cards[i])
+          if (hand->cards[i])
                rank_idx++;
           
           if (rank_idx == RAZZ_EVAL)
@@ -176,6 +175,7 @@ rank_hand(Hand *h) {
      return IDX_TO_CARD(i);
 }
 
+// This works at condition that the cards_to_remove array is sorted in ascending order
 void
 init_deck(Deck *deck, int start, int end, int rep, Card cards_to_remove[], int to_remove) {
      int i, j, idx, rem_idx;
@@ -186,11 +186,12 @@ init_deck(Deck *deck, int start, int end, int rep, Card cards_to_remove[], int t
   
      for (i = start; i < end; i++) {
           for (j = 0; j < rep; ) {
-               while ((rem_idx < to_remove) && (i == cards_to_remove[rem_idx])) {
+               while (i == cards_to_remove[rem_idx]) {
                     assert(j < rep);
                     j++;
                     rem_idx++;
                }
+               // if still we have other i cards to add we can add them to the deck
                if (j++ < rep)
                     deck->cards[idx++] = i;
          }
@@ -199,7 +200,7 @@ init_deck(Deck *deck, int start, int end, int rep, Card cards_to_remove[], int t
 
 Card
 get_random_card_from_deck(Deck *deck) {
-     // using random() and / instead of % is 40% faster
+     // using random() and / instead of % and lrand48() is 40% faster
      int pos = (int) (deck->len * (random() / (RAND_MAX + 1.0)));
      Card c = deck->cards[pos];
      swap_cards(pos, deck->len-1, deck->cards);

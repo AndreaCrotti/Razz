@@ -37,7 +37,7 @@ void swap_cards(int, int, Card *);
 void init_deck(Deck *, int, int, int, Card *, int);
 Card get_random_card_from_deck(Deck *);
 
-Card play(Deck *, int, Hand *);
+void play(Deck *, int, Hand *);
 void loop(Hand *, long *, Card *);
 
 void init_hand(Hand *);
