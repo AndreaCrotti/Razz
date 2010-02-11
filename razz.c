@@ -10,14 +10,8 @@
 /*
   Problems:
   - Using const whenever possible will increase the performances?
-  - see if using static stuff could somehow help
-  - fix problem with 10
-  - use j = 1 + (int) (10.0 * (rand() / (RAND_MAX + 1.0))) and not the modulo for the random
   - computing the rank WHILE I'm adding cards to the deck
-  - things must be cleared after they've been used in the same place
   - make it multithreading, see http://softpixel.com/~cwright/programming/threads/threads.c.php
-  - who allocates the memory should be the same that deallocate it (or use make/free for that purpose)
-  - check for correct freeing mallocs are needed?
   - find where the 4 stupid bytes are  lost
   - use static variable instead of all those macros
 */
@@ -37,7 +31,7 @@ int main(int argc, char *argv[])
 {
      init_hand(&hand_init);
      to_remove = malloc(sizeof(Card) * INITIAL_CARDS(num_players));
-     check_args(argc, argv);
+     get_args(argc, argv);
 
      qsort(to_remove, INITIAL_CARDS(num_players), sizeof(Card), intcmp);
      loop(&hand_init, result, to_remove);
@@ -47,7 +41,7 @@ int main(int argc, char *argv[])
      return 0;
 }
 
-void check_args(int argc, char *argv[]) {
+void get_args(int argc, char *argv[]) {
      Card card;
      int i, j;
 

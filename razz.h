@@ -55,9 +55,8 @@ int idx_to_rank(int);
 
 void output_result(long *);
 void usage();
-void check_args(int, char **);
+void get_args(int, char **);
 
 int intcmp(const void *, const void *);
 void qsort(void *, size_t, size_t, int (*compar)(const void *, const void *));
-long lrand48(void);
-
+long random(void);
