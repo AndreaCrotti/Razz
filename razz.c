@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <assert.h>
 #include <sysexits.h>
 #include <math.h>
@@ -9,7 +8,7 @@
 
 /*
   Problems:
-  - Using const whenever possible will increase the performances?
+  - Using const whenever possible will increase the performances? No but it's more clean
   - computing the rank WHILE I'm adding cards to the deck
   - make it multithreading, see http://softpixel.com/~cwright/programming/threads/threads.c.php
   - find where the 4 stupid bytes are  lost
@@ -20,6 +19,7 @@
 /// those two macro makes the mapping index->card for the pseudo dictionary hand structure
 #define CARD_TO_IDX(x) (x - 1)
 #define IDX_TO_CARD(x) (x + 1)
+#define INITIAL_CARDS(x) (INITIAL_PLAYER + (INITIAL_OTHER * (x - 1)))
 
 static Deck  global_deck;
 static int   num_players;
@@ -100,6 +100,7 @@ loop(Hand *hand_init, long *result, Card to_remove[]) {
           hand_tmp = *hand_init;
           play(deck, num_players, &hand_tmp);
           rank = rank_hand(&hand_tmp);
+          assert(rank); // different from 0
           result[rank_to_result_idx(rank)]++;
      }
 }
@@ -151,9 +152,9 @@ init_hand(Hand *hand) {
 
 void
 add_card_to_hand(Card c, Hand *h) {
-     if (!h->cards[c]) {
+     if (!h->cards[c])
           h->diffs++;
-     }
+
      h->cards[c]++;
      h->len++;
 }
@@ -165,14 +166,16 @@ rank_hand(Hand *hand) {
 
      int rank_idx, i;
      rank_idx = 0;
-     for (i = 0; i < RAZZ_CARDS; i++)  {
+     
+     // scanning the array in reverse order
+     for (i = RAZZ_CARDS-1; i > 0; i--)  {
           if (hand->cards[i])
                rank_idx++;
           
-          if (rank_idx == RAZZ_EVAL)
-               break;
+          if (rank_idx == (hand->diffs - RAZZ_EVAL + 1))
+               return IDX_TO_CARD(i);
      }
-     return IDX_TO_CARD(i);
+     return 0;
 }
 
 // This works at condition that the cards_to_remove array is sorted in ascending order

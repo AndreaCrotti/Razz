@@ -6,7 +6,6 @@
 
 #define INITIAL_PLAYER 3
 #define INITIAL_OTHER 1
-#define INITIAL_CARDS(x) (INITIAL_PLAYER + (INITIAL_OTHER * (x - 1)))
 
 #define RAZZ_CARDS 13
 #define RAZZ_REP 4
@@ -15,8 +14,7 @@
 
 #define POSSIBLE_RANKS (RAZZ_CARDS - MIN_RANK + 2)
 
-// A card is just an integer
-typedef int Card;
+typedef short Card;
 typedef struct Deck Deck;
 typedef struct Hand Hand;
 
@@ -50,7 +48,7 @@ int rank_to_result_idx(int);
 int idx_to_rank(int);
 
 void output_result(long *);
-void usage();
+void usage(void);
 void get_args(int, char **);
 
 int intcmp(const void *, const void *);
