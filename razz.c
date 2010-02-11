@@ -17,6 +17,9 @@
 */
 
 #define TO_EXP(x) powl(10, (x))
+/// those two macro makes the mapping index->card for the pseudo dictionary hand structure
+#define CARD_TO_IDX(x) (x - 1)
+#define IDX_TO_CARD(x) (x + 1)
 
 static Deck  global_deck;
 static int   num_players;
@@ -167,13 +170,12 @@ rank_hand(Hand *h) {
           if (h->cards[i])
                rank_idx++;
           
-          if (rank_idx == RAZZ_EVAL) //? rewrite better this cycle
+          if (rank_idx == RAZZ_EVAL)
                break;
      }
      return IDX_TO_CARD(i);
 }
 
-// removing this malloc in favour of a static variable doensn't help at all
 void
 init_deck(Deck *deck, int start, int end, int rep, Card cards_to_remove[], int to_remove) {
      int i, j, idx, rem_idx;
@@ -184,21 +186,20 @@ init_deck(Deck *deck, int start, int end, int rep, Card cards_to_remove[], int t
   
      for (i = start; i < end; i++) {
           for (j = 0; j < rep; ) {
-               while ((rem_idx < to_remove) && (i == cards_to_remove[rem_idx])) { // ? infinite loop with a printf... strange, is that really sorted??
+               while ((rem_idx < to_remove) && (i == cards_to_remove[rem_idx])) {
                     assert(j < rep);
                     j++;
                     rem_idx++;
                }
-               if (j++ < rep) {
+               if (j++ < rep)
                     deck->cards[idx++] = i;
-               }
          }
      }
 }
 
 Card
 get_random_card_from_deck(Deck *deck) {
-     // using this instead of % is 40% faster, but results differ a bit!, using random even faster!
+     // using random() and / instead of % is 40% faster
      int pos = (int) (deck->len * (random() / (RAND_MAX + 1.0)));
      Card c = deck->cards[pos];
      swap_cards(pos, deck->len-1, deck->cards);
@@ -219,13 +220,6 @@ output_result(long *result) {
      int i;
      for (i = 0; i < POSSIBLE_RANKS; i++)
           printf("%d:\t%ld\n", idx_to_rank(i), result[i]);
-}
-
-void
-merge_results(long *res1, long *res2) {
-     int i;
-     for (i = 0; i < POSSIBLE_RANKS; i++)
-          res1[i] += res2[i];
 }
 
 int intcmp(const void *v1, const void *v2)

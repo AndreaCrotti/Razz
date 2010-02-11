@@ -15,10 +15,6 @@
 
 #define POSSIBLE_RANKS (RAZZ_CARDS - MIN_RANK + 2)
 
-/// those two macro makes the mapping index->card for the pseudo dictionary hand structure
-#define CARD_TO_IDX(x) (x - 1)
-#define IDX_TO_CARD(x) (x + 1)
-
 // A card is just an integer
 typedef int Card;
 typedef struct Deck Deck;
