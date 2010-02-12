@@ -112,6 +112,7 @@ play(Deck *deck, int nplayer, Hand *hand) {
      while (hand->len < RAZZ_HAND) {
           // setup a correct value
           card_idx = get_random_card_from_int_deck(deck);
+          /* printf("got card %d\n", card_idx); */
           add_card_to_hand(card_idx, hand);
      }
 }
@@ -190,18 +191,17 @@ init_int_deck(Deck *deck, int size, Card to_remove[], int len) {
      }
 }
 
-// it should get the address instead, even more powerful
 Card
 get_random_card_from_int_deck(Deck *deck) {
      Card card;
      do {
-          card = (int) (deck->len * (random() / (RAND_MAX + 1.0)));
+          card = (int) (deck->len * (random() / (RAND_MAX + 1.0))) + 1;
+          /* printf("removing card %d\n", card); */
      }
-     while (!remove_card_from_int_deck(deck, card + 1));
-     return CARD_TO_IDX(card % RAZZ_CARDS); // which is the last one that has been evaluated
+     while (!remove_card_from_int_deck(deck, card));
+     return card % RAZZ_CARDS; // which is the last one that has been evaluated
 }
      
-// can also pass by value instead of by reference in this case
 int
 remove_card_from_int_deck(Deck *deck, Card card) {
      IntDeck orig = deck->deck;
