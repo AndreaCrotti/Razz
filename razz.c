@@ -215,7 +215,7 @@ remove_card_from_int_deck(Deck *deck, Card card) {
 
 void
 print_int_deck(Deck *deck) {
-     printf("deck = %lld, len = %d\n", deck->deck, deck->len);
+     printf("deck = %llu, len = %d\n", deck->deck, deck->len);
 }
 
 void
