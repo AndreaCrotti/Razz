@@ -32,7 +32,7 @@ struct Hand {
 
 void swap_cards(int, int, Card *);
 
-void init_deck(Deck *, int, int, int, Card *, int);
+void init_deck(Deck *, int, int, Card *, int);
 Card get_random_card_from_deck(Deck *);
 
 void play(Deck *, int, Hand *);

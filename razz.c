@@ -9,11 +9,10 @@
 /*
   Problems:
   - Using const whenever possible will increase the performances? No but it's more clean
-  - computing the rank WHILE I'm adding cards to the deck
   - make it multithreading, see http://softpixel.com/~cwright/programming/threads/threads.c.php
-  - find where the 4 stupid bytes are  lost
-  - use static variable instead of all those macros
   - check if forking would be faster http://www.csl.mtu.edu/cs4411/www/NOTES/process/fork/wait.html
+  - global variables instead of DEFINE?
+  - use the same API for int and normal deck
 */
 
 #define TO_EXP(x) powl(10, (x))
@@ -25,7 +24,7 @@
 static Deck  global_deck;
 static int   num_players;
 static int   num_simulations;
-static Card *to_remove;
+static Card  *to_remove;
 static Hand  hand_init;
 static Hand  hand_tmp;
 static long  result[POSSIBLE_RANKS];
@@ -33,9 +32,8 @@ static long  result[POSSIBLE_RANKS];
 int main(int argc, char *argv[])
 {
      init_hand(&hand_init);
-     to_remove = malloc(sizeof(Card) * INITIAL_CARDS(num_players));
+     to_remove = malloc(sizeof(Card) *INITIAL_CARDS(num_players));
      get_args(argc, argv);
-
      qsort(to_remove, INITIAL_CARDS(num_players), sizeof(Card), intcmp);
      loop(&hand_init, result, to_remove);
      output_result(result);
@@ -93,7 +91,7 @@ loop(Hand *hand_init, long *result, Card to_remove[]) {
      
      // We use only ONE deck! Initialize it directly without the initial hand
      Deck *deck = &global_deck;
-     init_deck(deck, 0, 13, 4, to_remove, INITIAL_CARDS(num_players));
+     init_deck(deck, RAZZ_CARDS, RAZZ_REP, to_remove, INITIAL_CARDS(num_players));
 
      for (i = 0; i < num_simulations; i++) {
           /* int_deck = make_int_deck(to_remove, INITIAL_CARDS(num_players)); */
@@ -102,7 +100,7 @@ loop(Hand *hand_init, long *result, Card to_remove[]) {
           hand_tmp = *hand_init;
           play(&global_deck, num_players, &hand_tmp);
           rank = rank_hand(&hand_tmp);
-          assert(rank); // different from 0
+          assert(rank != 0); // different from 0
           result[rank_to_result_idx(rank)]++;
      }
 }
@@ -112,7 +110,6 @@ play(Deck *deck, int nplayer, Hand *hand) {
      int card_idx;
   
      while (hand->len < RAZZ_HAND) {
-          /* card_idx = get_random_card_from_int_deck(deck, 49); */
           card_idx = get_random_card_from_deck(deck);
           add_card_to_hand(card_idx, hand);
      }
@@ -183,14 +180,14 @@ rank_hand(Hand *hand) {
 
 // This works at condition that the cards_to_remove array is sorted in ascending order
 void
-init_deck(Deck *deck, int start, int end, int rep, Card cards_to_remove[], int to_remove) {
+init_deck(Deck *deck, int num_cards, int rep, Card cards_to_remove[], int to_remove) {
      int i, j, idx, rem_idx;
      idx = rem_idx = 0;
 
-     int len = (end - start) * rep - to_remove;
+     int len = (num_cards * rep) - to_remove;
      deck->len = deck->orig_len = len;
   
-     for (i = start; i < end; i++) {
+     for (i = 0; i < num_cards; i++) {
           for (j = 0; j < rep; ) {
                while (i == cards_to_remove[rem_idx]) {
                     assert(j < rep);
