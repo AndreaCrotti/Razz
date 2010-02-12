@@ -207,6 +207,7 @@ get_random_card_from_deck(Deck *deck) {
      // using random() and / instead of % and lrand48() is 40% faster
      int pos = (int) (deck->len * (random() / (RAND_MAX + 1.0)));
      Card c = deck->cards[pos];
+     // swap found element with the last one and then shrink the deck
      swap_cards(pos, deck->len-1, deck->cards);
      deck->len--;
      return c;
