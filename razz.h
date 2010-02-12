@@ -20,9 +20,8 @@ typedef struct Hand Hand;
 typedef unsigned long long IntDeck;
 
 struct Deck {
-     Card cards[RAZZ_CARDS * RAZZ_REP];
+     IntDeck deck;
      int len;
-     int orig_len;
 };
 
 struct Hand {
@@ -30,11 +29,6 @@ struct Hand {
      int len;
      int diffs;
 };
-
-void swap_cards(int, int, Card *);
-
-void init_deck(Deck *, int, int, int, Card *, int);
-Card get_random_card_from_deck(Deck *);
 
 void play(Deck *, int, Hand *);
 void loop(Hand *, long *, Card *);
@@ -52,10 +46,9 @@ void output_result(long *);
 void usage(void);
 void get_args(int, char **);
 
-int intcmp(const void *, const void *);
-void qsort(void *, size_t, size_t, int (*compar)(const void *, const void *));
 long random(void);
 
-IntDeck make_int_deck(Card *, int );
-Card get_random_card_from_int_deck(IntDeck *, int);
-void remove_card_from_int_deck(IntDeck *, Card);
+void init_int_deck(Deck *, int, Card *, int );
+Card get_random_card_from_int_deck(Deck *);
+void remove_card_from_int_deck(Deck *, Card);
+void print_int_deck(Deck *);

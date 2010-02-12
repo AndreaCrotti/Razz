@@ -22,7 +22,6 @@
 #define IDX_TO_CARD(x) (x + 1)
 #define INITIAL_CARDS(x) (INITIAL_PLAYER + (INITIAL_OTHER * (x - 1)))
 
-static Deck  global_deck;
 static int   num_players;
 static int   num_simulations;
 static Card *to_remove;
@@ -30,15 +29,15 @@ static Hand  hand_init;
 static Hand  hand_tmp;
 static long  result[POSSIBLE_RANKS];
 
-/* static IntDeck int_deck; */
+static Deck global_deck;
 
 int main(int argc, char *argv[])
 {
+     assert(sizeof(IntDeck) >= 8);
      init_hand(&hand_init);
      to_remove = malloc(sizeof(Card) * INITIAL_CARDS(num_players));
      get_args(argc, argv);
 
-     qsort(to_remove, INITIAL_CARDS(num_players), sizeof(Card), intcmp);
      loop(&hand_init, result, to_remove);
      output_result(result);
 
@@ -94,12 +93,9 @@ loop(Hand *hand_init, long *result, Card to_remove[]) {
      int i, rank;
      
      // We use only ONE deck! Initialize it directly without the initial hand
-     Deck *deck = &global_deck;
-     init_deck(deck, 0, 13, 4, to_remove, INITIAL_CARDS(num_players));
 
      for (i = 0; i < num_simulations; i++) {
-          /* int_deck = make_int_deck(to_remove, INITIAL_CARDS(num_players)); */
-          deck->len = deck->orig_len;
+          init_int_deck(&global_deck, (RAZZ_CARDS * RAZZ_REP), to_remove, INITIAL_CARDS(num_players));
           // restore the hand to the initial state at every loop
           hand_tmp = *hand_init;
           play(&global_deck, num_players, &hand_tmp);
@@ -114,8 +110,8 @@ play(Deck *deck, int nplayer, Hand *hand) {
      int card_idx;
   
      while (hand->len < RAZZ_HAND) {
-          /* card_idx = get_random_card_from_int_deck(deck, 49); */
-          card_idx = get_random_card_from_deck(deck);
+          // setup a correct value
+          card_idx = get_random_card_from_int_deck(deck);
           add_card_to_hand(card_idx, hand);
      }
 }
@@ -183,76 +179,43 @@ rank_hand(Hand *hand) {
      return 0;
 }
 
-// This works at condition that the cards_to_remove array is sorted in ascending order
-void
-init_deck(Deck *deck, int start, int end, int rep, Card cards_to_remove[], int to_remove) {
-     int i, j, idx, rem_idx;
-     idx = rem_idx = 0;
-
-     int len = (end - start) * rep - to_remove;
-     deck->len = deck->orig_len = len;
-  
-     for (i = start; i < end; i++) {
-          for (j = 0; j < rep; ) {
-               while (i == cards_to_remove[rem_idx]) {
-                    assert(j < rep);
-                    j++;
-                    rem_idx++;
-               }
-               // if still we have other i cards to add we can add them to the deck
-               if (j++ < rep)
-                    deck->cards[idx++] = i;
-         }
-     }
-}
-
-Card
-get_random_card_from_deck(Deck *deck) {
-     // using random() and / instead of % and lrand48() is 40% faster
-     int pos = (int) (deck->len * (random() / (RAND_MAX + 1.0)));
-     Card c = deck->cards[pos];
-     // swap found element with the last one and then shrink the deck
-     swap_cards(pos, deck->len-1, deck->cards);
-     deck->len--;
-     return c;
-}
 
 void
-swap_cards(int c1_idx, int c2_idx, Card *cards) {
-     Card tmp;
-     tmp = cards[c1_idx];
-     cards[c1_idx] = cards[c2_idx];
-     cards[c2_idx] = tmp;
-}
-
-IntDeck
-make_int_deck(Card to_remove[], int len) {
-     IntDeck deck = 0;
+init_int_deck(Deck *deck, int size, Card to_remove[], int len) {
+     deck->deck = 0;
+     deck->len = size;
      int i;
      for (i = 0; i < len; i++) {
-          remove_card_from_int_deck(&deck, to_remove[i]);
+          remove_card_from_int_deck(deck, to_remove[i]);
      }
-     return deck;
 }
 
 // it should get the address instead, even more powerful
 Card
-get_random_card_from_int_deck(IntDeck *deck, int size) {
+get_random_card_from_int_deck(Deck *deck) {
      Card card;
-     card = (int) (size * (random() / (RAND_MAX + 1.0)));
+     card = (int) (deck->len * (random() / (RAND_MAX + 1.0)));
      remove_card_from_int_deck(deck, card + 1);
      return CARD_TO_IDX(card % RAZZ_CARDS + 1); // which is the last one that has been evaluated
 }
      
 // can also pass by value instead of by reference in this case
 void
-remove_card_from_int_deck(IntDeck *deck, Card card) {
-     IntDeck orig = *deck;
-     *deck |= (1 << card);
-     // checking if it's fine
-     if (orig != *deck)
-          printf("removing card %d from deck\n", card);
-     assert(*deck != orig);
+remove_card_from_int_deck(Deck *deck, Card card) {
+     IntDeck orig = deck->deck;
+     IntDeck rem = 1 << card;
+     printf("removing card %d\n", card);
+     deck->deck |= rem;
+     deck->len--;
+     print_int_deck(deck);
+     assert(deck->deck != orig);
+     // smaller deck
+}
+
+
+void
+print_int_deck(Deck *deck) {
+     printf("deck = %lld, len = %d\n", deck->deck, deck->len);
 }
 
 void
@@ -261,9 +224,3 @@ output_result(long *result) {
      for (i = 0; i < POSSIBLE_RANKS; i++)
           printf("%d:\t%ld\n", idx_to_rank(i), result[i]);
 }
-
-int intcmp(const void *v1, const void *v2)
-{
-     return (*(int *)v1 - *(int *)v2);
-}
-
