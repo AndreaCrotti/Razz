@@ -17,6 +17,7 @@
 typedef short Card;
 typedef struct Deck Deck;
 typedef struct Hand Hand;
+typedef unsigned long long IntDeck;
 
 struct Deck {
      Card cards[RAZZ_CARDS * RAZZ_REP];
@@ -54,3 +55,7 @@ void get_args(int, char **);
 int intcmp(const void *, const void *);
 void qsort(void *, size_t, size_t, int (*compar)(const void *, const void *));
 long random(void);
+
+IntDeck make_int_deck(Card *, int );
+Card get_random_card_from_int_deck(IntDeck *, int);
+void remove_card_from_int_deck(IntDeck *, Card);

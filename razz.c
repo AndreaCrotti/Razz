@@ -30,6 +30,8 @@ static Hand  hand_init;
 static Hand  hand_tmp;
 static long  result[POSSIBLE_RANKS];
 
+/* static IntDeck int_deck; */
+
 int main(int argc, char *argv[])
 {
      init_hand(&hand_init);
@@ -96,10 +98,11 @@ loop(Hand *hand_init, long *result, Card to_remove[]) {
      init_deck(deck, 0, 13, 4, to_remove, INITIAL_CARDS(num_players));
 
      for (i = 0; i < num_simulations; i++) {
+          /* int_deck = make_int_deck(to_remove, INITIAL_CARDS(num_players)); */
           deck->len = deck->orig_len;
           // restore the hand to the initial state at every loop
           hand_tmp = *hand_init;
-          play(deck, num_players, &hand_tmp);
+          play(&global_deck, num_players, &hand_tmp);
           rank = rank_hand(&hand_tmp);
           assert(rank); // different from 0
           result[rank_to_result_idx(rank)]++;
@@ -111,6 +114,7 @@ play(Deck *deck, int nplayer, Hand *hand) {
      int card_idx;
   
      while (hand->len < RAZZ_HAND) {
+          /* card_idx = get_random_card_from_int_deck(deck, 49); */
           card_idx = get_random_card_from_deck(deck);
           add_card_to_hand(card_idx, hand);
      }
@@ -219,6 +223,36 @@ swap_cards(int c1_idx, int c2_idx, Card *cards) {
      tmp = cards[c1_idx];
      cards[c1_idx] = cards[c2_idx];
      cards[c2_idx] = tmp;
+}
+
+IntDeck
+make_int_deck(Card to_remove[], int len) {
+     IntDeck deck = 0;
+     int i;
+     for (i = 0; i < len; i++) {
+          remove_card_from_int_deck(&deck, to_remove[i]);
+     }
+     return deck;
+}
+
+// it should get the address instead, even more powerful
+Card
+get_random_card_from_int_deck(IntDeck *deck, int size) {
+     Card card;
+     card = (int) (size * (random() / (RAND_MAX + 1.0)));
+     remove_card_from_int_deck(deck, card + 1);
+     return CARD_TO_IDX(card % RAZZ_CARDS + 1); // which is the last one that has been evaluated
+}
+     
+// can also pass by value instead of by reference in this case
+void
+remove_card_from_int_deck(IntDeck *deck, Card card) {
+     IntDeck orig = *deck;
+     *deck |= (1 << card);
+     // checking if it's fine
+     if (orig != *deck)
+          printf("removing card %d from deck\n", card);
+     assert(*deck != orig);
 }
 
 void
