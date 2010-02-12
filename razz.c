@@ -194,22 +194,21 @@ init_int_deck(Deck *deck, int size, Card to_remove[], int len) {
 Card
 get_random_card_from_int_deck(Deck *deck) {
      Card card;
-     card = (int) (deck->len * (random() / (RAND_MAX + 1.0)));
-     remove_card_from_int_deck(deck, card + 1);
-     return CARD_TO_IDX(card % RAZZ_CARDS + 1); // which is the last one that has been evaluated
+     do {
+          card = (int) (deck->len * (random() / (RAND_MAX + 1.0)));
+     }
+     while (!remove_card_from_int_deck(deck, card + 1));
+     return CARD_TO_IDX(card % RAZZ_CARDS); // which is the last one that has been evaluated
 }
      
 // can also pass by value instead of by reference in this case
-void
+int
 remove_card_from_int_deck(Deck *deck, Card card) {
      IntDeck orig = deck->deck;
      IntDeck rem = 1 << card;
-     printf("removing card %d\n", card);
      deck->deck |= rem;
      deck->len--;
-     print_int_deck(deck);
-     assert(deck->deck != orig);
-     // smaller deck
+     return (deck->deck - orig);
 }
 
 

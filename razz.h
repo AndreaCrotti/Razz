@@ -50,5 +50,5 @@ long random(void);
 
 void init_int_deck(Deck *, int, Card *, int );
 Card get_random_card_from_int_deck(Deck *);
-void remove_card_from_int_deck(Deck *, Card);
+int remove_card_from_int_deck(Deck *, Card);
 void print_int_deck(Deck *);
