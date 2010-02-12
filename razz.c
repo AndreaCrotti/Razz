@@ -13,6 +13,7 @@
   - make it multithreading, see http://softpixel.com/~cwright/programming/threads/threads.c.php
   - find where the 4 stupid bytes are  lost
   - use static variable instead of all those macros
+  - check if forking would be faster http://www.csl.mtu.edu/cs4411/www/NOTES/process/fork/wait.html
 */
 
 #define TO_EXP(x) powl(10, (x))
