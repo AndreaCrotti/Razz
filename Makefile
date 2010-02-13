@@ -4,18 +4,18 @@ all: clean razz razz_prof razz_fast
 
 PROFILE=-pg -g
 FAST=-DNDEBUG -O3
-OPT=-lm -Wall -std=c99 --pedantic # not using ansi C
+CFLAGS=-lm -Wall -std=c99 --pedantic # not using ansi C
 FILES=razz.c razz.h razz.py Makefile
 FNAME=andrea_crotti.tar.gz
 
 razz:
-	gcc $(OPT) -o razz razz.c
+	gcc $(CFLAGS) -o razz razz.c
 
 razz_fast:
-	gcc $(FAST) $(OPT) -o razz_fast razz.c
+	gcc $(FAST) $(CFLAGS) -o razz_fast razz.c
 
 razz_prof:
-	gcc $(PROFILE) $(OPT) -o razz_prof razz.c
+	gcc $(PROFILE) $(CFLAGS) -o razz_prof razz.c
 
 doc:
 	doxygen

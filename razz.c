@@ -31,10 +31,10 @@ static long  result[POSSIBLE_RANKS];
 
 int main(int argc, char *argv[])
 {
+     /* srandom ((int)(time (NULL))); */
      init_hand(&hand_init);
-     to_remove = malloc(sizeof(Card) *INITIAL_CARDS(num_players));
      get_args(argc, argv);
-     qsort(to_remove, INITIAL_CARDS(num_players), sizeof(Card), intcmp);
+
      loop(&hand_init, result, to_remove);
      output_result(result);
 
@@ -51,6 +51,9 @@ void get_args(int argc, char *argv[]) {
 
      num_simulations = TO_EXP(atol(argv[1]));
      num_players = atoi(argv[2]);
+
+     int rem_num = INITIAL_CARDS(num_players);
+     to_remove = malloc(sizeof(Card) * rem_num);
 
      // max/min bound for players
      if (num_players > 8 || num_players < 1) {
@@ -72,6 +75,7 @@ void get_args(int argc, char *argv[]) {
           
           to_remove[i-3] = card;
      }
+     qsort(to_remove, rem_num, sizeof(Card), intcmp);
 }
 
 void usage() {
@@ -94,7 +98,6 @@ loop(Hand *hand_init, long *result, Card to_remove[]) {
      init_deck(deck, RAZZ_CARDS, RAZZ_REP, to_remove, INITIAL_CARDS(num_players));
 
      for (i = 0; i < num_simulations; i++) {
-          /* int_deck = make_int_deck(to_remove, INITIAL_CARDS(num_players)); */
           deck->len = deck->orig_len;
           // restore the hand to the initial state at every loop
           hand_tmp = *hand_init;
