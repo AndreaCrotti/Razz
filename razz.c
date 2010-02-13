@@ -205,7 +205,7 @@ get_random_card_from_int_deck(Deck *deck) {
 int
 remove_card_from_int_deck(Deck *deck, Card card) {
      IntDeck orig = deck->deck;
-     IntDeck rem = 1 << card;
+     IntDeck rem = 1ULL << card; // we make it unsigned long also
      deck->deck |= rem;
      deck->len--;
      return (deck->deck - orig);
