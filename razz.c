@@ -13,6 +13,7 @@
   - check if forking would be faster http://www.csl.mtu.edu/cs4411/www/NOTES/process/fork/wait.html
   - global variables instead of DEFINE?
   - use the same API for int and normal deck
+  - FIXME: there is a problem when removing many cards, check it out
 */
 
 #define TO_EXP(x) powl(10, (x))
@@ -73,7 +74,7 @@ void get_args(int argc, char *argv[], Game *game) {
           
           game->to_remove[i-3] = card;
      }
-     qsort(game->to_remove, rem_num, sizeof(Card), intcmp);
+     qsort(game->to_remove, rem_num, sizeof(Card), card_cmp);
 }
 
 void free_conf(Game *game) {
@@ -233,8 +234,8 @@ output_result(long *result) {
           printf("%d:\t%ld\n", idx_to_rank(i), result[i]);
 }
 
-int intcmp(const void *v1, const void *v2)
+int card_cmp(const void *v1, const void *v2)
 {
-     return (*(int *)v1 - *(int *)v2);
+     return (*(Card *)v1 - *(Card *)v2);
 }
 

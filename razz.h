@@ -63,6 +63,6 @@ void output_result(long *);
 void usage(void);
 void get_args(int, char **, Game *);
 
-int intcmp(const void *, const void *);
+int card_cmp(const void *, const void *);
 void qsort(void *, size_t, size_t, int (*compar)(const void *, const void *));
 long random(void);
