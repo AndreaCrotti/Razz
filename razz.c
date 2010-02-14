@@ -21,46 +21,44 @@
 #define IDX_TO_CARD(x) (x + 1)
 #define INITIAL_CARDS(x) (INITIAL_PLAYER + (INITIAL_OTHER * (x - 1)))
 
-static Deck  global_deck;
-static int   num_players;
-static int   num_simulations;
-static Card  *to_remove;
-static Hand  hand_init;
-static Hand  hand_tmp;
-static long  result[POSSIBLE_RANKS];
+// instead of needing allocation
+static Game game_conf;
+void free_conf(Game *);
 
 int main(int argc, char *argv[])
 {
      /* srandom ((int)(time (NULL))); */
-     init_hand(&hand_init);
-     get_args(argc, argv);
+     init_hand(&game_conf.hand_init);
+     get_args(argc, argv, &game_conf);
 
-     loop(&hand_init, result, to_remove);
-     output_result(result);
+     loop(&game_conf);
+     output_result(game_conf.result);
 
-     free(to_remove);
+     free_conf(&game_conf);
      return 0;
 }
 
-void get_args(int argc, char *argv[]) {
+// this should create the configuration for the game
+// to pass around later also to the thread
+void get_args(int argc, char *argv[], Game *game) {
      Card card;
      int i, j;
 
      if (argc < 6)
           usage();
 
-     num_simulations = TO_EXP(atol(argv[1]));
-     num_players = atoi(argv[2]);
+     game->num_simulations = TO_EXP(atol(argv[1]));
+     game->num_players = atoi(argv[2]);
 
-     int rem_num = INITIAL_CARDS(num_players);
-     to_remove = malloc(sizeof(Card) * rem_num);
+     int rem_num = INITIAL_CARDS(game->num_players);
+     game->to_remove = malloc(sizeof(Card) * rem_num);
 
      // max/min bound for players
-     if (num_players > 8 || num_players < 1) {
+     if (game->num_players > 8 || game->num_players < 1) {
           fprintf(stderr, "wrong number of players\n");
           usage();
      }
-     int exp_args = INITIAL_PLAYER + (INITIAL_OTHER * (num_players - 1)) + 3;
+     int exp_args = INITIAL_PLAYER + (INITIAL_OTHER * (game->num_players - 1)) + 3;
   
      // checking consistency between number of players and arguments
      if (exp_args != argc) {
@@ -71,11 +69,15 @@ void get_args(int argc, char *argv[]) {
      for (i = 3, j = 0; i < argc; i++) {
           card = char_to_card_idx(argv[i][0]);
           if (j++ < INITIAL_PLAYER)
-               add_card_to_hand(card, &hand_init);
+               add_card_to_hand(card, &game->hand_init);
           
-          to_remove[i-3] = card;
+          game->to_remove[i-3] = card;
      }
-     qsort(to_remove, rem_num, sizeof(Card), intcmp);
+     qsort(game->to_remove, rem_num, sizeof(Card), intcmp);
+}
+
+void free_conf(Game *game) {
+     free(game->to_remove);
 }
 
 void usage() {
@@ -90,21 +92,22 @@ void usage() {
 }
 
 void
-loop(Hand *hand_init, long *result, Card to_remove[]) {
+loop(Game *game) {
      int i, rank;
      
      // We use only ONE deck! Initialize it directly without the initial hand
-     Deck *deck = &global_deck;
-     init_deck(deck, RAZZ_CARDS, RAZZ_REP, to_remove, INITIAL_CARDS(num_players));
+     Deck *deck = &game->deck;
+     Hand hand_tmp;
+     init_deck(deck, RAZZ_CARDS, RAZZ_REP, game->to_remove, INITIAL_CARDS(game->num_players)); // shorten this
 
-     for (i = 0; i < num_simulations; i++) {
+     for (i = 0; i < game->num_simulations; i++) {
           deck->len = deck->orig_len;
           // restore the hand to the initial state at every loop
-          hand_tmp = *hand_init;
-          play(&global_deck, num_players, &hand_tmp);
+          hand_tmp = game->hand_init;
+          play(deck, game->num_players, &hand_tmp);
           rank = rank_hand(&hand_tmp);
           assert(rank != 0); // different from 0
-          result[rank_to_result_idx(rank)]++;
+          game->result[rank_to_result_idx(rank)]++;
      }
 }
 

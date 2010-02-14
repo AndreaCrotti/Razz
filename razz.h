@@ -17,6 +17,8 @@
 typedef short Card;
 typedef struct Deck Deck;
 typedef struct Hand Hand;
+typedef struct Game Game;
+
 
 struct Deck {
      Card cards[RAZZ_CARDS * RAZZ_REP];
@@ -30,13 +32,23 @@ struct Hand {
      int diffs;
 };
 
+struct Game
+{
+     Deck deck;
+     int num_players;
+     int num_simulations;
+     Card *to_remove;
+     Hand hand_init;
+     long result[POSSIBLE_RANKS];
+};
+
 void swap_cards(int, int, Card *);
 
 void init_deck(Deck *, int, int, Card *, int);
 Card get_random_card_from_deck(Deck *);
 
 void play(Deck *, int, Hand *);
-void loop(Hand *, long *, Card *);
+void loop(Game *);
 
 void init_hand(Hand *);
 void add_card_to_hand(Card, Hand *);
@@ -49,7 +61,7 @@ int idx_to_rank(int);
 
 void output_result(long *);
 void usage(void);
-void get_args(int, char **);
+void get_args(int, char **, Game *);
 
 int intcmp(const void *, const void *);
 void qsort(void *, size_t, size_t, int (*compar)(const void *, const void *));
