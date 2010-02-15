@@ -10,9 +10,6 @@
   Problems:
   - Using const whenever possible will increase the performances? No but it's more clean
   - make it multithreading, see http://softpixel.com/~cwright/programming/threads/threads.c.php
-  - check if forking would be faster http://www.csl.mtu.edu/cs4411/www/NOTES/process/fork/wait.html
-  - global variables instead of DEFINE?
-  - use the same API for int and normal deck
   - use couples instead of diffs for a better usage
 */
 
@@ -35,13 +32,14 @@ int main(int argc, char *argv[])
      loop(&game_conf);
      output_result(game_conf.result);
 
-     free_conf(&game_conf);
+     free(game_conf.to_remove);
      return 0;
 }
 
 // this should create the configuration for the game
 // to pass around later also to the thread
-void get_args(int argc, char *argv[], Game *game) {
+void
+get_args(int argc, char *argv[], Game *game) {
      Card card;
      int i, j;
 
@@ -77,11 +75,8 @@ void get_args(int argc, char *argv[], Game *game) {
      qsort(game->to_remove, rem_num, sizeof(Card), card_cmp);
 }
 
-void free_conf(Game *game) {
-     free(game->to_remove);
-}
-
-void usage() {
+void
+usage() {
      fprintf(stderr, "Usage: ./razz <k> <n> <c1_1> <c1_2> <c1_3> <c2_1> .. <cn_1>\n");
      fprintf(stderr, "\tk : exponent for number of simulations (10^k)\n");
      fprintf(stderr, "\tn : number of players\n");
