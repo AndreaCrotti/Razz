@@ -39,6 +39,7 @@ struct Game
      int num_simulations;
      Card *to_remove;
      Hand hand_init;
+     int index;
      long result[POSSIBLE_RANKS];
 };
 
@@ -48,7 +49,7 @@ void init_deck(Deck *, int, int, Card *, int);
 Card get_random_card_from_deck(Deck *);
 
 int give_and_rank(Deck *, int, Hand *);
-void loop(Game *);
+void *loop(void *);
 
 void init_hand(Hand *);
 void add_card_to_hand(Card, Hand *);

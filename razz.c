@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <sysexits.h>
 #include <math.h>
+#include <pthread.h>
 #include "razz.h"
 
 /*
@@ -22,26 +23,44 @@
 #define IDX_TO_CARD(x) (x + 1)
 #define INITIAL_CARDS(x) (INITIAL_PLAYER + (INITIAL_OTHER * (x - 1)))
 
+#define NUM_THREADS 2
+
 // instead of needing allocation
 static Game game_conf;
 void free_conf(Game *);
 
 int main(int argc, char *argv[])
 {
+     int i, rc;
+     pthread_attr_t attr;
+     void *status;
      /* srandom ((int)(time (NULL))); */
      init_hand(&game_conf.hand_init);
      get_args(argc, argv, &game_conf);
 
-     loop(&game_conf);
-     output_result(game_conf.result);
+     Game game_threads[NUM_THREADS];
+     pthread_t thread[NUM_THREADS];
+     
+     for (i = 0; i < NUM_THREADS; i++) {
+          // simple approach, just copy the whole structure every time
+          game_threads[i] = game_conf;
+          game_threads[i].index = i;
+          pthread_create(&thread[i], &attr, loop, (void *) game_threads[i]); 
+     }
 
-     free_conf(&game_conf);
+     for (i = 0; i < NUM_THREADS; i++) {
+          pthread_join(thread[i], &status);
+          output_result(game_threads[i].result);
+          free_conf(&game_threads[i]);
+     }
+
      return 0;
 }
 
 // this should create the configuration for the game
 // to pass around later also to the thread
-void get_args(int argc, char *argv[], Game *game) {
+void
+get_args(int argc, char *argv[], Game *game) {
      Card card;
      int i, j;
 
@@ -92,8 +111,9 @@ void usage() {
      exit(EX_USAGE);
 }
 
-void
-loop(Game *game) {
+void *
+loop(void *game) {
+     Game *game = (Game *) game;
      int i, rank;
      
      // We use only ONE deck! Initialize it directly without the initial hand
@@ -109,6 +129,7 @@ loop(Game *game) {
           assert(rank != 0); // different from 0
           game->result[rank_to_result_idx(rank)]++;
      }
+     pthread_exit((void *) game->index);
 }
 
 int
