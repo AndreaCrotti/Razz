@@ -13,7 +13,7 @@
   - check if forking would be faster http://www.csl.mtu.edu/cs4411/www/NOTES/process/fork/wait.html
   - global variables instead of DEFINE?
   - use the same API for int and normal deck
-  - FIXME: there is a problem when removing many cards, check it out
+  - use couples instead of diffs for a better usage
 */
 
 #define TO_EXP(x) powl(10, (x))
@@ -119,9 +119,10 @@ give_and_rank(Deck *deck, int nplayer, Hand *hand) {
           card_idx = get_random_card_from_deck(deck);
           add_card_to_hand(card_idx, hand);
 
-          // detecting couples not removable before ranking
-          // makes if faster mostly when more equal cards are given in input
-          if ((hand->len - hand->diffs) > (RAZZ_HAND - RAZZ_EVAL))
+          // detecting possible "couples" in an earlier stage, improvement is dependent
+          // on MAX_COUPLES value
+          if ((hand->len > (RAZZ_EVAL - MAX_COUPLES)) &&
+              ((hand->len - hand->diffs) > MAX_COUPLES))
                return NON_HIGH_HAND;
      }
      return rank_hand(hand);
