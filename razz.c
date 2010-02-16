@@ -20,17 +20,14 @@
 #define IDX_TO_CARD(x) (x + 1)
 #define INITIAL_CARDS(x) (INITIAL_PLAYER + (INITIAL_OTHER * (x - 1)))
 
-#define NUM_THREADS 2
+#define NUM_THREADS 5
 
 // instead of needing allocation
 static Game game_conf;
-void free_conf(Game *);
 
 int main(int argc, char *argv[])
 {
-     int i, rc;
-     pthread_attr_t attr;
-     void *status;
+     int i;
      /* srandom ((int)(time (NULL))); */
      init_hand(&game_conf.hand_init);
      get_args(argc, argv, &game_conf);
@@ -42,13 +39,15 @@ int main(int argc, char *argv[])
           // simple approach, just copy the whole structure every time
           game_threads[i] = game_conf;
           game_threads[i].index = i;
-          pthread_create(&thread[i], &attr, loop, (void *) game_threads[i]); 
+          printf("startin thread %d\n", i);
+          pthread_create(&thread[i], NULL, loop, (void *)&game_threads[i]); 
      }
 
      for (i = 0; i < NUM_THREADS; i++) {
-          pthread_join(thread[i], &status);
+          pthread_join(thread[i], NULL);
+          printf("ended thread %d\n", i);
           output_result(game_threads[i].result);
-          free_conf(&game_threads[i]);
+          /* free(&game_threads[i].to_remove); */
      }
 
      return 0;
@@ -64,7 +63,7 @@ get_args(int argc, char *argv[], Game *game) {
      if (argc < 6)
           usage();
 
-     game->num_simulations = TO_EXP(atol(argv[1]));
+     game->num_simulations = (long) TO_EXP(atol(argv[1])) / NUM_THREADS;
      game->num_players = atoi(argv[2]);
 
      int rem_num = INITIAL_CARDS(game->num_players);
@@ -107,23 +106,24 @@ usage() {
 
 void *
 loop(void *game) {
-     Game *game = (Game *) game;
      int i, rank;
+     Game* pGame = (Game *)game;
+     pGame->index = 0;
      
      // We use only ONE deck! Initialize it directly without the initial hand
-     Deck *deck = &game->deck;
+     Deck *deck = &pGame->deck;
      Hand hand_tmp;
-     init_deck(deck, RAZZ_CARDS, RAZZ_REP, game->to_remove, INITIAL_CARDS(game->num_players)); // shorten this
+     init_deck(deck, RAZZ_CARDS, RAZZ_REP, pGame->to_remove, INITIAL_CARDS(pGame->num_players)); // shorten this
 
-     for (i = 0; i < game->num_simulations; i++) {
+     for (i = 0; i < pGame->num_simulations; i++) {
           deck->len = deck->orig_len;
           // restore the hand to the initial state at every loop
-          hand_tmp = game->hand_init;
-          rank = give_and_rank(deck, game->num_players, &hand_tmp);
+          hand_tmp = pGame->hand_init;
+          rank = give_and_rank(deck, pGame->num_players, &hand_tmp);
           assert(rank != 0); // different from 0
-          game->result[rank_to_result_idx(rank)]++;
+          pGame->result[rank_to_result_idx(rank)]++;
      }
-     pthread_exit((void *) game->index);
+     pthread_exit((void *) pGame->index);
 }
 
 int
