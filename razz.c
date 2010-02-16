@@ -76,18 +76,6 @@ get_args(int argc, char *argv[], Game *game) {
 }
 
 void
-usage() {
-     fprintf(stderr, "Usage: ./razz <k> <n> <c1_1> <c1_2> <c1_3> <c2_1> .. <cn_1>\n");
-     fprintf(stderr, "\tk : exponent for number of simulations (10^k)\n");
-     fprintf(stderr, "\tn : number of players\n");
-     fprintf(stderr, "\tcx_y : yth card of xth player, player 1 wants 3 cards, other players only one.\n");
-     fprintf(stderr, "\tfor example\n ./razz 6 2 A 2 3 4\nwill run 1 million simulations with 2 players\n");
-     fprintf(stderr, "\twith Ace,2,3 for player 1 and 4 for player 2\n");
-     fprintf(stderr, "\tthe returned statistics represent the number of times for each ranking obtained by player 1\n");
-     exit(EX_USAGE);
-}
-
-void
 loop(Game *game) {
      int i, rank;
      
@@ -97,11 +85,12 @@ loop(Game *game) {
      init_deck(deck, RAZZ_CARDS, RAZZ_REP, game->to_remove, INITIAL_CARDS(game->num_players)); // shorten this
 
      for (i = 0; i < game->num_simulations; i++) {
+          // restore initial deck len, without really shuffling or creating a new one
           deck->len = deck->orig_len;
           // restore the hand to the initial state at every loop
           hand_tmp = game->hand_init;
           rank = give_and_rank(deck, &hand_tmp);
-          assert(rank != 0); // different from 0
+          assert(rank != 0);
           game->result[rank_to_result_idx(rank)]++;
      }
 }
@@ -122,35 +111,6 @@ give_and_rank(Deck *deck, Hand *hand) {
      }
      return rank_hand(hand);
 }
-
-int
-rank_to_result_idx(int rank) {
-     switch (rank) {
-     case -1: return 0;
-     default : return (rank - MIN_RANK + 1);
-     }
-}
-
-int
-idx_to_rank(int idx) {
-     switch (idx) {
-     case 0: return -1;
-     default : return (idx + MIN_RANK -1);
-     }
-}
-
-int
-char_to_card_idx(char c) {
-     switch ( c ) {
-     case 'A': return 0;
-     case 'J': return 10;
-     case 'Q': return 11;
-     case 'K': return 12;
-     case '1' : return 9; // dirty trick, make sure we don't get 1 instead of A
-     default : return CARD_TO_IDX(c - '0');
-     }
-}
-
 void
 init_hand(Hand *hand) {
      hand->len = 0;
@@ -227,6 +187,34 @@ swap_cards(int c1_idx, int c2_idx, Card *cards) {
      cards[c2_idx] = tmp;
 }
 
+int
+rank_to_result_idx(int rank) {
+     switch (rank) {
+     case -1: return 0;
+     default : return (rank - MIN_RANK + 1);
+     }
+}
+
+int
+idx_to_rank(int idx) {
+     switch (idx) {
+     case 0: return -1;
+     default : return (idx + MIN_RANK -1);
+     }
+}
+
+int
+char_to_card_idx(char c) {
+     switch ( c ) {
+     case 'A': return 0;
+     case 'J': return 10;
+     case 'Q': return 11;
+     case 'K': return 12;
+     case '1' : return 9; // dirty trick, make sure we don't get 1 instead of A
+     default : return CARD_TO_IDX(c - '0');
+     }
+}
+
 void
 output_result(long *result) {
      int i;
@@ -239,3 +227,14 @@ int card_cmp(const void *v1, const void *v2)
      return (*(Card *)v1 - *(Card *)v2);
 }
 
+void
+usage() {
+     fprintf(stderr, "Usage: ./razz <k> <n> <c1_1> <c1_2> <c1_3> <c2_1> .. <cn_1>\n");
+     fprintf(stderr, "\tk : exponent for number of simulations (10^k)\n");
+     fprintf(stderr, "\tn : number of players\n");
+     fprintf(stderr, "\tcx_y : yth card of xth player, player 1 wants 3 cards, other players only one.\n");
+     fprintf(stderr, "\tfor example\n\t ./razz 6 2 A 2 3 4\n\twill run 1 million simulations with 2 players\n");
+     fprintf(stderr, "\twith Ace,2,3 for player 1 and 4 for player 2\n");
+     fprintf(stderr, "\tthe returned statistics represent the number of times for each ranking obtained by player 1\n");
+     exit(EX_USAGE);
+}
