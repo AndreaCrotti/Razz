@@ -20,7 +20,7 @@
 #define IDX_TO_CARD(x) (x + 1)
 #define INITIAL_CARDS(x) (INITIAL_PLAYER + (INITIAL_OTHER * (x - 1)))
 
-#define NUM_THREADS 5
+#define NUM_THREADS 2
 
 // instead of needing allocation
 static Game game_conf;
