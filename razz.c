@@ -30,8 +30,6 @@ int main(int argc, char *argv[])
 
      loop(&game_conf);
      output_result(game_conf.result);
-
-     free(game_conf.to_remove);
      return 0;
 }
 
@@ -49,7 +47,7 @@ get_args(int argc, char *argv[], Game *game) {
      game->num_players = atoi(argv[2]);
 
      int rem_num = INITIAL_CARDS(game->num_players);
-     game->to_remove = malloc(sizeof(Card) * rem_num);
+     Card *to_remove = malloc(sizeof(Card) * rem_num);
 
      // max/min bound for players
      if (game->num_players > 8 || game->num_players < 1) {
@@ -69,9 +67,12 @@ get_args(int argc, char *argv[], Game *game) {
           if (j++ < INITIAL_PLAYER)
                add_card_to_hand(card, &game->hand_init);
           
-          game->to_remove[i-3] = card;
+          to_remove[i-3] = card;
      }
-     qsort(game->to_remove, rem_num, sizeof(Card), card_cmp);
+     qsort(to_remove, rem_num, sizeof(Card), card_cmp);
+     // to_remove is only needed for deck initialization, we can free it right after
+     init_deck(&game->deck, RAZZ_CARDS, RAZZ_REP, to_remove, INITIAL_CARDS(game->num_players)); // shorten this
+     free(to_remove);
 }
 
 void
@@ -81,7 +82,6 @@ loop(Game *game) {
      // We use only ONE deck! Initialize it directly without the initial hand
      Deck *deck = &game->deck;
      Hand hand_tmp;
-     init_deck(deck, RAZZ_CARDS, RAZZ_REP, game->to_remove, INITIAL_CARDS(game->num_players)); // shorten this
 
      for (i = 0; i < game->num_simulations; i++) {
           // restore initial deck len, without really shuffling or creating a new one

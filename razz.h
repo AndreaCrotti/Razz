@@ -31,7 +31,6 @@ struct Game
      Deck deck;
      int num_players;
      int num_simulations;
-     Card *to_remove;
      Hand hand_init;
      long result[POSSIBLE_RANKS];
 };
