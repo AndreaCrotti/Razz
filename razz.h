@@ -19,7 +19,6 @@ typedef struct Deck Deck;
 typedef struct Hand Hand;
 typedef struct Game Game;
 
-
 struct Deck {
      Card cards[RAZZ_CARDS * RAZZ_REP];
      int len;
@@ -47,7 +46,7 @@ void swap_cards(int, int, Card *);
 void init_deck(Deck *, int, int, Card *, int);
 Card get_random_card_from_deck(Deck *);
 
-int give_and_rank(Deck *, int, Hand *);
+int give_and_rank(Deck *, Hand *);
 void loop(Game *);
 
 void init_hand(Hand *);

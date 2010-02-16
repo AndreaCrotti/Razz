@@ -100,14 +100,14 @@ loop(Game *game) {
           deck->len = deck->orig_len;
           // restore the hand to the initial state at every loop
           hand_tmp = game->hand_init;
-          rank = give_and_rank(deck, game->num_players, &hand_tmp);
+          rank = give_and_rank(deck, &hand_tmp);
           assert(rank != 0); // different from 0
           game->result[rank_to_result_idx(rank)]++;
      }
 }
 
 int
-give_and_rank(Deck *deck, int nplayer, Hand *hand) {
+give_and_rank(Deck *deck, Hand *hand) {
      int card_idx;
 
      while (hand->len < RAZZ_HAND) {
