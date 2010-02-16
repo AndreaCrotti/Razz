@@ -7,10 +7,9 @@
 #include "razz.h"
 
 /*
-  Problems:
-  - Using const whenever possible will increase the performances? No but it's more clean
   - make it multithreading, see http://softpixel.com/~cwright/programming/threads/threads.c.php
   - use couples instead of diffs for a better usage
+  - adding another structure Simulation would be better?
 */
 
 #define TO_EXP(x) powl(10, (x))

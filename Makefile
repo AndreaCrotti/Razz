@@ -8,6 +8,8 @@ CFLAGS=-lm -Wall -std=c99 --pedantic # not using ansi C
 FILES=razz.c razz.h razz.py Makefile
 FNAME=andrea_crotti.tar.gz
 
+.PHONY: clean
+
 razz:
 	gcc $(CFLAGS) -o razz razz.c
 
