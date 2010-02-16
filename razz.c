@@ -38,7 +38,6 @@ int main(int argc, char *argv[])
      for (i = 0; i < NUM_THREADS; i++) {
           // simple approach, just copy the whole structure every time
           game_threads[i] = game_conf;
-          game_threads[i].index = i;
           printf("startin thread %d\n", i);
           pthread_create(&thread[i], NULL, loop, (void *)&game_threads[i]); 
      }
@@ -96,7 +95,6 @@ void *
 loop(void *game) {
      int i, rank;
      Game* pGame = (Game *)game;
-     pGame->index = 0;
      
      // We use only ONE deck! Initialize it directly without the initial hand
      Deck *deck = &pGame->deck;
@@ -111,7 +109,7 @@ loop(void *game) {
           assert(rank != 0); // different from 0
           pGame->result[rank_to_result_idx(rank)]++;
      }
-     pthread_exit((void *) pGame->index);
+     return NULL;
 }
 
 int

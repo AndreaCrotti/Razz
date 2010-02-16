@@ -33,7 +33,6 @@ struct Game
      int num_simulations;
      Card *to_remove;
      Hand hand_init;
-     int index;
      long result[POSSIBLE_RANKS];
 };
 
