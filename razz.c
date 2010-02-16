@@ -51,6 +51,21 @@ int main(int argc, char *argv[])
      return 0;
 }
 
+// find a way to divide stuff that should be modified from the rest
+void
+copy_game(Game *source, Game *dest) {
+     dest->deck = source->deck;
+     dest->num_players = source->num_players;
+     /********************************/
+     /* Deck deck;                   */
+     /* int num_players;             */
+     /* int num_simulations;         */
+     /* Card *to_remove;             */
+     /* Hand hand_init;              */
+     /* long result[POSSIBLE_RANKS]; */
+     /********************************/
+}
+
 // this should create the configuration for the game
 // to pass around later also to the thread
 void
