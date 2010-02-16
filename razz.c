@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
      int i;
      /* srandom ((int)(time (NULL))); */
      init_hand(&game_conf.hand_init);
-     get_args(argc, argv, &game_conf);
+     prepare_game(argc, argv, &game_conf);
 
      Game game_threads[NUM_THREADS];
      pthread_t thread[NUM_THREADS];
@@ -48,14 +48,13 @@ int main(int argc, char *argv[])
           output_result(game_threads[i].result);
           /* free(&game_threads[i].to_remove); */
      }
-
      return 0;
 }
 
 // this should create the configuration for the game
 // to pass around later also to the thread
 void
-get_args(int argc, char *argv[], Game *game) {
+prepare_game(int argc, char *argv[], Game *game) {
      Card card;
      int i, j;
 
@@ -89,6 +88,8 @@ get_args(int argc, char *argv[], Game *game) {
           game->to_remove[i-3] = card;
      }
      qsort(game->to_remove, rem_num, sizeof(Card), card_cmp);
+     // should be done once for all
+     init_deck(&game->deck, RAZZ_CARDS, RAZZ_REP, game->to_remove, INITIAL_CARDS(game->num_players));
 }
 
 void *
@@ -98,8 +99,7 @@ loop(void *game) {
      
      // We use only ONE deck! Initialize it directly without the initial hand
      Deck *deck = &pGame->deck;
-     Hand hand_tmp;
-     init_deck(deck, RAZZ_CARDS, RAZZ_REP, pGame->to_remove, INITIAL_CARDS(pGame->num_players)); // shorten this
+     Hand hand_tmp; // should this maybe be part of a structure?
 
      for (i = 0; i < pGame->num_simulations; i++) {
           deck->len = deck->orig_len;
@@ -136,12 +136,12 @@ init_hand(Hand *hand) {
 }
 
 void
-add_card_to_hand(Card c, Hand *h) {
-     if (!h->cards[c])
-          h->diffs++;
+add_card_to_hand(Card c, Hand *hand) {
+     if (!hand->cards[c])
+          hand->diffs++;
 
-     h->cards[c]++;
-     h->len++;
+     hand->cards[c]++;
+     hand->len++;
 }
 
 Card

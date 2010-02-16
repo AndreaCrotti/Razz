@@ -55,7 +55,7 @@ int idx_to_rank(int);
 
 void output_result(long *);
 void usage(void);
-void get_args(int, char **, Game *);
+void prepare_game(int, char **, Game *);
 
 int card_cmp(const void *, const void *);
 void qsort(void *, size_t, size_t, int (*compar)(const void *, const void *));
