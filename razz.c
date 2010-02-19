@@ -105,21 +105,26 @@ loop(Game *game) {
           deck->len = deck->orig_len;
           // restore the hand to the initial state at every loop
           hand_tmp = game->hand_init;
-          play(deck, game->num_players, &hand_tmp);
-          rank = rank_hand(&hand_tmp);
+          rank = give_and_rank(deck, game->num_players, &hand_tmp);
           assert(rank != 0); // different from 0
           game->result[rank_to_result_idx(rank)]++;
      }
 }
 
-void
-play(Deck *deck, int nplayer, Hand *hand) {
+int
+give_and_rank(Deck *deck, int nplayer, Hand *hand) {
      int card_idx;
-  
+
      while (hand->len < RAZZ_HAND) {
           card_idx = get_random_card_from_deck(deck);
           add_card_to_hand(card_idx, hand);
+
+          // detecting couples not removable before ranking
+          // makes if faster mostly when more equal cards are given in input
+          if ((hand->len - hand->diffs) > (RAZZ_HAND - RAZZ_EVAL))
+               return NON_HIGH_HAND;
      }
+     return rank_hand(hand);
 }
 
 int
@@ -168,9 +173,6 @@ add_card_to_hand(Card c, Hand *h) {
 
 Card
 rank_hand(Hand *hand) {
-     if (hand->diffs < RAZZ_EVAL)
-          return NON_HIGH_HAND;
-
      int rank_idx, i;
      rank_idx = 0;
      
@@ -186,9 +188,11 @@ rank_hand(Hand *hand) {
 }
 
 // This works at condition that the cards_to_remove array is sorted in ascending order
+// FIXME: line too long, give less arguments, mm no way if we also want to remove on the fly
 void
 init_deck(Deck *deck, int num_cards, int rep, Card cards_to_remove[], int to_remove) {
-     int i, j, idx, rem_idx;
+     Card i;
+     int j, idx, rem_idx;
      idx = rem_idx = 0;
 
      int len = (num_cards * rep) - to_remove;
@@ -196,7 +200,7 @@ init_deck(Deck *deck, int num_cards, int rep, Card cards_to_remove[], int to_rem
   
      for (i = 0; i < num_cards; i++) {
           for (j = 0; j < rep; ) {
-               while (i == cards_to_remove[rem_idx]) {
+               while ((i == cards_to_remove[rem_idx]) && (rem_idx < to_remove)) {
                     assert(j < rep);
                     j++;
                     rem_idx++;
@@ -212,11 +216,11 @@ Card
 get_random_card_from_deck(Deck *deck) {
      // using random() and / instead of % and lrand48() is 40% faster
      int pos = (int) (deck->len * (random() / (RAND_MAX + 1.0)));
-     Card c = deck->cards[pos];
+     Card card = deck->cards[pos];
      // swap found element with the last one and then shrink the deck
      swap_cards(pos, deck->len-1, deck->cards);
      deck->len--;
-     return c;
+     return card;
 }
 
 void
