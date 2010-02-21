@@ -2,6 +2,40 @@ RAZZ SIMULATION
 #+OPTIONS: toc:nil num:nil
 # Look in the bayesian formula to see how to get the probabilities correctly
 
+* Random generator
+  - [[http://en.wikipedia.org/wiki/Pseudorandom_number_generator][Pseudorandom number generator]]
+  - [[http://www.ams.org/featurecolumn/archive/random.html][nothing left to chance]]
+  - [[http://www.random.org/randomness/][random.org]]
+  - [[http://faculty.rhodes.edu/wetzel/random/intro.html][can you behave randomly?]]
+
+  This little simulation is based on the fact that randomness works.
+  Pseudo random generators don't create real random numbers, but use a procedure that hides the footprints so that the numbers create the *illusion* of randomness.
+  
+  This generators normally need a *seed*, which is the starting point of the sequence which will be created.
+  /random numbers should not be generated with a method chosen at random/ (Knuth)
+
+  A good way to generate pseudo random numbers comes from the *linear congruential generators*.
+
+** Linear congruential generators
+   $X_{n+1} = f (X_n) = (aX_n + c) % m$
+   The trick is to find the right values of /a/, /c/ and /m/.
+   The maximal length of the sequence that we can get is /m/, and using the correct values we can maximize it.
+
+** Other possible generators
+   - [[http://en.wikipedia.org/wiki/Multiply-with-carry][multiple with carry]]
+     very fast and using only arithmetic given a large amount of random seeds
+     It uses a similar formula to linear congruential generators but here the /c/ changes at every execution.
+   - [[http://en.literateprograms.org/Mersenne_twister_(C)][mersenne twister]]
+
+** Testing random generators
+   There are a few tests that can be done to test if a random generator is working correctly
+   - Frequency test
+   - Permutation test
+   - Run test
+   - Gap test
+   - Poker test
+   - Birthday test
+
 * Problem
   Given an initial configuration (3 initial cards for player 1 and 1 for each other player) simulate a very large number of games. \\
   For every game get the rank obtained by player 1, where poker and flushes are discarded and the rank is computed with the rules of razz.
@@ -74,7 +108,6 @@ self.cards.remove(c)
 ** C
    C code is written in c99 standard (not ansi).
    To make C code run as fast as possible we should avoid every expansive operation, like allocation of data structures at every cycle.
-
 *** Deck
     The deck is a structure containing:
     - array of cards
@@ -99,6 +132,16 @@ self.cards.remove(c)
 *** Hand
 
 *** Using random and lrand48 gives exactly the same result (while rand differs).    And lrand48 is the slowest, also avoid using the modulo, is slower and it only uses least significant bits.
+     The random() function uses a non-linear, additive feedback, random number generator, employing a
+     default table of size 31 long integers.  It returns successive pseudo-random numbers in the range from
+     0 to (2**31)-1.  The period of this random number generator is very large, approximately
+     16*((2**31)-1).
+
+     The rand48() family of functions generates pseudo-random numbers, using a linear congruential algorithm
+     working on integers 48 bits in size.  The particular formula employed is r(n+1) = (a * r(n) + c) mod m.
+     The default value for the multiplicand `a' is 0xfdeece66d (25214903917).  The default value for the the
+     addend `c' is 0xb (11).  The modulo is always fixed at m = 2 ** 48.  r(n) is called the seed of the
+     random number generator.
     
 * Testing
   I used [fn:1] for testing python code, it looks in the current directory and try to run all the tests that it finds.
@@ -129,7 +172,6 @@ self.cards.remove(c)
 
 * Links
   [[http://www.pokereagles.com/poker-rules/razz-rules.php][razz rules explained]]
-
 
 * Footnotes
 

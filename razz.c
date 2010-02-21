@@ -10,6 +10,8 @@
   - make it multithreading, see http://softpixel.com/~cwright/programming/threads/threads.c.php
   - use couples instead of diffs for a better usage
   - adding another structure Simulation would be better?
+  - check if possible to use a different random simulator, for example
+    http://en.wikipedia.org/wiki/Multiply-with-carry
 */
 
 #define TO_EXP(x) powl(10, (x))
