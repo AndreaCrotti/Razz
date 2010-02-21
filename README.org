@@ -2,40 +2,6 @@ RAZZ SIMULATION
 #+OPTIONS: toc:nil num:nil
 # Look in the bayesian formula to see how to get the probabilities correctly
 
-* Random generator
-  - [[http://en.wikipedia.org/wiki/Pseudorandom_number_generator][Pseudorandom number generator]]
-  - [[http://www.ams.org/featurecolumn/archive/random.html][nothing left to chance]]
-  - [[http://www.random.org/randomness/][random.org]]
-  - [[http://faculty.rhodes.edu/wetzel/random/intro.html][can you behave randomly?]]
-
-  This little simulation is based on the fact that randomness works.
-  Pseudo random generators don't create real random numbers, but use a procedure that hides the footprints so that the numbers create the *illusion* of randomness.
-  
-  This generators normally need a *seed*, which is the starting point of the sequence which will be created.
-  /random numbers should not be generated with a method chosen at random/ (Knuth)
-
-  A good way to generate pseudo random numbers comes from the *linear congruential generators*.
-
-** Linear congruential generators
-   $X_{n+1} = f (X_n) = (aX_n + c) % m$
-   The trick is to find the right values of /a/, /c/ and /m/.
-   The maximal length of the sequence that we can get is /m/, and using the correct values we can maximize it.
-
-** Other possible generators
-   - [[http://en.wikipedia.org/wiki/Multiply-with-carry][multiple with carry]]
-     very fast and using only arithmetic given a large amount of random seeds
-     It uses a similar formula to linear congruential generators but here the /c/ changes at every execution.
-   - [[http://en.literateprograms.org/Mersenne_twister_(C)][mersenne twister]]
-
-** Testing random generators
-   There are a few tests that can be done to test if a random generator is working correctly
-   - Frequency test
-   - Permutation test
-   - Run test
-   - Gap test
-   - Poker test
-   - Birthday test
-
 * Problem
   Given an initial configuration (3 initial cards for player 1 and 1 for each other player) simulate a very large number of games. \\
   For every game get the rank obtained by player 1, where poker and flushes are discarded and the rank is computed with the rules of razz.
@@ -170,8 +136,39 @@ self.cards.remove(c)
 
 ** Pure C
 
-* Links
-  [[http://www.pokereagles.com/poker-rules/razz-rules.php][razz rules explained]]
+* Random generators
+  - [[http://en.wikipedia.org/wiki/Pseudorandom_number_generator][Pseudorandom number generator]]
+  - [[http://www.ams.org/featurecolumn/archive/random.html][nothing left to chance]]
+  - [[http://www.random.org/randomness/][random.org]]
+  - [[http://faculty.rhodes.edu/wetzel/random/intro.html][can you behave randomly?]]
+
+  This little simulation is based on the fact that randomness works.
+  Pseudo random generators don't create real random numbers, but use a procedure that hides the footprints so that the numbers create the *illusion* of randomness.
+  
+  This generators normally need a *seed*, which is the starting point of the sequence which will be created.
+  /random numbers should not be generated with a method chosen at random/ (Knuth)
+
+  A good way to generate pseudo random numbers comes from the *linear congruential generators*.
+
+** Linear congruential generators
+   $X_{n+1} = f (X_n) = (aX_n + c) % m$
+   The trick is to find the right values of /a/, /c/ and /m/.
+   The maximal length of the sequence that we can get is /m/, and using the correct values we can maximize it.
+
+** Other possible generators
+   - [[http://en.wikipedia.org/wiki/Multiply-with-carry][multiple with carry]]
+     very fast and using only arithmetic given a large amount of random seeds
+     It uses a similar formula to linear congruential generators but here the /c/ changes at every execution.
+   - [[http://en.literateprograms.org/Mersenne_twister_(C)][mersenne twister]]
+
+** Testing random generators
+   There are a few tests that can be done to test if a random generator is working correctly
+   - Frequency test
+   - Permutation test
+   - Run test
+   - Gap test
+   - Poker test
+   - Birthday test
 
 * Footnotes
 
