@@ -46,11 +46,11 @@ get_args(int argc, char *argv[], Game *game) {
      Card card;
      int i, j;
 
-     if (argc < 6)
+     if (argc < 5)
           usage();
 
      game->num_simulations = TO_EXP(atol(argv[1]));
-     game->num_players = atoi(argv[2]);
+     game->num_players = argc - 4;
 
      int rem_num = INITIAL_CARDS(game->num_players);
      Card *to_remove = malloc(sizeof(Card) * rem_num);
@@ -60,15 +60,8 @@ get_args(int argc, char *argv[], Game *game) {
           fprintf(stderr, "wrong number of players\n");
           usage();
      }
-     int exp_args = INITIAL_PLAYER + (INITIAL_OTHER * (game->num_players - 1)) + 3;
-  
-     // checking consistency between number of players and arguments
-     if (exp_args != argc) {
-          fprintf(stderr, "wrong number of cards given\n");
-          usage();
-     }
 
-     for (i = 3, j = 0; i < argc; i++) {
+     for (i = 2, j = 0; i < argc; i++) {
           card = char_to_card_idx(argv[i][0]);
           if (j++ < INITIAL_PLAYER)
                add_card_to_hand(card, &game->hand_init);
@@ -233,9 +226,8 @@ int card_cmp(const void *v1, const void *v2)
 
 void
 usage() {
-     fprintf(stderr, "Usage: ./razz <k> <n> <c1_1> <c1_2> <c1_3> <c2_1> .. <cn_1>\n");
+     fprintf(stderr, "Usage: ./razz <k> <c1_1> <c1_2> <c1_3> <c2_1> .. <cn_1>\n");
      fprintf(stderr, "\tk : exponent for number of simulations (10^k)\n");
-     fprintf(stderr, "\tn : number of players\n");
      fprintf(stderr, "\tcx_y : yth card of xth player, player 1 wants 3 cards, other players only one.\n");
      fprintf(stderr, "\tfor example\n\t ./razz 6 2 A 2 3 4\n\twill run 1 million simulations with 2 players\n");
      fprintf(stderr, "\twith Ace,2,3 for player 1 and 4 for player 2\n");

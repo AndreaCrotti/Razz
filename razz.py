@@ -178,18 +178,18 @@ def main():
         return
 
     num_simulations = 10 ** int(argv[1])
-    nplayers = int(argv[2])
-    my_cards = map(str_to_RazzCard, argv[3 : 6])
-    other_cards = map(str_to_RazzCard, argv[6 : 6 + nplayers])
+    num_players = len(argv) - 4
+    my_cards = map(str_to_RazzCard, argv[2 : 5])
+    other_cards = map(str_to_RazzCard, argv[5:])
     # I can concatenate the initial cards in one hand only
     # for performance reasons
     init_cards = {}
     init_cards[0] = my_cards
     
-    for i in range(1, nplayers):
+    for i in range(1, num_players):
         init_cards[i] = [other_cards[i-1]]
 
-    ranks = loop(num_simulations, nplayers, init_cards)
+    ranks = loop(num_simulations, num_players, init_cards)
     print Result(ranks, num_simulations)
     
 if __name__ == '__main__':

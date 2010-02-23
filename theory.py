@@ -30,5 +30,5 @@ def all_cards(init):
     return ranks, count
 
 if __name__ == '__main__':
-    initial = map(str_to_RazzCard, argv[2:])
+    initial = map(str_to_RazzCard, argv[1:])
     print Result(*all_cards(initial))
