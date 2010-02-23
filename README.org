@@ -8,26 +8,38 @@ RAZZ SIMULATION
 
   For example running
 #+begin_src sh
-  ./razz 3 1 A 2 3
+  ./razz 3 A 2 3
 #+end_src
   Will run 10^3 simulations with only one player which has as initial cards Ace, 2 and 3.
   
 This would be the output
 #+begin_src sh
--1:	35
-5:	77
-6:	112
-7:	138
-8:	132
-9:	159
-10:	124
-11:	103
-12:	76
-13:	44
+./razz.py 3 A 2 3
+-1        0.031     
+5         0.076     
+6         0.105     
+7         0.144     
+8         0.166     
+9         0.138     
+10        0.118     
+11        0.109     
+12        0.077     
+13        0.036  
 #+end_src
   
-* Implentation
+* A general solver
+  Given the assumption that cards dealt to the other players don't interfere we can easily generate *all* the possible games and get the real probabilities.
+  This could be useful to check whether the randomized algorithm also works correctly.
+  
+  It's enough to follow those steps:
+  - take in input the cards
+  - remove them from the deck
+  - for every possible combination of 4 out of the remaining cards
+    + generate a razzHand
+    + rank it
+  For this we use the 
 
+* Implementation
 ** General considerations
    The most important thing to get a fast and well written program is to select the right data structure.
    We can consider those entities:

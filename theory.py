@@ -13,7 +13,6 @@ def all_cards(init):
     """Generate ALL the possible combinations and
     find the REAL probabilities given"""
     d = Deck(DECK_CARDS)
-    # removing the initial cards
     d.remove(init)
     ranks = {}
 
