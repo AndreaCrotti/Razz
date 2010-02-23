@@ -14,10 +14,6 @@ RAZZ_CARDS = dict(A = 1, J = 11, Q = 12, K = 13)
 NON_HIGH_CARD = -1
 DECK_CARDS = range(1, 14) * 4
 
-# Staged:
-# Actually do all the different stages giving cards as in real poker
-# Unstaged:
-# fill the player hand all in once
 class RazzGame(object):
     """
     Main class representing the status of our game
@@ -132,17 +128,6 @@ class RazzHand(object):
         else:
             cards.sort()
             return cards[:self.EVAL_CARDS][-1]
-
-class Result(object):
-    def __init__(self):
-        self.result = {}
-
-    def __str__(self):
-        return str(self.result)
-
-    def extend(self):
-        "Extend the result with new data coming in"
-        pass
         
 def str_to_RazzCard(s):
     if s.isdigit():
@@ -159,6 +144,42 @@ def output_ranks(values):
         print s
     print "TOT".ljust(cell) + str(sum(values.values())).ljust(cell)
 
+class Result(object):
+    CELL = 10
+    def __init__(self, res, count):
+        self.result = res
+        for k in self.result.keys():
+            self.result[k] /= float(count)
+
+    def __str__(self):
+        res = []
+        res.append("RANK".ljust(self.CELL) + "TIMES".ljust(self.CELL))
+        for k, v in self.result.items():
+            s = str(k).ljust(self.CELL) + str(v).ljust(self.CELL)
+            res.append(s)
+        res.append("TOT".ljust(self.CELL) + str(sum(self.result.values())).ljust(self.CELL))
+        return "\n".join(res)
+
+def all_cards(init):
+    """Generate ALL the possible combinations and
+    find the REAL probabilities given"""
+    from itertools import combinations
+    d = Deck(DECK_CARDS)
+    # removing the initial cards
+    d.remove(init)
+    ranks = {}
+
+    count = 0
+    for hand in combinations(d.cards, 4):
+        count += 1
+        h = RazzHand(list(hand) + init)
+        got_rank = h.rank()
+        if ranks.has_key(got_rank):
+            ranks[got_rank] += 1
+        else:
+            ranks[got_rank] = 1
+
+    return ranks, count
 
 # Must remove also the initial cards from the working deck
 def loop(times, nplayers, init_cards, full = False):
@@ -177,9 +198,6 @@ def loop(times, nplayers, init_cards, full = False):
         else:
             ranks[got_rank] = 1
     return ranks
-
-def usage():
-    pass
 
 def main():
     if len(argv) == 1:
@@ -200,14 +218,12 @@ def main():
     for i in range(1, nplayers):
         init_cards[i] = [other_cards[i-1]]
 
-    s = """
-    number of players: %d
-    my initial cards: %s
-    other players cards: %s""" % (nplayers, str(my_cards), str(other_cards))
-    print s
-
     ranks = loop(num_simulations, nplayers, init_cards)
-    output_ranks(ranks)
+    print "theoretical correct result:"
+    print Result(*all_cards(my_cards + other_cards))
+    print "\nrandomized analysis:"
+    print Result(ranks, num_simulations)
+    # output_ranks(ranks)
 
 def parse_args():
     """Parsing arguments and returning them as a configuration"""
@@ -216,7 +232,6 @@ def parse_args():
     # - parallel
     # - verbose (use logging maybe)
     # - level of realism (full / not full)
-
     
 if __name__ == '__main__':
     main()

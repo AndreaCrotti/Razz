@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <sysexits.h>
 #include <math.h>
+#include <unistd.h>
 #include "razz.h"
 
 /*
@@ -12,6 +13,7 @@
   - adding another structure Simulation would be better?
   - check if possible to use a different random simulator, for example
     http://en.wikipedia.org/wiki/Multiply-with-carry
+  - check if using vfork instead of fork would be better (does not copy the stack)
 */
 
 #define TO_EXP(x) powl(10, (x))
@@ -20,18 +22,35 @@
 #define IDX_TO_CARD(x) (x + 1)
 #define INITIAL_CARDS(x) (INITIAL_PLAYER + (INITIAL_OTHER * (x - 1)))
 
+#define NPROCS 2
+
 // instead of needing allocation
 static Game game_conf;
 void free_conf(Game *);
 
 int main(int argc, char *argv[])
 {
-     /* srandom ((int)(time (NULL))); */
+     // srandom ((int)(time (NULL)));
+     pid_t pid;
+     int left_procs = NPROCS;
+
      init_hand(&game_conf.hand_init);
      get_args(argc, argv, &game_conf);
+     
+     pid = fork();
+
+     if (pid == 0) {
+          // child, do actual work
+     }
+     else {
+          left_procs--;
+          if (left_procs) {
+               fork();
+          }
+     }
 
      loop(&game_conf);
-     output_result(game_conf.result);
+     output_result(game_conf.result, game_conf.num_simulations);
      return 0;
 }
 
@@ -145,7 +164,6 @@ rank_hand(Hand *hand) {
 }
 
 // This works at condition that the cards_to_remove array is sorted in ascending order
-// FIXME: line too long, give less arguments, mm no way if we also want to remove on the fly
 void
 init_deck(Deck *deck, int num_cards, int rep, Card cards_to_remove[], int to_remove) {
      Card i;
@@ -217,10 +235,10 @@ char_to_card_idx(char c) {
 }
 
 void
-output_result(long *result) {
+output_result(long *result, long num_simulations) {
      int i;
      for (i = 0; i < POSSIBLE_RANKS; i++)
-          printf("%d:\t%ld\n", idx_to_rank(i), result[i]);
+          printf("%d:\t%f\n", idx_to_rank(i), ((double) result[i] / num_simulations));
 }
 
 int card_cmp(const void *v1, const void *v2)

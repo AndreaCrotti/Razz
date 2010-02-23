@@ -52,7 +52,7 @@ int char_to_card_idx(char);
 int rank_to_result_idx(int);
 int idx_to_rank(int);
 
-void output_result(long *);
+void output_result(long *, long);
 void usage(void);
 void get_args(int, char **, Game *);
 
