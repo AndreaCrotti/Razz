@@ -136,14 +136,6 @@ def str_to_RazzCard(s):
         s = s.upper()
         return RAZZ_CARDS[s] # not handling exceptions here?
 
-def output_ranks(values):
-    cell = 10
-    print "RANK".ljust(cell) + "TIMES".ljust(cell)
-    for k, v in values.items():
-        s = str(k).ljust(cell) + str(v).ljust(cell)
-        print s
-    print "TOT".ljust(cell) + str(sum(values.values())).ljust(cell)
-
 class Result(object):
     CELL = 10
     def __init__(self, res, count):
@@ -153,33 +145,12 @@ class Result(object):
 
     def __str__(self):
         res = []
-        res.append("RANK".ljust(self.CELL) + "TIMES".ljust(self.CELL))
-        for k, v in self.result.items():
-            s = str(k).ljust(self.CELL) + str(v).ljust(self.CELL)
+        ks = self.result.keys()
+        ks.sort()
+        for k in ks:
+            s = str(k).ljust(self.CELL) + str(self.result[k]).ljust(self.CELL)
             res.append(s)
-        res.append("TOT".ljust(self.CELL) + str(sum(self.result.values())).ljust(self.CELL))
         return "\n".join(res)
-
-def all_cards(init):
-    """Generate ALL the possible combinations and
-    find the REAL probabilities given"""
-    from itertools import combinations
-    d = Deck(DECK_CARDS)
-    # removing the initial cards
-    d.remove(init)
-    ranks = {}
-
-    count = 0
-    for hand in combinations(d.cards, 4):
-        count += 1
-        h = RazzHand(list(hand) + init)
-        got_rank = h.rank()
-        if ranks.has_key(got_rank):
-            ranks[got_rank] += 1
-        else:
-            ranks[got_rank] = 1
-
-    return ranks, count
 
 # Must remove also the initial cards from the working deck
 def loop(times, nplayers, init_cards, full = False):
@@ -219,19 +190,7 @@ def main():
         init_cards[i] = [other_cards[i-1]]
 
     ranks = loop(num_simulations, nplayers, init_cards)
-    print "theoretical correct result:"
-    print Result(*all_cards(my_cards + other_cards))
-    print "\nrandomized analysis:"
     print Result(ranks, num_simulations)
-    # output_ranks(ranks)
-
-def parse_args():
-    """Parsing arguments and returning them as a configuration"""
-    pass
-    # options to add
-    # - parallel
-    # - verbose (use logging maybe)
-    # - level of realism (full / not full)
     
 if __name__ == '__main__':
     main()

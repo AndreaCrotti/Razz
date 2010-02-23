@@ -31,24 +31,9 @@ void free_conf(Game *);
 int main(int argc, char *argv[])
 {
      // srandom ((int)(time (NULL)));
-     pid_t pid;
-     int left_procs = NPROCS;
-
      init_hand(&game_conf.hand_init);
      get_args(argc, argv, &game_conf);
      
-     pid = fork();
-
-     if (pid == 0) {
-          // child, do actual work
-     }
-     else {
-          left_procs--;
-          if (left_procs) {
-               fork();
-          }
-     }
-
      loop(&game_conf);
      output_result(game_conf.result, game_conf.num_simulations);
      return 0;
