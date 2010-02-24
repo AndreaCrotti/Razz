@@ -10,13 +10,13 @@
 # compare those results, compute the norm and so on
 
 import numpy as np
+from sys import argv
 from os import popen
 from string import split
 from theory import all_cards
 from razz import DECK_CARDS, Result
 from pylab import hist, clf, show
 from itertools import combinations
-SIMS = 4
 
 to_c_args = {
     1 : 'A',
@@ -33,10 +33,10 @@ def init_to_c_args(cards):
             cards[i] = str(cards[i])
     return " ".join(cards)
 
-def check_correctness():
+def check_correctness(num_sim):
     for a,b,c in combinations(DECK_CARDS, 3):
-        cprog = parse_c_result(str(SIMS) + " " + init_to_c_args([a,b,c]))
-        dist = results_distance(Result(*all_cards([a,b,c])), Result(cprog, 10 ** SIMS, floating = True))
+        cprog = parse_c_result(str(num_sim) + " " + init_to_c_args([a,b,c]))
+        dist = results_distance(Result(*all_cards([a,b,c])), Result(cprog, 10 ** num_sim, floating = True))
         print " ".join(map(str, [a,b,c,dist]))
 
 
@@ -60,4 +60,8 @@ def hist_result(result):
 
 if __name__ == '__main__':
     # hist(times, weights=range(1,9))
-    check_correctness()
+    if len(argv) == 2:
+        check_correctness(int(argv[1]))
+    else:
+        print "usage: ./precision.py <#simulations>"
+        
