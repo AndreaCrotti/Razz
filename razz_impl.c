@@ -21,28 +21,23 @@ loop(Game *game) {
           deck->len = deck->orig_len;
           // restore the hand to the initial state at every loop
           hand_tmp = game->hand_init;
-          rank = give_and_rank(deck, &hand_tmp);
+          fill_hand(deck, &hand_tmp);
+          rank = rank_hand(&hand_tmp);
           assert(rank != 0);
           game->result[rank_to_result_idx(rank)]++;
      }
 }
 
-int
-give_and_rank(Deck *deck, Hand *hand) {
+void
+fill_hand(Deck *deck, Hand *hand) {
      int card_idx;
 
      while (hand->len < RAZZ_HAND) {
           card_idx = get_random_card_from_deck(deck);
           add_card_to_hand(card_idx, hand);
-
-          // detecting possible "couples" in an earlier stage, the improvement ratio is dependent
-          // on MAX_COUPLES value
-          if ((hand->len > (RAZZ_EVAL - MAX_COUPLES)) &&
-              ((hand->len - hand->diffs) > MAX_COUPLES))
-               return NON_HIGH_HAND;
      }
-     return rank_hand(hand);
 }
+
 void
 init_hand(Hand *hand) {
      hand->len = 0;
@@ -61,9 +56,12 @@ add_card_to_hand(Card c, Hand *h) {
 
 Card
 rank_hand(Hand *hand) {
+     if (hand->diffs < RAZZ_EVAL)
+          return NON_HIGH_HAND;
+
      int rank_idx, i;
      rank_idx = 0;
-     
+
      // scanning the array in reverse order
      for (i = RAZZ_CARDS-1; i > 0; i--)  {
           if (hand->cards[i])
@@ -141,7 +139,7 @@ char_to_card_idx(char c) {
      case 'J': return 10;
      case 'Q': return 11;
      case 'K': return 12;
-     case '1' : return 9; // dirty trick, make sure we don't get 1 instead of A
+     case '1' : return 9; // dirty trick, make sure we NEVER get 1 instead of A
      default : return CARD_TO_IDX(c - '0');
      }
 }

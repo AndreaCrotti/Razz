@@ -1,4 +1,4 @@
-// -*- compile-command: "gcc -Wall -o precision precision.c razz.c" -*-
+// -*- compile-command: "gcc -Wall -o precision precision.c razz_impl.c" -*-
 #include <stdio.h>
 #include <stdlib.h>
 #include "razz.h"
@@ -46,15 +46,23 @@ int main(int argc, char *argv[]) {
      inits[2] = 2;
      
      Card cards[7];
+     // initialize to the same value
+     for (i = 0; i < 3; i++) {
+          cards[i] = inits[i];
+     }
 
      Deck *deck;
      // remove the 3 initial inits from the deck and then at every step
      // create a hand and remove it
      init_deck(deck, RAZZ_CARDS, RAZZ_REP, inits, 3); // shorten this
-     void init_deck(Deck *, int, int, Card *, int);
 
      int count = 0;
      while (next_comb(comb2, k, n)) {
+          // setting upper values to the new combination
+          for (i = 0; i < 4; i++) {
+               cards[3 + i] = comb2[i];
+               // There is a coupling problem in give-and-rank!!
+          }
           printc(comb2, k);
           count++;
      }

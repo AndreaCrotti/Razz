@@ -37,7 +37,6 @@ This would be the output
   - for every possible combination of 4 out of the remaining cards
     + generate a razzHand
     + rank it
-  For this we use the 
 
 * Implementation
 ** General considerations
