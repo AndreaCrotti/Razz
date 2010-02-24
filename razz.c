@@ -101,7 +101,7 @@ give_and_rank(Deck *deck, Hand *hand) {
           card_idx = get_random_card_from_deck(deck);
           add_card_to_hand(card_idx, hand);
 
-          // detecting possible "couples" in an earlier stage, improvement is dependent
+          // detecting possible "couples" in an earlier stage, the improvement ratio is dependent
           // on MAX_COUPLES value
           if ((hand->len > (RAZZ_EVAL - MAX_COUPLES)) &&
               ((hand->len - hand->diffs) > MAX_COUPLES))
@@ -158,7 +158,7 @@ init_deck(Deck *deck, int num_cards, int rep, Card cards_to_remove[], int to_rem
                     j++;
                     rem_idx++;
                }
-               // if still we have other i cards to add we can add them to the deck
+               // if still we have other i cards we can add them to the deck
                if (j++ < rep)
                     deck->cards[idx++] = i;
          }
