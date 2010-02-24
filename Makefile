@@ -6,19 +6,20 @@ PROFILE=-pg -g
 FAST=-DNDEBUG -O3
 CFLAGS=-lm -pthread -Wall -std=c99 --pedantic # not using ansi C
 CC=gcc
-FILES=razz.c razz.h razz.py Makefile
+RAZZ_FILES=razz.c razz_impl.c
+FILES=razz.c razz_impl.c razz.h razz.py Makefile
 FNAME=andrea_crotti.tar.gz
 
 .PHONY: clean
 
 razz:
-	$(CC) $(CFLAGS) -o razz razz.c
+	$(CC) $(CFLAGS) -o razz $(RAZZ_FILES)
 
 razz_fast:
-	$(CC) $(FAST) $(CFLAGS) -o razz_fast razz.c
+	$(CC) $(FAST) $(CFLAGS) -o razz_fast $(RAZZ_FILES)
 
 razz_prof:
-	$(CC) $(PROFILE) $(CFLAGS) -o razz_prof razz.c
+	$(CC) $(PROFILE) $(CFLAGS) -o razz_prof $(RAZZ_FILES)
 
 doc:
 	doxygen
