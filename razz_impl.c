@@ -11,7 +11,7 @@
 void
 loop(Game *game) {
      int i, rank;
-     
+
      // We use only ONE deck! Initialize it directly without the initial hand
      Deck *deck = &game->deck;
      Hand hand_tmp;
@@ -99,7 +99,6 @@ init_deck(Deck *deck, int num_cards, int rep, Card cards_to_remove[], int to_rem
 
 Card
 get_random_card_from_deck(Deck *deck) {
-     // using random() and / instead of % and lrand48() is 40% faster
      int pos = (int) (deck->len * (random() / (RAND_MAX + 1.0)));
      Card card = deck->cards[pos];
      // swap found element with the last one and then shrink the deck

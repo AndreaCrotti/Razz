@@ -1,5 +1,5 @@
 # check usage of http://www.galassi.org/mark/mydocs/autoconf_tutorial_2.html#SEC2
-all: clean razz razz_prof razz_fast
+all: clean razz razz_prof razz_fast precision
 # assserts make code slower, remove them with -DNDEBUG
 
 PROFILE=-pg -g
@@ -21,6 +21,9 @@ razz_fast:
 razz_prof:
 	$(CC) $(PROFILE) $(CFLAGS) -o razz_prof $(RAZZ_FILES)
 
+precision:
+	$(CC) $(CFLAGS) -o precision razz_impl.c precision.c
+
 doc:
 	doxygen
 
@@ -31,5 +34,5 @@ nose:
 	nosetests-2.6
 
 clean:
-	rm -f *.o razz razz_prof razz_fast
+	rm -f *.o razz razz_prof razz_fast precision
 
