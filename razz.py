@@ -138,10 +138,11 @@ def str_to_RazzCard(s):
 
 class Result(object):
     CELL = 10
-    def __init__(self, res, count):
+    def __init__(self, res, count, floating = False):
         self.result = res
-        for k in self.result.keys():
-            self.result[k] /= float(count)
+        if not(floating):
+            for k in self.result.keys():
+                self.result[k] /= float(count)
 
     def __str__(self):
         res = []
@@ -151,6 +152,11 @@ class Result(object):
             s = str(k).ljust(self.CELL) + str(self.result[k]).ljust(self.CELL)
             res.append(s)
         return "\n".join(res)
+    
+    def to_arr(self):
+        ks = self.result.keys()
+        ks.sort()
+        return [self.result[k] for k in ks]
 
 # Must remove also the initial cards from the working deck
 def loop(times, nplayers, init_cards, full = False):
