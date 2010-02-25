@@ -19,10 +19,11 @@
 // instead of needing allocation
 static Game game_conf;
 void free_conf(Game *);
+unsigned int time(int);
 
 int main(int argc, char *argv[])
 {
-     // srandom ((int)(time (NULL)));
+     srandom(time (0));
      init_hand(&game_conf.hand_init);
      get_args(argc, argv, &game_conf);
      

@@ -97,7 +97,7 @@ init_deck(Deck *deck, int len_subdeck, int rep, Card cards_to_remove[], int to_r
 
 Card
 get_random_card_from_deck(Deck *deck) {
-     int pos = (int) (deck->len * (lrand48() / (RAND_MAX + 1.0)));
+     int pos = (int) (deck->len * (random() / (RAND_MAX + 1.0)));
      Card card = deck->cards[pos];
      // swap found element with the last one and then shrink the deck
      swap_cards(pos, deck->len-1, deck->cards);
