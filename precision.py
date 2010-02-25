@@ -1,20 +1,18 @@
 #!/usr/bin/env python
+"""
+Take the exponent of the number of simulations and the initial
+cards and run 10 times a comparison of the C and theoretical output.
+With optionally initial cards given only run once.
 
-# compare different results and graph the precision obtained
-# from them
-# there are various different configurations
-# - python program with full game and no cheating
-# - python program with partial game
-# - c program with all the tricks on
-
-# compare those results, compute the norm and so on
+Distance is given by the norm of the differences * 100
+"""
 
 import numpy as np
 from sys import argv
 from os import popen
 from string import split
 from theory import all_cards
-from razz import DECK_CARDS, Result
+from razz import DECK_CARDS, Result, str_to_RazzCard
 
 to_c_args = {
     1 : 'A',
@@ -32,17 +30,22 @@ def init_to_c_args(cards):
             cards[i] = str(cards[i])
     return " ".join(cards)
 
-def check_correctness(num_sim):
+def check_correctness(num_sim, triple = None):
     "Print out some random triples and the precision of the running C program"
     from random import choice
-    while True:
-        triple = [choice(DECK_CARDS) for _ in range(3)]
-        cprog = parse_c_result(str(num_sim) + " " + init_to_c_args(triple[:]))
-        dist = results_distance(Result(*all_cards(triple)), Result(cprog, 10 ** num_sim, floating = True))
+    def cycle(triple):
+        cprog = run_and_parse_c(str(num_sim) + " " + init_to_c_args(triple))
+        py_triple = map(str_to_RazzCard, triple)
+        dist = results_distance(Result(*all_cards(py_triple)), Result(cprog, 10 ** num_sim, floating = True))
         print " ".join(map(str, triple +[dist]))
 
+    if triple:
+        cycle(triple)
+    else:
+        for _ in range(10):
+            cycle([choice(DECK_CARDS) for _ in range(3)])
 
-def parse_c_result(args_list):
+def run_and_parse_c(args_list):
     result = {}
     s = "./razz_fast " + args_list
     out = popen(s)
@@ -56,9 +59,8 @@ def results_distance(res1, res2):
     return np.linalg.norm(np.array(res1.to_arr()) - np.array(res2.to_arr())) * 100
 
 if __name__ == '__main__':
-    # hist(times, weights=range(1,9))
     if len(argv) == 2:
         check_correctness(int(argv[1]))
     else:
-        print "usage: ./precision.py <#simulations>"
+        check_correctness(int(argv[1]), argv[2:])
         
