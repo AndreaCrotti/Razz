@@ -105,7 +105,7 @@ void add_card_to_hand(Card, Hand *);
  * Core function, return the ranking of the hand
  * 
  * 
- * @return rank
+ * @return rank of the hand
  */
 Card rank_hand(Hand *);
 
@@ -118,5 +118,6 @@ void usage(void);
 void get_args(int, char **, Game *);
 
 int card_cmp(const void *, const void *);
+// external functions
 void qsort(void *, size_t, size_t, int (*compar)(const void *, const void *));
 long random(void);

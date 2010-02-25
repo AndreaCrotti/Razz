@@ -15,6 +15,7 @@
 
 #define TO_EXP(x) powl(10, (x))
 #define INITIAL_CARDS(x) (INITIAL_PLAYER + (INITIAL_OTHER * (x - 1)))
+void print_arr(Card *, int);
 
 // instead of needing allocation
 static Game game_conf;
@@ -23,7 +24,7 @@ unsigned int time(int);
 
 int main(int argc, char *argv[])
 {
-     srandom(time (0));
+     srandom(time(0));
      init_hand(&game_conf.hand_init);
      get_args(argc, argv, &game_conf);
      
@@ -59,7 +60,7 @@ get_args(int argc, char *argv[], Game *game) {
           if (j++ < INITIAL_PLAYER)
                add_card_to_hand(card, &game->hand_init);
           
-          to_remove[i-3] = card;
+          to_remove[i-2] = card;
      }
      qsort(to_remove, rem_num, sizeof(Card), card_cmp);
      // to_remove is only needed for deck initialization, we can free it right after

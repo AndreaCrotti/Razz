@@ -1,5 +1,4 @@
 #!/bin/bash
-set -x
 echo -e "theoretical result:"
 ./theory.py $@
 echo -e "\nc program with 10^7 simulations:"

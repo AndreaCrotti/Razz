@@ -4,7 +4,7 @@
 #include <assert.h>
 #include "razz.h"
 
-/// those two macro makes the mapping index->card for the pseudo dictionary hand structure
+// internally we always use indices for cards, the first macro is only for output
 #define CARD_TO_IDX(x) (x - 1)
 #define IDX_TO_CARD(x) (x + 1)
 
@@ -44,12 +44,12 @@ init_hand(Hand *hand) {
 }
 
 void
-add_card_to_hand(Card c, Hand *h) {
-     if (!h->cards[c])
-          h->diffs++;
+add_card_to_hand(Card c, Hand *hand) {
+     if (!hand->cards[c])
+          hand->diffs++;
 
-     h->cards[c]++;
-     h->len++;
+     hand->cards[c]++;
+     hand->len++;
 }
 
 Card

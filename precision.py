@@ -15,8 +15,6 @@ from os import popen
 from string import split
 from theory import all_cards
 from razz import DECK_CARDS, Result
-from pylab import hist, clf, show
-from itertools import combinations
 
 to_c_args = {
     1 : 'A',
@@ -26,6 +24,7 @@ to_c_args = {
 }
 
 def init_to_c_args(cards):
+    "translate card list to c program arguments"
     for i in range(len(cards)):
         if to_c_args.has_key(cards[i]):
             cards[i] = to_c_args[cards[i]]
@@ -34,12 +33,10 @@ def init_to_c_args(cards):
     return " ".join(cards)
 
 def check_correctness(num_sim):
-    "print out some random triples and their precision"
+    "Print out some random triples and the precision of the running C program"
     from random import choice
     while True:
         triple = [choice(DECK_CARDS) for _ in range(3)]
-        print triple
-    # for a,b,c in combinations(DECK_CARDS, 3):
         cprog = parse_c_result(str(num_sim) + " " + init_to_c_args(triple[:]))
         dist = results_distance(Result(*all_cards(triple)), Result(cprog, 10 ** num_sim, floating = True))
         print " ".join(map(str, triple +[dist]))
@@ -55,13 +52,8 @@ def parse_c_result(args_list):
     return result
 
 def results_distance(res1, res2):
-    "Printing the distance between the results given in input, using the norm"
-    return np.linalg.norm(np.array(res1.to_arr()) - np.array(res2.to_arr()))
-
-def hist_result(result):
-    clf()
-    hist(result.keys(), weights=result.values(), align='mid', bins=14, range=(-1,13))
-    show() # never closing in this way
+    "Printing the distance between the results given in input, using the norm multiplied by 100"
+    return np.linalg.norm(np.array(res1.to_arr()) - np.array(res2.to_arr())) * 100
 
 if __name__ == '__main__':
     # hist(times, weights=range(1,9))

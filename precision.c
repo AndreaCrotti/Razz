@@ -57,7 +57,5 @@ int main(int argc, char *argv[]) {
           count++;
           printf("%d\n", rank);
      }
-     /* output_result(result, count); */
-     /* printf("created %d combinations\n", count); */
      return 0;
 }
