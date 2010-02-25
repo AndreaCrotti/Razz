@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 # Some ideas:
-# - see if using a queue or a heap could be better for performances
-# - write documentation in RST syntax for sphinx
 # - use multiprocessing to split the work
 #   from http://docs.python.org/dev/library/multiprocessing.html
-# - try to prepare the deck already without the initial cards,
-#   deleting the ugly "remove" method
 
 from random import choice
 from sys import argv
@@ -13,6 +9,7 @@ from sys import argv
 RAZZ_CARDS = dict(A = 1, J = 11, Q = 12, K = 13)
 NON_HIGH_CARD = -1
 DECK_CARDS = range(1, 14) * 4
+RAZZ_HAND = 7
 
 class RazzGame(object):
     """
@@ -21,46 +18,20 @@ class RazzGame(object):
     in the end we just care about the rank given by only one of
     the players
     """
-    STAGES = range(3, 8)
-    # FIXME: move out responsabilities
-    def __init__(self, nplayers, deck, init_cards, staged = True, full = False):
-        # FIXME: this init is doing a way too many things
+    def __init__(self, nplayers, deck, init_cards):
         self.nplayers = nplayers
         self.hands = {}
         self.deck = deck
-        if not(staged):
-            self.stages = [7]
-        else:
-            self.stages = range(3, 8)
-
-        if full:
-            self.playing = self.nplayers
-        else:
-            self.playing = 1
-
         for p, h in init_cards.items():
             self.hands[p] = RazzHand(h)
             self.deck.remove(self.hands[p].to_list())
 
-    def __str__(self):
-        return "\n".join(map(str, self.hands.values()))
-
-    # cards are given until the stage is completed
-    def give_cards(self, staged = False):
-        ## staged and full should be given here not in the stupid init method
-        for stage_cards in self.stages:
-            for n in xrange(self.playing):
-                h = self.hands[n]
-                while h.len < stage_cards: # a bit dirtier than len() but 10% faster
-                    h.addCard(self.deck.getRandomCard())
+    def give_cards(self):
+        for n in range(self.nplayers):
+            h = self.hands[n]
+            while h.len < RAZZ_HAND:
+                h.addCard(self.deck.getRandomCard())
                     
-    # Stages:
-    # 0 -> 3 cards each (give 2 to other players)
-    # 1,2,3 -> 1 card each
-    # 4 -> 1 final card
-    # every time remove the cards from the deck
-    # We must first remove the cards, for fun determine also whos the winner of the game
-
     def getHand(self, player):
         return self.hands[player]
 
@@ -69,9 +40,6 @@ class Deck(object):
         # this copy is necessary otherwise we modify the DECK_CARDS given in input
         self.cards = cards[:]
         
-    def __str__(self):
-        return str(self.cards)
-
     def remove(self, card_list):
         for c in card_list:
             self.cards.remove(c)
@@ -80,7 +48,6 @@ class Deck(object):
     def getRandomCard(self):
         "Returns a card randomly from the deck, assuming it's already in random order"
         c = choice(self.cards)
-        # check that I'm actually removing the first one
         self.cards.remove(c)
         return c
 
@@ -96,15 +63,6 @@ class RazzHand(object):
         self.len = 0
         for c in card_list:
             self.addCard(c)
-
-    def __str__(self):
-        return str(self.cards)
-
-    def __cmp__(self, other):
-        return cmp(self.rank(), other.rank())
-
-    def __len__(self):
-        return self.len
 
     # ranking directly here turned out to be too complicated and also slower
     def addCard(self, card):
@@ -199,5 +157,4 @@ def main():
     print Result(ranks, num_simulations)
     
 if __name__ == '__main__':
-    main()
-    
+    main()    

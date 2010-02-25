@@ -38,6 +38,10 @@ This would be the output
     + generate a razzHand
     + rank it
 
+  For this we use *itertools* in python which is very fast.
+  All the possible combinations that we need to rank are
+  $Binomial(TOT\_CARDS - INITIAL\_CARDS, 4)$
+
 * Implementation
 ** General considerations
    The most important thing to get a fast and well written program is to select the right data structure.
@@ -70,7 +74,6 @@ This would be the output
 
 #+begin_src python
 c = choice(self.cards)
-# check that I'm actually removing the first one
 self.cards.remove(c)
 #+end_src
 

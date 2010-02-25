@@ -4,13 +4,11 @@ all: clean razz razz_prof razz_fast precision
 
 PROFILE=-pg -g
 FAST=-DNDEBUG -O3
-CFLAGS=-lm -pthread -Wall -std=c99 --pedantic # not using ansi C
+CFLAGS=-lm -Wall -std=c99 --pedantic # not using ansi C
 CC=gcc
 RAZZ_FILES=razz.c razz_impl.c
-FILES=razz.c razz_impl.c razz.h razz.py Makefile
+FILES=razz.c razz_impl.c razz.h razz.py precision.c precision.py Makefile
 FNAME=andrea_crotti.tar.gz
-
-.PHONY: clean
 
 razz:
 	$(CC) $(CFLAGS) -o razz $(RAZZ_FILES)
