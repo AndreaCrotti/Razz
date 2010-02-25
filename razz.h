@@ -19,6 +19,9 @@
 #define MIN_RANK 5
 #define POSSIBLE_RANKS (RAZZ_CARDS - MIN_RANK + 2)
 
+#define TO_EXP(x) powl(10, (x))
+#define INITIAL_CARDS(x) (INITIAL_PLAYER + (INITIAL_OTHER * (x - 1)))
+
 typedef short Card;
 typedef struct Deck Deck;
 typedef struct Hand Hand;
@@ -121,3 +124,5 @@ int card_cmp(const void *, const void *);
 // external functions
 void qsort(void *, size_t, size_t, int (*compar)(const void *, const void *));
 long random(void);
+void srandom(unsigned int);
+unsigned int time(int);

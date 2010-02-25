@@ -1,5 +1,5 @@
 # check usage of http://www.galassi.org/mark/mydocs/autoconf_tutorial_2.html#SEC2
-all: clean razz razz_prof razz_fast precision
+all: clean razz razz_prof razz_fast
 # assserts make code slower, remove them with -DNDEBUG
 
 PROFILE=-pg -g

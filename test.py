@@ -3,20 +3,15 @@ from random import choice
 from razz import RazzHand, Deck, DECK_CARDS, NON_HIGH_CARD, loop
 
 class TestRazzHand(unittest.TestCase):
-    def test_highCardValues(self):
-        h = [13, 10, 7, 6, 2]
-        h1 = [13, 10, 7, 2, 1]
-        self.assertEqual(RazzHand(h), RazzHand(h1))
-
     def test_PairLosesAgainstHighCard(self):
         p1 = RazzHand([13, 13, 7, 6, 2])
         p2 = RazzHand([10, 7, 3, 2, 1])
-        self.assertTrue(p1 < p2)
+        self.assertTrue(p1.rank() < p2.rank())
 
     def test_pokerLoseAgainstLowHand(self):
         pok = [6, 6, 6, 6, 3]
         low = [8, 4, 3, 2, 1]
-        self.assertTrue(RazzHand(pok) < RazzHand(low))
+        self.assertTrue(RazzHand(pok).rank() < RazzHand(low).rank())
 
     def test_RazzHandRanksCorrectly(self):
         hand = RazzHand([6,4,3,2,1])

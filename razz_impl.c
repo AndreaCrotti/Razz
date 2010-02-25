@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <math.h>
+#include <sysexits.h>
 #include "razz.h"
 
 // internally we always use indices for cards, the first macro is only for output
@@ -155,4 +157,50 @@ output_result(long *result, long num_simulations) {
 int card_cmp(const void *v1, const void *v2)
 {
      return (*(Card *)v1 - *(Card *)v2);
+}
+
+// this should create the configuration for the game
+// to pass around later also to the thread
+void
+get_args(int argc, char *argv[], Game *game) {
+     Card card;
+     int i, j;
+
+     if (argc < 5)
+          usage();
+
+     game->num_simulations = TO_EXP(atol(argv[1]));
+     int num_players = argc - 4;
+
+     int rem_num = INITIAL_CARDS(num_players);
+     Card *to_remove = malloc(sizeof(Card) * rem_num);
+
+     // max/min bound for players
+     if (num_players > 8 || num_players < 1) {
+          fprintf(stderr, "wrong number of players\n");
+          usage();
+     }
+
+     for (i = 2, j = 0; i < argc; i++) {
+          card = char_to_card_idx(argv[i][0]);
+          if (j++ < INITIAL_PLAYER)
+               add_card_to_hand(card, &game->hand_init);
+          
+          to_remove[i-2] = card;
+     }
+     qsort(to_remove, rem_num, sizeof(Card), card_cmp);
+     // to_remove is only needed for deck initialization, we can free it right after
+     init_deck(&game->deck, RAZZ_CARDS, RAZZ_REP, to_remove, INITIAL_CARDS(num_players));
+     free(to_remove);
+}
+
+void
+usage() {
+     fprintf(stderr, "Usage: ./razz <k> <c1_1> <c1_2> <c1_3> <c2_1> .. <cn_1>\n");
+     fprintf(stderr, "\tk : exponent for number of simulations (10^k)\n");
+     fprintf(stderr, "\tcx_y : yth card of xth player, player 1 wants 3 cards, other players only one.\n");
+     fprintf(stderr, "\tfor example\n\t ./razz 6 2 A 2 3 4\n\twill run 1 million simulations with 2 players\n");
+     fprintf(stderr, "\twith Ace,2,3 for player 1 and 4 for player 2\n");
+     fprintf(stderr, "\tthe returned statistics represent the number of times for each ranking obtained by player 1\n");
+     exit(EX_USAGE);
 }
