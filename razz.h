@@ -40,7 +40,6 @@ struct Hand {
 struct Game
 {
      Deck deck;
-     int num_players;
      int num_simulations;
      Hand hand_init;
      long result[POSSIBLE_RANKS];

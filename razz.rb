@@ -9,15 +9,15 @@
   A deck is a colection of cards, and a hand is just of subset of it.
 =end
 class Deck
-  def initialize(suits, ranks)
+  def initialize(ranks, rep)
     @cards = []
-    for s in suits
-      for r in ranks
-        @cards << (Card.new s, r)
-      end
-    end
+    ranks.each { |x|
+      1.upto(rep).each {
+        @cards << x
+      }
+    }
   end
-  
+
   def to_s
     @cards.inject("") { |res, x| res + x.to_s + "\n" }
   end
@@ -36,48 +36,6 @@ class Deck
 
 end
 
-class Card
-  def initialize(suit, rank)
-    @suit = suit
-    @rank = rank
-  end
-
-  def to_s
-    "#{@rank} of #{@suit}"
-  end
-
-end
-
-
-class Player
-  attr_accessor :cards
-  # a hand is just an empty deck at worst
-  def initialize(name, hand = Deck.new([], []))
-    @name = name
-    @cards = cards
-    @hand = hand
-  end
-
-  def to_s
-    "#{@name}" + cards.to_s
-  end
-end
-
-
-class RazzGame
-  attr_reader :players, :deck
-
-  def initialize(players)
-    @suit = "a".."d"
-    @ranks = %w[A J Q K].concat((2..10).to_a)
-
-    @players = players
-    @deck = Deck.new @suit, @ranks
-  end
-
-end
-
-
 require 'test/unit'
 
 class TC_Razz < Test::Unit::TestCase
@@ -89,10 +47,7 @@ class TC_Razz < Test::Unit::TestCase
   def test_PlayersMoreThanZero
     assert(@r.players.length > 0)
   end
-
-  def test_DeckCreatesCards
-    assert(@r.deck[0].is_a? Card)
-  end
 end
 
 
+p Deck.new((%w[A J Q K].concat((2..10).to_a)), 4)

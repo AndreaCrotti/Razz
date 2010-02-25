@@ -42,13 +42,13 @@ get_args(int argc, char *argv[], Game *game) {
           usage();
 
      game->num_simulations = TO_EXP(atol(argv[1]));
-     game->num_players = argc - 4;
+     int num_players = argc - 4;
 
-     int rem_num = INITIAL_CARDS(game->num_players);
+     int rem_num = INITIAL_CARDS(num_players);
      Card *to_remove = malloc(sizeof(Card) * rem_num);
 
      // max/min bound for players
-     if (game->num_players > 8 || game->num_players < 1) {
+     if (num_players > 8 || num_players < 1) {
           fprintf(stderr, "wrong number of players\n");
           usage();
      }
@@ -62,7 +62,7 @@ get_args(int argc, char *argv[], Game *game) {
      }
      qsort(to_remove, rem_num, sizeof(Card), card_cmp);
      // to_remove is only needed for deck initialization, we can free it right after
-     init_deck(&game->deck, RAZZ_CARDS, RAZZ_REP, to_remove, INITIAL_CARDS(game->num_players)); // shorten this
+     init_deck(&game->deck, RAZZ_CARDS, RAZZ_REP, to_remove, INITIAL_CARDS(num_players));
      free(to_remove);
 }
 
