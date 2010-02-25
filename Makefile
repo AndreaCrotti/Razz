@@ -22,7 +22,7 @@ razz_prof:
 	$(CC) $(PROFILE) $(CFLAGS) -o razz_prof $(RAZZ_FILES)
 
 precision:
-	$(CC) $(CFLAGS) -o precision razz_impl.c precision.c
+	$(CC) $(CFLAGS) $(FAST) -o precision razz_impl.c precision.c
 
 doc:
 	doxygen

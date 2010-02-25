@@ -12,7 +12,7 @@ void
 loop(Game *game) {
      int i, rank;
 
-     // We use only ONE deck! Initialize it directly without the initial hand
+     // We use only ONE deck! already initialized without the initial hand
      Deck *deck = &game->deck;
      Hand hand_tmp;
 
@@ -22,6 +22,7 @@ loop(Game *game) {
           // restore the hand to the initial state at every loop
           hand_tmp = game->hand_init;
           fill_hand(deck, &hand_tmp);
+
           rank = rank_hand(&hand_tmp);
           assert(rank != 0);
           game->result[rank_to_result_idx(rank)]++;
@@ -30,11 +31,8 @@ loop(Game *game) {
 
 void
 fill_hand(Deck *deck, Hand *hand) {
-     int card_idx;
-
      while (hand->len < RAZZ_HAND) {
-          card_idx = get_random_card_from_deck(deck);
-          add_card_to_hand(card_idx, hand);
+          add_card_to_hand(get_random_card_from_deck(deck), hand);
      }
 }
 
@@ -75,15 +73,15 @@ rank_hand(Hand *hand) {
 
 // This works at condition that the cards_to_remove array is sorted in ascending order
 void
-init_deck(Deck *deck, int num_cards, int rep, Card cards_to_remove[], int to_remove) {
+init_deck(Deck *deck, int len_subdeck, int rep, Card cards_to_remove[], int to_remove) {
      Card i;
      int j, idx, rem_idx;
      idx = rem_idx = 0;
 
-     int len = (num_cards * rep) - to_remove;
+     int len = (len_subdeck * rep) - to_remove;
      deck->len = deck->orig_len = len;
   
-     for (i = 0; i < num_cards; i++) {
+     for (i = 0; i < len_subdeck; i++) {
           for (j = 0; j < rep; ) {
                while ((i == cards_to_remove[rem_idx]) && (rem_idx < to_remove)) {
                     assert(j < rep);
