@@ -97,7 +97,7 @@ init_deck(Deck *deck, int len_subdeck, int rep, Card cards_to_remove[], int to_r
 
 Card
 get_random_card_from_deck(Deck *deck) {
-     int pos = (int) (deck->len * (random() / (RAND_MAX + 1.0)));
+     int pos = (int) (deck->len * (lrand48() / (RAND_MAX + 1.0)));
      Card card = deck->cards[pos];
      // swap found element with the last one and then shrink the deck
      swap_cards(pos, deck->len-1, deck->cards);
@@ -144,8 +144,12 @@ char_to_card_idx(char c) {
 void
 output_result(long *result, long num_simulations) {
      int i;
-     for (i = 0; i < POSSIBLE_RANKS; i++)
-          printf("%d:\t%f\n", idx_to_rank(i), ((double) result[i] / num_simulations));
+     double res;
+     for (i = 0; i < POSSIBLE_RANKS; i++) {
+          res = ((double) result[i] / num_simulations);
+          if (res != 0)
+               printf("%d:\t%f\n", idx_to_rank(i), res);
+     }
 }
 
 int card_cmp(const void *v1, const void *v2)

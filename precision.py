@@ -34,10 +34,15 @@ def init_to_c_args(cards):
     return " ".join(cards)
 
 def check_correctness(num_sim):
-    for a,b,c in combinations(DECK_CARDS, 3):
-        cprog = parse_c_result(str(num_sim) + " " + init_to_c_args([a,b,c]))
-        dist = results_distance(Result(*all_cards([a,b,c])), Result(cprog, 10 ** num_sim, floating = True))
-        print " ".join(map(str, [a,b,c,dist]))
+    "print out some random triples and their precision"
+    from random import choice
+    while True:
+        triple = [choice(DECK_CARDS) for _ in range(3)]
+        print triple
+    # for a,b,c in combinations(DECK_CARDS, 3):
+        cprog = parse_c_result(str(num_sim) + " " + init_to_c_args(triple[:]))
+        dist = results_distance(Result(*all_cards(triple)), Result(cprog, 10 ** num_sim, floating = True))
+        print " ".join(map(str, triple +[dist]))
 
 
 def parse_c_result(args_list):
