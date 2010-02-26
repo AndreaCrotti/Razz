@@ -159,8 +159,6 @@ int card_cmp(const void *v1, const void *v2)
      return (*(Card *)v1 - *(Card *)v2);
 }
 
-// this should create the configuration for the game
-// to pass around later also to the thread
 void
 get_args(int argc, char *argv[], Game *game) {
      Card card;
@@ -199,8 +197,8 @@ usage() {
      fprintf(stderr, "Usage: ./razz <k> <c1_1> <c1_2> <c1_3> <c2_1> .. <cn_1>\n");
      fprintf(stderr, "\tk : exponent for number of simulations (10^k)\n");
      fprintf(stderr, "\tcx_y : yth card of xth player, player 1 wants 3 cards, other players only one.\n");
-     fprintf(stderr, "\tfor example\n\t ./razz 6 2 A 2 3 4\n\twill run 1 million simulations with 2 players\n");
+     fprintf(stderr, "\tfor example\n\t ./razz 6 A 2 3 4\n\twill run 1 million simulations with 2 players\n");
      fprintf(stderr, "\twith Ace,2,3 for player 1 and 4 for player 2\n");
-     fprintf(stderr, "\tthe returned statistics represent the number of times for each ranking obtained by player 1\n");
+     fprintf(stderr, "\tthe returned statistics represent the probabilities of each ranking obtained by player 1\n");
      exit(EX_USAGE);
 }

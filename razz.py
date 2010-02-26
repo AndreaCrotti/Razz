@@ -27,6 +27,7 @@ class RazzGame(object):
             self.deck.remove(self.hands[p].to_list())
 
     def give_cards(self):
+        "Give cards to all player until they're hand is full"
         for n in range(self.nplayers):
             h = self.hands[n]
             while h.len < RAZZ_HAND:

@@ -3,14 +3,13 @@
  * @author Andrea Crotti <andrea.crotti.0@gmail.com>
  * @date   Wed Feb 24 17:38:32 2010
  * 
- * @brief  Interface for razz program
+ * @brief  Interface for razz simulation program
  * 
  * 
  */
 
 #define RAZZ_HAND 7
 #define RAZZ_EVAL 5
-#define MAX_COUPLES (RAZZ_HAND - RAZZ_EVAL)
 #define NON_HIGH_HAND (-1)
 #define INITIAL_PLAYER 3
 #define INITIAL_OTHER 1
@@ -27,7 +26,6 @@ typedef struct Deck Deck;
 typedef struct Hand Hand;
 typedef struct Game Game;
 
-/// A deck is basically an array of cards with an actual and original length
 struct Deck {
      Card cards[RAZZ_CARDS * RAZZ_REP];
      int len;
@@ -112,13 +110,20 @@ void add_card_to_hand(Card, Hand *);
  */
 Card rank_hand(Hand *);
 
+/** 
+ * Creates the configuration of the game parsing the arguments 
+ * 
+ * @param int argc
+ * @param char ** argv
+ * @param Game * pointer to the game configuration that will be written
+ */
+void get_args(int, char **, Game *);
+
 int char_to_card_idx(char);
 int rank_to_result_idx(int);
 int idx_to_rank(int);
-
 void output_result(long *, long);
 void usage(void);
-void get_args(int, char **, Game *);
 
 int card_cmp(const void *, const void *);
 // external functions
