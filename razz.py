@@ -43,6 +43,7 @@ class Deck(object):
         
     def remove(self, card_list):
         for c in card_list:
+            assert(c in self.cards)
             self.cards.remove(c)
 
     # This is the function which must be maximally fast
