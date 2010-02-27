@@ -1,12 +1,6 @@
 #include <stdio.h>
 #include "razz.h"
 
-/*
-  - make it multithreading, see http://softpixel.com/~cwright/programming/threads/threads.c.php
-  - use couples instead of diffs for a better usage
-  - adding another structure Simulation would be better?
-*/
-
 Game game_conf;
 
 int main(int argc, char *argv[])
