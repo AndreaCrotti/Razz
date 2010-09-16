@@ -17,7 +17,6 @@ def dict_merge(dicts):
     return ret
 
 if __name__ == '__main__':
-    # maybe better to create a class wrapping the Pool and use Manage for shared variables somehow
     pool = Pool(processes = cpus)
     dicts = []
     workers = [pool.apply_async(loop, [SIMS / cpus, nplayers, init_cards]) for _ in range(cpus)]
