@@ -31,9 +31,9 @@ class RazzGame(object):
         for n in range(self.nplayers):
             h = self.hands[n]
             while h.len < RAZZ_HAND:
-                h.addCard(self.deck.getRandomCard())
+                h.add_card(self.deck.get_random_card())
                     
-    def getHand(self, player):
+    def get_hand(self, player):
         return self.hands[player]
 
 class Deck(object):
@@ -47,7 +47,7 @@ class Deck(object):
             self.cards.remove(c)
 
     # This is the function which must be maximally fast
-    def getRandomCard(self):
+    def get_random_card(self):
         "Returns a card randomly from the deck, assuming it's already in random order"
         c = choice(self.cards)
         self.cards.remove(c)
@@ -64,10 +64,10 @@ class RazzHand(object):
         self.cards = {}
         self.len = 0
         for c in card_list:
-            self.addCard(c)
+            self.add_card(c)
 
     # ranking directly here turned out to be too complicated and also slower
-    def addCard(self, card):
+    def add_card(self, card):
         if card in self.cards:
             self.cards[card] += 1
         else:
@@ -89,7 +89,7 @@ class RazzHand(object):
             cards.sort()
             return cards[:self.EVAL_CARDS][-1]
         
-def str_to_RazzCard(s):
+def str_to_razz_card(s):
     if s.isdigit():
         return int(s)
     else:
@@ -128,7 +128,7 @@ def loop(times, nplayers, init_cards, full = False):
         d = Deck(DECK_CARDS)
         r = RazzGame(nplayers, d, init_cards)
         r.give_cards()
-        got_rank = r.getHand(0).rank()
+        got_rank = r.get_hand(0).rank()
 
         if ranks.has_key(got_rank):
             ranks[got_rank] += 1
@@ -145,8 +145,8 @@ def main():
 
     num_simulations = 10 ** int(argv[1])
     num_players = len(argv) - 4
-    my_cards = map(str_to_RazzCard, argv[2 : 5])
-    other_cards = map(str_to_RazzCard, argv[5:])
+    my_cards = map(str_to_razz_card, argv[2 : 5])
+    other_cards = map(str_to_razz_card, argv[5:])
     # I can concatenate the initial cards in one hand only
     # for performance reasons
     init_cards = {}

@@ -29,7 +29,7 @@ class TestDeck(unittest.TestCase):
         i = 0
         # we get a card until the deck is empty
         while i < len(r.cards):
-            self.assertTrue(r.getRandomCard() > 0)
+            self.assertTrue(r.get_random_card() > 0)
             i += 1
 
 # some longer tests should not be started automatically with the rests
