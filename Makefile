@@ -1,23 +1,25 @@
 # check usage of http://www.galassi.org/mark/mydocs/autoconf_tutorial_2.html#SEC2
 all: clean razz razz_prof razz_fast
 # assserts make code slower, remove them with -DNDEBUG
+#TODO: switch to automake 
 
 PROFILE=-pg -g2
 FAST=-DNDEBUG -O3
-CFLAGS=-lm -Wall -std=c99 --pedantic # not using ansi C
+CFLAGS=-lm -Wall -Wextra -std=c99 --pedantic
 CC=gcc
 RAZZ_FILES=razz.c razz_impl.c
 FILES=razz.c razz_impl.c razz.h razz.py precision.c precision.py Makefile
 FNAME=andrea_crotti.tar.gz
 PHONIES = clean nose dist doc
 
-razz:
+# set the razz objects here
+razz: $(RAZZ_FILES)
 	$(CC) $(CFLAGS) -o razz $(RAZZ_FILES)
 
-razz_fast:
+razz_fast: $(RAZZ_FILES)
 	$(CC) $(FAST) $(CFLAGS) -o razz_fast $(RAZZ_FILES)
 
-razz_prof:
+razz_prof: $(RAZZ_FILES)
 	$(CC) $(FAST) $(PROFILE) $(CFLAGS) -o razz_prof $(RAZZ_FILES)
 
 precision:
