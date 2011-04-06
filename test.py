@@ -2,6 +2,7 @@ import unittest
 from random import choice
 from razz import RazzHand, Deck, DECK_CARDS, NON_HIGH_CARD, loop
 
+
 class TestRazzHand(unittest.TestCase):
     def test_PairLosesAgainstHighCard(self):
         p1 = RazzHand([13, 13, 7, 6, 2])
@@ -14,14 +15,15 @@ class TestRazzHand(unittest.TestCase):
         self.assertTrue(RazzHand(pok).rank() < RazzHand(low).rank())
 
     def test_RazzHandRanksCorrectly(self):
-        hand = RazzHand([6,4,3,2,1])
+        hand = RazzHand([6, 4, 3, 2, 1])
         self.assertEqual(hand.rank(), 6)
 
     def test_RankPairIsCorrect(self):
-        self.assertEqual(RazzHand([1,1,2,2,2,5,6]).rank(), NON_HIGH_CARD)
+        self.assertEqual(RazzHand([1, 1, 2, 2, 2, 5, 6]).rank(), NON_HIGH_CARD)
 
     def test_lenAttributeWorkingCorrectly(self):
-        self.assertEqual(RazzHand([1,1,3,3,4,5,5]).len, 7)
+        self.assertEqual(RazzHand([1, 1, 3, 3, 4, 5, 5]).len, 7)
+
 
 class TestDeck(unittest.TestCase):
     def test_RandomIsAlwaysGettingACard(self):
@@ -32,11 +34,11 @@ class TestDeck(unittest.TestCase):
             self.assertTrue(r.get_random_card() > 0)
             i += 1
 
-# some longer tests should not be started automatically with the rests
+
 def test_ProbAlwaysSimilar():
     nsims = 10000
-    threshold = nsims * 2 /100 # 2 % of difference is allowed
-    ranks = loop(10000, 1, {0:[1,2,3]})
+    threshold = nsims * 2 / 100  # 2 % of difference is allowed
+    ranks = loop(10000, 1, {0: [1, 2, 3]})
     right = {-1: 292,
              5: 692,
              6: 1170,
@@ -52,30 +54,31 @@ def test_ProbAlwaysSimilar():
         assert(abs(ranks[r] - right[r]) < threshold)
             # print ranks[r], right[r]
 
+
 def test_randChoiceWorkingForDeck():
     d = Deck(DECK_CARDS)
     for _ in range(100):
         assert(choice(d.cards) in d.cards)
 
+
 def test_Ranking5WorksCorrectly():
     "Checking some possible where I should get a rank5"
     l = [
-     [1, 1, 2, 3, 4, 5, 9],
-     [1, 1, 2, 3, 4, 5, 10],
-     [1, 1, 2, 3, 4, 5, 11],
-     [1, 1, 2, 3, 4, 5, 12],
-     [1, 1, 2, 3, 4, 5, 13],
-     [1, 2, 2, 2, 3, 4, 5],
-     [1, 2, 2, 3, 3, 4, 5],
-     [1, 2, 2, 3, 4, 4, 5],
-     [1, 2, 2, 3, 4, 5, 6],
-     [1, 2, 2, 3, 4, 5, 7],
-     [1, 2, 2, 3, 4, 5, 8],
-     [1, 2, 2, 3, 4, 5, 9],
+        [1, 1, 2, 3, 4, 5, 9],
+        [1, 1, 2, 3, 4, 5, 10],
+        [1, 1, 2, 3, 4, 5, 11],
+        [1, 1, 2, 3, 4, 5, 12],
+        [1, 1, 2, 3, 4, 5, 13],
+        [1, 2, 2, 2, 3, 4, 5],
+        [1, 2, 2, 3, 3, 4, 5],
+        [1, 2, 2, 3, 4, 4, 5],
+        [1, 2, 2, 3, 4, 5, 6],
+        [1, 2, 2, 3, 4, 5, 7],
+        [1, 2, 2, 3, 4, 5, 8],
+        [1, 2, 2, 3, 4, 5, 9],
     ]
     for tup in l:
         assert(RazzHand(tup).rank() == 5)
-
 
 
 def test_RankNegativeWorks():
@@ -86,6 +89,6 @@ def test_RankNegativeWorks():
     for tup in l:
         assert(RazzHand(tup).rank() == -1)
 
-    
+
 if __name__ == '__main__':
     unittest.main()
