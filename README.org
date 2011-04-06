@@ -14,17 +14,17 @@ RAZZ SIMULATION
   
 This would be the output
 #+begin_src sh
-./razz.py 3 A 2 3
--1        0.031     
-5         0.076     
-6         0.105     
-7         0.144     
-8         0.166     
-9         0.138     
-10        0.118     
-11        0.109     
-12        0.077     
-13        0.036  
+  ./razz.py 3 A 2 3
+  -1        0.031     
+  5         0.076     
+  6         0.105     
+  7         0.144     
+  8         0.166     
+  9         0.138     
+  10        0.118     
+  11        0.109     
+  12        0.077     
+  13        0.036  
 #+end_src
   
 * A general solver
@@ -134,7 +134,7 @@ self.cards.remove(c)
     random number generator.
     
 * Testing
-  I used [fn:1] for testing python code, it looks in the current directory and try to run all the tests that it finds.
+  I used nose for testing python code, it looks in the current directory and try to run all the tests that it finds.
 
 * Objectives
   - Design a nice structure
@@ -142,7 +142,7 @@ self.cards.remove(c)
   - Compare the performances and the possibilities given
   - Make it fast!
 
-* Speed comparison
+* Speed comparison                                                 :noexport:
 
 ** Pure python
    Python can't be 
@@ -184,7 +184,3 @@ self.cards.remove(c)
    - Gap test
    - Poker test
    - Birthday test
-
-* Footnotes
-
-[fn:1] [[http://code.google.com/p/python-nose/][python nose]]
