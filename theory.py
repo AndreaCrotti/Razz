@@ -5,7 +5,7 @@ Get the theoretical probabilities only
 given the initial cards dealt
 """
 
-from razz import Deck, RazzHand, DECK_CARDS, Result, str_to_RazzCard
+from razz import Deck, RazzHand, DECK_CARDS, Result, str_to_razz_card
 from itertools import combinations
 from sys import argv
 
@@ -29,5 +29,5 @@ def all_cards(init):
     return ranks, count
 
 if __name__ == '__main__':
-    initial = map(str_to_RazzCard, argv[1:])
+    initial = map(str_to_razz_card, argv[1:])
     print Result(*all_cards(initial))

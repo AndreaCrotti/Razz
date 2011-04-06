@@ -5,11 +5,13 @@
 
 from random import choice
 from sys import argv
+from collections import defaultdict
 
-RAZZ_CARDS = dict(A = 1, J = 11, Q = 12, K = 13)
+RAZZ_CARDS = dict(A=1, J=11, Q=12, K=13)
 NON_HIGH_CARD = -1
 DECK_CARDS = range(1, 14) * 4
 RAZZ_HAND = 7
+
 
 class RazzGame(object):
     """
@@ -32,15 +34,16 @@ class RazzGame(object):
             h = self.hands[n]
             while h.len < RAZZ_HAND:
                 h.add_card(self.deck.get_random_card())
-                    
+
     def get_hand(self, player):
         return self.hands[player]
+
 
 class Deck(object):
     def __init__(self, cards):
         # this copy is necessary otherwise we modify the DECK_CARDS given in input
         self.cards = cards[:]
-        
+
     def remove(self, card_list):
         for c in card_list:
             assert(c in self.cards)
@@ -53,6 +56,7 @@ class Deck(object):
         self.cards.remove(c)
         return c
 
+
 class RazzHand(object):
     """
     We don't take into account flush or straight
@@ -60,6 +64,7 @@ class RazzHand(object):
     """
     TOT_CARDS = 7
     EVAL_CARDS = 5
+
     def __init__(self, card_list):
         self.cards = {}
         self.len = 0
@@ -88,7 +93,8 @@ class RazzHand(object):
         else:
             cards.sort()
             return cards[:self.EVAL_CARDS][-1]
-        
+
+
 def str_to_razz_card(s):
     if s.isdigit():
         return int(s)
@@ -112,7 +118,7 @@ class Result(object):
             s = str(k).ljust(self.CELL) + str(self.result[k]).ljust(self.CELL)
             res.append(s)
         return "\n".join(res)
-    
+
     def to_arr(self):
         ks = self.result.keys()
         ks.sort()
@@ -121,7 +127,7 @@ class Result(object):
 # Must remove also the initial cards from the working deck
 def loop(times, nplayers, init_cards, full = False):
     # at every loop it should restart from scratch
-    ranks = {}
+    ranks = defaultdict(lambda: 0)
 
     for n in range(times):
         # every time creating a new object
@@ -129,12 +135,10 @@ def loop(times, nplayers, init_cards, full = False):
         r = RazzGame(nplayers, d, init_cards)
         r.give_cards()
         got_rank = r.get_hand(0).rank()
+        ranks[got_rank] += 1
 
-        if ranks.has_key(got_rank):
-            ranks[got_rank] += 1
-        else:
-            ranks[got_rank] = 1
     return ranks
+
 
 def main():
     if len(argv) == 1:
@@ -151,12 +155,12 @@ def main():
     # for performance reasons
     init_cards = {}
     init_cards[0] = my_cards
-    
+
     for i in range(1, num_players):
         init_cards[i] = [other_cards[i-1]]
 
     ranks = loop(num_simulations, num_players, init_cards)
     print Result(ranks, num_simulations)
-    
+
 if __name__ == '__main__':
-    main()    
+    main()
