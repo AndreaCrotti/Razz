@@ -10,8 +10,7 @@
 #define CARD_TO_IDX(x) (x - 1)
 #define IDX_TO_CARD(x) (x + 1)
 
-void
-loop(Game *game) {
+void loop(Game *game) {
      int i, rank;
 
      // We use only ONE deck! already initialized without the initial hand
@@ -31,22 +30,19 @@ loop(Game *game) {
      }
 }
 
-void
-fill_hand(Deck *deck, Hand *hand) {
+void fill_hand(Deck *deck, Hand *hand) {
      while (hand->len < RAZZ_HAND) {
           add_card_to_hand(get_random_card_from_deck(deck), hand);
      }
 }
 
-void
-init_hand(Hand *hand) {
+void init_hand(Hand *hand) {
      hand->len = 0;
      hand->diffs = 0;
      memset(hand->cards, 0, sizeof(Card) * RAZZ_CARDS);
 }
 
-void
-add_card_to_hand(Card c, Hand *hand) {
+void add_card_to_hand(Card c, Hand *hand) {
      if (!hand->cards[c])
           hand->diffs++;
 
@@ -54,8 +50,7 @@ add_card_to_hand(Card c, Hand *hand) {
      hand->len++;
 }
 
-Card
-rank_hand(Hand *hand) {
+Card rank_hand(Hand *hand) {
      if (hand->diffs < RAZZ_EVAL)
           return NON_HIGH_HAND;
 
@@ -74,8 +69,7 @@ rank_hand(Hand *hand) {
 }
 
 // This works at condition that the cards_to_remove array is sorted in ascending order
-void
-init_deck(Deck *deck, int len_subdeck, int rep, Card cards_to_remove[], int to_remove) {
+void init_deck(Deck *deck, int len_subdeck, int rep, Card cards_to_remove[], int to_remove) {
      Card i;
      int j, idx, rem_idx;
      idx = rem_idx = 0;
@@ -97,8 +91,7 @@ init_deck(Deck *deck, int len_subdeck, int rep, Card cards_to_remove[], int to_r
      }
 }
 
-Card
-get_random_card_from_deck(Deck *deck) {
+Card get_random_card_from_deck(Deck *deck) {
      int pos = (int) (deck->len * (random() / (RAND_MAX + 1.0)));
      Card card = deck->cards[pos];
      // swap found element with the last one and then shrink the deck
@@ -107,32 +100,28 @@ get_random_card_from_deck(Deck *deck) {
      return card;
 }
 
-void
-swap_cards(int c1_idx, int c2_idx, Card *cards) {
+void swap_cards(int c1_idx, int c2_idx, Card *cards) {
      Card tmp;
      tmp = cards[c1_idx];
      cards[c1_idx] = cards[c2_idx];
      cards[c2_idx] = tmp;
 }
 
-int
-rank_to_result_idx(int rank) {
+int rank_to_result_idx(int rank) {
      switch (rank) {
      case -1: return 0;
      default : return (rank - MIN_RANK + 1);
      }
 }
 
-int
-idx_to_rank(int idx) {
+int idx_to_rank(int idx) {
      switch (idx) {
      case 0: return -1;
      default : return (idx + MIN_RANK -1);
      }
 }
 
-int
-char_to_card_idx(char c) {
+int char_to_card_idx(char c) {
      switch ( c ) {
      case 'A': return 0;
      case 'J': return 10;
@@ -143,8 +132,7 @@ char_to_card_idx(char c) {
      }
 }
 
-void
-output_result(long *result, long num_simulations) {
+void output_result(long *result, long num_simulations) {
      int i;
      double res;
      for (i = 0; i < POSSIBLE_RANKS; i++) {
@@ -159,8 +147,7 @@ int card_cmp(const void *v1, const void *v2)
      return (*(Card *)v1 - *(Card *)v2);
 }
 
-void
-get_args(int argc, char *argv[], Game *game) {
+void get_args(int argc, char *argv[], Game *game) {
      Card card;
      int i, j;
 
@@ -192,8 +179,7 @@ get_args(int argc, char *argv[], Game *game) {
      free(to_remove);
 }
 
-void
-usage() {
+void usage() {
      fprintf(stderr, "Usage: ./razz <k> <c1_1> <c1_2> <c1_3> <c2_1> .. <cn_1>\n");
      fprintf(stderr, "\tk : exponent for number of simulations (10^k)\n");
      fprintf(stderr, "\tcx_y : yth card of xth player, player 1 wants 3 cards, other players only one.\n");
