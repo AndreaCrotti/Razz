@@ -1,7 +1,4 @@
 #!/usr/bin/env python
-# Some ideas:
-# - use multiprocessing to split the work
-#   from http://docs.python.org/dev/library/multiprocessing.html
 
 from random import choice
 from sys import argv

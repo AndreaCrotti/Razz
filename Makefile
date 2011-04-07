@@ -25,14 +25,14 @@ razz_prof: $(RAZZ_FILES)
 precision:
 	$(CC) $(CFLAGS) $(FAST) -o precision razz_impl.c precision.c
 
-# PHONIES
+# TODO: add to the PHONIES
 doc:
 	doxygen
 
 dist:
 	tar -cvzf $(FNAME) $(FILES)
 
-nose:
+test:
 	nosetests-2.6
 
 clean:
