@@ -66,17 +66,14 @@ class RazzHand(object):
     EVAL_CARDS = 5
 
     def __init__(self, card_list):
-        self.cards = {}
+        self.cards = defaultdict(lambda: 1)
         self.len = 0
         for c in card_list:
             self.add_card(c)
 
     # ranking directly here turned out to be too complicated and also slower
     def add_card(self, card):
-        if card in self.cards:
-            self.cards[card] += 1
-        else:
-            self.cards[card] = 1
+        self.cards[card] += 1
         self.len += 1
 
     # use sum or lambda instead
@@ -96,15 +93,16 @@ class RazzHand(object):
 
 
 def str_to_razz_card(s):
-    if s.isdigit():
+    try:
         return int(s)
-    else:
-        s = s.upper()
-        return RAZZ_CARDS[s] # not handling exceptions here?
+    except ValueError:
+        return RAZZ_CARDS[s]
+
 
 class Result(object):
     CELL = 10
-    def __init__(self, res, count, floating = False):
+
+    def __init__(self, res, count, floating=False):
         self.result = res
         if not(floating):
             for k in self.result.keys():
@@ -112,20 +110,16 @@ class Result(object):
 
     def __str__(self):
         res = []
-        ks = self.result.keys()
-        ks.sort()
-        for k in ks:
+        for k in sorted(self.result):
             s = str(k).ljust(self.CELL) + str(self.result[k]).ljust(self.CELL)
             res.append(s)
         return "\n".join(res)
 
     def to_arr(self):
-        ks = self.result.keys()
-        ks.sort()
-        return [self.result[k] for k in ks]
+        return [self.result[k] for k in sorted(self.result)]
 
 # Must remove also the initial cards from the working deck
-def loop(times, nplayers, init_cards, full = False):
+def loop(times, nplayers, init_cards, full=False):
     # at every loop it should restart from scratch
     ranks = defaultdict(lambda: 0)
 
@@ -140,13 +134,8 @@ def loop(times, nplayers, init_cards, full = False):
     return ranks
 
 
+# TODO: add better argument parsing 
 def main():
-    if len(argv) == 1:
-        # nice trick to test automatically when not passing arguments
-        import nose
-        nose.run()
-        return
-
     num_simulations = 10 ** int(argv[1])
     num_players = len(argv) - 4
     my_cards = map(str_to_razz_card, argv[2 : 5])
@@ -163,4 +152,9 @@ def main():
     print Result(ranks, num_simulations)
 
 if __name__ == '__main__':
-    main()
+    if len(argv) == 1:
+        # nice trick to test automatically when not passing arguments
+        import nose
+        nose.run()
+    else:
+        main()
