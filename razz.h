@@ -8,18 +8,10 @@
  * 
  */
 
-#define RAZZ_HAND 7
-#define RAZZ_EVAL 5
-#define NON_HIGH_HAND (-1)
-#define INITIAL_PLAYER 3
-#define INITIAL_OTHER 1
 #define RAZZ_CARDS 13
 #define RAZZ_REP 4
 #define MIN_RANK 5
 #define POSSIBLE_RANKS (RAZZ_CARDS - MIN_RANK + 2)
-
-#define TO_EXP(x) powl(10, (x))
-#define INITIAL_CARDS(x) (INITIAL_PLAYER + (INITIAL_OTHER * (x - 1)))
 
 typedef short Card;
 typedef struct Deck Deck;

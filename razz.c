@@ -14,6 +14,15 @@
 #define CARD_TO_IDX(x) (x - 1)
 #define IDX_TO_CARD(x) (x + 1)
 
+#define RAZZ_HAND 7
+#define RAZZ_EVAL 5
+#define NON_HIGH_HAND (-1)
+#define INITIAL_PLAYER 3
+#define INITIAL_OTHER 1
+
+#define TO_EXP(x) powl(10, (x))
+#define INITIAL_CARDS(x) (INITIAL_PLAYER + (INITIAL_OTHER * (x - 1)))
+
 Game game_conf;
 
 void fill_hand(Deck *deck, Hand *hand) {
