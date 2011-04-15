@@ -14,28 +14,25 @@
 #define POSSIBLE_RANKS (RAZZ_CARDS - MIN_RANK + 2)
 
 typedef short Card;
-typedef struct Deck Deck;
-typedef struct Hand Hand;
-typedef struct Game Game;
 
-struct Deck {
+typedef struct Deck {
      Card cards[RAZZ_CARDS * RAZZ_REP];
      int len;
      int orig_len;
-};
+} Deck;
 
-struct Hand {
+typedef struct Hand {
      Card cards[RAZZ_CARDS]; /**< dictionary idx -> occurrences */
      int len;
      int diffs;
-};
+} Hand;
 
-struct Game {
+typedef struct Game {
      Deck deck;
      int num_simulations;
      Hand hand_init;
      long result[POSSIBLE_RANKS];
-};
+} Game;
 
 /** 
  * Swap two cards in the array at the given indices
