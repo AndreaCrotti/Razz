@@ -7,8 +7,8 @@ PROFILE=-pg -g2
 FAST=-DNDEBUG -O3
 CFLAGS=-lm -Wall -Wextra -std=c99 --pedantic
 CC=gcc
-RAZZ_FILES=razz.c razz_impl.c
-FILES=razz.c razz_impl.c razz.h razz.py precision.c precision.py Makefile
+RAZZ_FILES=razz.c
+FILES=razz.c razz.h razz.py precision.py Makefile
 FNAME=andrea_crotti.tar.gz
 PHONIES = clean nose dist doc
 
@@ -22,9 +22,6 @@ razz_fast: $(RAZZ_FILES)
 razz_prof: $(RAZZ_FILES)
 	$(CC) $(FAST) $(PROFILE) $(CFLAGS) -o razz_prof $(RAZZ_FILES)
 
-precision:
-	$(CC) $(CFLAGS) $(FAST) -o precision razz_impl.c precision.c
-
 # TODO: add to the PHONIES
 doc:
 	doxygen
@@ -36,5 +33,5 @@ test:
 	nosetests-2.6
 
 clean:
-	rm -f *.o razz razz_prof razz_fast precision
+	rm -f *.o razz razz_prof razz_fast
 
