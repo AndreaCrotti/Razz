@@ -38,8 +38,7 @@ struct Hand {
      int diffs;
 };
 
-struct Game
-{
+struct Game {
      Deck deck;
      int num_simulations;
      Hand hand_init;

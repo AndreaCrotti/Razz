@@ -1,19 +1,18 @@
+#define _XOPEN_SOURCE 500
+
+#include <assert.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
-#include <math.h>
 #include <sysexits.h>
+#include <time.h>
+
 #include "razz.h"
 
 // internally we always use indices for cards, the first macro is only for output
 #define CARD_TO_IDX(x) (x - 1)
 #define IDX_TO_CARD(x) (x + 1)
-
-void qsort(void *, size_t, size_t, int (*compar)(const void *, const void *));
-long random(void);
-void srandom(unsigned int);
-unsigned int time(int);
 
 Game game_conf;
 
