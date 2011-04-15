@@ -7,24 +7,25 @@ given the initial cards dealt
 
 from razz import Deck, RazzHand, DECK_CARDS, Result, str_to_razz_card
 from itertools import combinations
+from collections import defaultdict
 from sys import argv
 
+
 def all_cards(init):
-    """Generate ALL the possible combinations and
-    find the REAL probabilities given"""
+    """
+    Generate ALL the possible combinations and find the REAL
+    probabilities given
+    """
     d = Deck(DECK_CARDS)
     d.remove(init)
-    ranks = {}
+    ranks = defaultdict(lambda: 0)
 
     count = 0
     for hand in combinations(d.cards, 4):
         count += 1
         h = RazzHand(list(hand) + init[:3])
         got_rank = h.rank()
-        if ranks.has_key(got_rank):
-            ranks[got_rank] += 1
-        else:
-            ranks[got_rank] = 1
+        ranks[got_rank] += 1
 
     return ranks, count
 
