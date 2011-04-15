@@ -135,7 +135,7 @@ def loop(times, nplayers, init_cards, full=False):
 def main():
     num_simulations = 10 ** int(argv[1])
     num_players = len(argv) - 4
-    my_cards = map(str_to_razz_card, argv[2 : 5])
+    my_cards = map(str_to_razz_card, argv[2:5])
     other_cards = map(str_to_razz_card, argv[5:])
     # I can concatenate the initial cards in one hand only
     # for performance reasons
@@ -143,7 +143,7 @@ def main():
     init_cards[0] = my_cards
 
     for i in range(1, num_players):
-        init_cards[i] = [other_cards[i-1]]
+        init_cards[i] = [other_cards[i - 1]]
 
     ranks = loop(num_simulations, num_players, init_cards)
     print Result(ranks, num_simulations)

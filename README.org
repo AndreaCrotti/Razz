@@ -1,18 +1,17 @@
 RAZZ SIMULATION
-#+OPTIONS: toc:nil num:nil
-# Look in the bayesian formula to see how to get the probabilities correctly
+#+OPTIONS: toc:nil num:t
 
 * Problem
-  Given an initial configuration (3 initial cards for player 1 and 1 for each other player) simulate a very large number of games. \\
-  For every game get the rank obtained by player 1, where poker and flushes are discarded and the rank is computed with the rules of razz.
+  Given an initial configuration (3 initial cards for player 1 and 1 for each other player) simulate a very large number of games.
+  For every game get the rank obtained by player 1, where poker and flushes are discarded and the rank is computed with the [[http://en.wikipedia.org/wiki/Razz_%2528poker%2529][rules of razz poker]].
 
   For example running
 #+begin_src sh
   ./razz 3 A 2 3
 #+end_src
   Will run 10^3 simulations with only one player which has as initial cards Ace, 2 and 3.
+  The simulator must extract a total of 7 cards and take the 5 that give the best hand for razz.
   
-This would be the output
 #+begin_src sh
   ./razz.py 3 A 2 3
   -1        0.031     
@@ -26,8 +25,13 @@ This would be the output
   12        0.077     
   13        0.036  
 #+end_src
+
+  And it's interpreted as
+  - there is 3% of probability to get a /null/ hand
+  - there is 7% of getting a 5, which represents the best hand possible in Razz.
+  And so on.
   
-* A general solver
+* A probabilistic solver
   Given the assumption that cards dealt to the other players don't interfere we can easily generate *all* the possible games and get the real probabilities.
   This could be useful to check whether the randomized algorithm also works correctly.
   
@@ -42,7 +46,9 @@ This would be the output
   All the possible combinations that we need to rank are
   $Binomial(TOT\_CARDS - INITIAL\_CARDS, 4)$
 
-* Implementation
+* Randomized solver
+  Instead of computing the probabilities it's faster to extract cards randomly for a big number of times and compute the result /a posteriori/.
+
 ** General considerations
    The most important thing to get a fast and well written program is to select the right data structure.
    We can consider those entities:
