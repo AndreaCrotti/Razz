@@ -1,37 +1,36 @@
-# check usage of http://www.galassi.org/mark/mydocs/autoconf_tutorial_2.html#SEC2
-all: clean razz razz_prof razz_fast
+all: razz razz_prof razz_fast
 # assserts make code slower, remove them with -DNDEBUG
-#TODO: switch to automake 
 
 PROFILE=-pg -g2
 FAST=-DNDEBUG -O3
 CFLAGS=-lm -Wall -Wextra -std=c99 --pedantic
 CC=gcc
-RAZZ_FILES=razz.c
-FILES=razz.c razz.h razz.py precision.py Makefile
-FNAME=andrea_crotti.tar.gz
-PHONIES = clean nose dist doc
+RAZZ_FILES=razz.c razz.h
+FNAME=andrea_crotti.tar
 
 # set the razz objects here
-razz: $(RAZZ_FILES)
-	$(CC) $(CFLAGS) -o razz $(RAZZ_FILES)
+razz razz_prof razz_fast: $(RAZZ_FILES)
 
-razz_fast: $(RAZZ_FILES)
-	$(CC) $(FAST) $(CFLAGS) -o razz_fast $(RAZZ_FILES)
+razz_prof razz_fast: CFLAGS += $(FAST)
+razz_prof: CFLAGS += $(PROFILE)
 
-razz_prof: $(RAZZ_FILES)
-	$(CC) $(FAST) $(PROFILE) $(CFLAGS) -o razz_prof $(RAZZ_FILES)
+razz razz_prof razz_fast:
+	$(CC) $(CFLAGS) -o $@ $^
 
-# TODO: add to the PHONIES
-doc:
+doc: Doxyfile
 	doxygen
 
-dist:
-	tar -cvzf $(FNAME) $(FILES)
+# use git --archive maybe if possible?
+dist: $(FNAME)
+
+$(FNAME):
+	git archive --format=tar -o $@ master
 
 test:
 	nosetests-2.6
 
 clean:
-	rm -f *.o razz razz_prof razz_fast
+	rm -f *.o razz razz_prof razz_fast $(FNAME)
 
+
+.PHONY: doc clean test all dist

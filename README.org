@@ -79,8 +79,8 @@ RAZZ SIMULATION
     It's still much faster than shuffling the deck every time.
 
 #+begin_src python
-c = choice(self.cards)
-self.cards.remove(c)
+  c = choice(self.cards)
+  self.cards.remove(c)
 #+end_src
 
 *** Hand
