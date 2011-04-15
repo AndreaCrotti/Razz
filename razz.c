@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include "razz.h"
 
+void srandom(unsigned int);
+unsigned int time(int);
+
 Game game_conf;
 
 int main(int argc, char *argv[])

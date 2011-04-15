@@ -117,17 +117,19 @@ Card rank_hand(Hand *);
  * @param char ** argv
  * @param Game * pointer to the game configuration that will be written
  */
+
+/** 
+ * Analyze the arguments given and initialize the game deck
+ *
+ * @param int 
+ */
 void get_args(int, char **, Game *);
 
-int char_to_card_idx(char);
-int rank_to_result_idx(int);
-int idx_to_rank(int);
-void output_result(long *, long);
-void usage(void);
 
-int card_cmp(const void *, const void *);
-// external functions
-void qsort(void *, size_t, size_t, int (*compar)(const void *, const void *));
-long random(void);
-void srandom(unsigned int);
-unsigned int time(int);
+/** 
+ * output the result of the simulation
+ * @long * array of results
+ * @long number of simulations run
+ *
+ */
+void output_result(long *, long);

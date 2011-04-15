@@ -10,6 +10,17 @@
 #define CARD_TO_IDX(x) (x - 1)
 #define IDX_TO_CARD(x) (x + 1)
 
+
+int char_to_card_idx(char);
+int rank_to_result_idx(int);
+int idx_to_rank(int);
+void usage(void);
+
+int card_cmp(const void *, const void *);
+// external functions
+void qsort(void *, size_t, size_t, int (*compar)(const void *, const void *));
+long random(void);
+
 void loop(Game *game) {
     int i, rank;
 
