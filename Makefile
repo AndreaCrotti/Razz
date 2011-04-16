@@ -15,7 +15,7 @@ razz_prof razz_fast: CFLAGS += $(FAST)
 razz_prof: CFLAGS += $(PROFILE)
 
 razz razz_prof razz_fast:
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ razz.c
 
 doc: Doxyfile
 	doxygen
