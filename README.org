@@ -27,7 +27,7 @@ RAZZ SIMULATION
 #+end_src
 
   And it's interpreted as
-  - there is 3% of probability to get a /null/ hand
+  - there is 3% of probability to get a /null/ hand, which is an hand where we don't get 5 different cards
   - there is 7% of getting a 5, which represents the best hand possible in Razz.
   And so on.
   
@@ -49,115 +49,62 @@ RAZZ SIMULATION
 * Randomized solver
   Instead of computing the probabilities it's faster to extract cards randomly for a big number of times and compute the result /a posteriori/.
 
-** General considerations
-   The most important thing to get a fast and well written program is to select the right data structure.
-   We can consider those entities:
-   - Card
-     simply an integer, we don't need to keep track of the suit also.
-   - Deck
-     On a deck we must be able to
-     + remove given cards (from 3 up to 10 in initialization phase only)
-     + select and remove random cards (4 in simplified case up to 46 in the completely fair version)
-     
-     For this structure I chose a list/array, 52 Integers is really small and the access is always linear.
-     Different considerations on sorting are done later
-
-   - Hand
-     A hand is simply a set of card that each player has in every stage of the game, we must be able to:
-     + add cards
-     + compute the rank
-     
-     Here I chose a dictionary, which maps every card to the number of occurrences in the hand.
-     Adding a card is just a *dict[x]++* and ranking is also very fast.
-
-** Python
-   In python I didn't try to optimize as much as in C, because the code would be much less clean and I wouldn't still get comparable performances.
-
-*** Deck
-    The deck is a list of integers, we need to remove a list of cards from it and to extract random cards.
-    Extraction is done picking one card with choice and removing it.
-    It's still much faster than shuffling the deck every time.
-
-#+begin_src python
-  c = choice(self.cards)
-  self.cards.remove(c)
-#+end_src
-
-*** Hand
-    A hand is a dictionary \\
-    [card : occurrences]
-    Adding cards is straightforward and computing the rank is also very easy, we can simply
-    - sort the keys (which represent the different cards present)
-    - if they're less than necessary it's at least a couple and we discard it, otherwise we take the k_{th} card
-
 ** C
-   C code is written in c99 standard (not ansi).
-   To make C code run as fast as possible we should avoid every expansive operation, like allocation of data structures at every cycle.
-*** Deck
-    The deck is a structure containing:
-    - array of cards
-    - original length
-    - current length
+*** Data structures
+    Since only 
 
-    To get a real simulation we should shuffle the whole deck at every game, but that's too expansive.
-    Another way is picking random cards with a random index in the range of the length. \\
-    Even if the card to pick randomly are just a few we could still pick the same card, and randomly choose until one free card is found is in general not a good idea.
+*** Algorithm
+    C code is written with c99 standard, and K&R style.
+    The main goal is to make it as fast as possible, so everything too expensive should be avoided.
+    In theory to pick randomly a card we should shuffle the whole deck every time and then pick a card.
 
-    So I just shrink the array at every step swapping the chosen element with the last one.
+    But shuffling the whole deck is very expensive, so a better solution has to be found.
 
-    For example: \\
+    The solution that I implemented consists of
+    - generate a random index in the range (0, num_cards)
+    - swap the card at index with the last card
+    - decrement by 1 the number of cards
+
+    For example given the following deck: \\
     [1, 2, 4, 3] \\
 
     We pick index 1, so 2 must be extracted \\
     [1, 3, 4 | 2] \\
     
-    We swapped 2 with 3 and decremented the actual length.
-
-    Keeping the original deck as it is and just moving one index is very useful because to reset the deck we just need to put it back \\
-    *deck->len = deck->orig\_len;*
+    And now the deck the next random index can only select cards in the deck
+    [1, 3, 4]
     
-*** Hand
-    A hand is implemented like in python, with a dictionary [Card : #], with the difference that here when we need to always keep all indices.
-    So we also keep a variable *diffs* which keeps track of how many different cards have been found.
-    The rank then will be:
-    - *-1* if we don't have enough different cards
-    - the *diffs - eval + 1* card found scanning backwards the array otherwise
-    
-    A possible improvement would be to rank direcly in *give_cards*, whenever we know we'll certainly have a couple we could return *-1* (or call rank_hand when not possible).
-    In avarage is a bit faster but introduces a coupling between two functions which breaks the [[http://en.wikipedia.org/wiki/Single_responsibility_principle][SRP]].
+    This approach is many order of magnitudes faster then shuffling the whole deck and, for the property of the random function, it also gives the right probabilities.
 
-*** Random generator
-    Using random and lrand48 gives exactly the same result (while rand differs).    And lrand48 is the slowest, also avoid using the modulo, is slower and it only uses least significant bits.
-    The random() function uses a non-linear, additive feedback, random number generator, employing a
-    default table of size 31 long integers.  It returns successive pseudo-random numbers in the range from
-    0 to (2**31)-1.  The period of this random number generator is very large, approximately
-    16*((2**31)-1).
+*** Random generator choice
+    Using *random* and *lrand48* give the same result, while *rand* differs.
+    Since lrand48 was also slower, I chose *random*, and the choice does make a big difference, since profiling the program I noticed that the bottleneck is exactly the random call.
 
-    The rand48() family of functions generates pseudo-random numbers, using a linear congruential algorithm
-    working on integers 48 bits in size.  The particular formula employed is r(n+1) = (a * r(n) + c) mod m.
-    The default value for the multiplicand `a' is 0xfdeece66d (25214903917).  The default value for the the
-    addend `c' is 0xb (11).  The modulo is always fixed at m = 2 ** 48.  r(n) is called the seed of the
-    random number generator.
-    
-* Testing
-  I used nose for testing python code, it looks in the current directory and try to run all the tests that it finds.
+    Another important tip is to avoid using the modulo function, and instead this pattern should be used:
 
-* Objectives
-  - Design a nice structure
-  - See how to run test units in many languages
-  - Compare the performances and the possibilities given
-  - Make it fast!
+#+begin_src c
+    int pos = (int) (deck->len * (random() / (RAND_MAX + 1.0)));
+#+end_src
+    The % operator is slower and doesn't use all the bits from the generated random value.
 
-* Speed comparison                                                 :noexport:
+**** Random()
+     The random() function uses a non-linear, additive feedback, random number generator, employing a
+     default table of size 31 long integers.  It returns successive pseudo-random numbers in the range from
+     0 to (2**31)-1.  The period of this random number generator is very large, approximately
+     16*((2**31)-1).
 
-** Pure python
-   Python can't be 
+**** Rand48()
+     The rand48() family of functions generates pseudo-random numbers, using a linear congruential algorithm
+     working on integers 48 bits in size.  The particular formula employed is r(n+1) = (a * r(n) + c) mod m.
+     The default value for the multiplicand `a' is 0xfdeece66d (25214903917).  The default value for the the
+     addend `c' is 0xb (11).  The modulo is always fixed at m = 2 ** 48.  r(n) is called the seed of the
+     random number generator.
 
-** Pure C
-   C program for simulations runs very fast, in fact as you can see the bottleneck became the ramdom number generator.
-   [[file:profiled.pdf]]
 
-* Random generators
+** Python
+   The python version of the program is 
+
+* Other random generators
   - [[http://en.wikipedia.org/wiki/Pseudorandom_number_generator][Pseudorandom number generator]]
   - [[http://www.ams.org/featurecolumn/archive/random.html][nothing left to chance]]
   - [[http://www.random.org/randomness/][random.org]]
