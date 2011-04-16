@@ -127,14 +127,78 @@ RAZZ SIMULATION
      addend `c' is 0xb (11).  The modulo is always fixed at m = 2 ** 48.  r(n) is called the seed of the
      random number generator.
 
+*** Perfomances
+    With 10 millions simulations the C code is still very fast, less than 1 second:
+#+begin_src sh
+  $ time ./razz_fast 7 A 2 3
+  -1:     0.028419
+  5:      0.071538
+  6:      0.117815
+  7:      0.143025
+  8:      0.150514
+  9:      0.143172
+  10:     0.125754
+  11:     0.100989
+  12:     0.073119
+  13:     0.045655
+  
+  real    0m0.942s
+  user    0m0.930s
+  sys     0m0.010s
+#+end_src
+
+    Increasing even more the number of /games/ played make it slower but not significantly more precise.
 
 # TODO: comment more on this 
 ** Python
    The python version of the program is equivalent to the C program, but in python I didn't try to optimize too much, but only to make it readable and correct.
 
 * Putting them together
-  So now there is 
-#
+  So now there is a solver that uses exact probabilistic results, one randomized simulation in C and in python.
+  Running the script *glue.sh* shows the results on a given initial situation for all the 3 modalities.
+
+  And as we can see already with 10^7 simulation run the C version is very precise.
+  The python version runs much slower, and 10^5 simulations are not sufficient to get the same level of precision (as expected).
+  
+#+begin_src sh
+  $ ./glue.sh A 2 3
+  theoretical result:
+  -1        0.0283939662822
+  5         0.0715324057468
+  6         0.117993543393
+  7         0.143008174593
+  8         0.150201060998
+  9         0.143196964262
+  10        0.125620646038
+  11        0.101096867979
+  12        0.0732503917386
+  13        0.0457059789688
+  
+  c program with 10^7 simulations:
+  -1:     0.028382
+  5:      0.071485
+  6:      0.118071
+  7:      0.142907
+  8:      0.150132
+  9:      0.143166
+  10:     0.125617
+  11:     0.101164
+  12:     0.073303
+  13:     0.045772
+  
+  python program with 10^5 simulations:
+  -1        0.01282   
+  5         0.07924   
+  6         0.13027   
+  7         0.15419   
+  8         0.16001   
+  9         0.14831   
+  10        0.1252    
+  11        0.09468   
+  12        0.06245   
+  13        0.03283   
+#+end_src
+
 
 * Other random generators
   - [[http://en.wikipedia.org/wiki/Pseudorandom_number_generator][Pseudorandom number generator]]
