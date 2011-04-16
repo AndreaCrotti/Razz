@@ -50,11 +50,38 @@ RAZZ SIMULATION
   Instead of computing the probabilities it's faster to extract cards randomly for a big number of times and compute the result /a posteriori/.
 
 ** C
+   All the C code is written with c99 standard, and K&R style.
+   *razz.c* contains the implementation, and *razz.h* contains the documentation and definition of the interface.
+
 *** Data structures
-    Since only 
+    Only the number of the card is important, so a deck can be represented by a simple array of shorts.
+    More space-aggressive approaches could be used since the cards only go from 1 to 13, but using bit-wise data-structures resulted to be slower due to misaligned data.
+
+#+begin_src c
+  typedef short Card;
+  
+  typedef struct Deck {
+       Card cards[RAZZ_CARDS * RAZZ_REP];
+       int len;
+       int orig_len;
+  } Deck;
+#+end_src
+
+    A hand is instead a dictionary, implemented on an array:
+
+#+begin_src c
+  typedef struct Hand {
+       Card cards[RAZZ_CARDS]; /**< dictionary idx -> occurrences */
+       int len;
+       int diffs;
+  } Hand;
+  
+#+end_src
+
+    Since I know what is the maximum possible value, it's very easy to assign to every position a card number, and use the array as a counter.
+    Keep this data structure is very good also to analyze the result.
 
 *** Algorithm
-    C code is written with c99 standard, and K&R style.
     The main goal is to make it as fast as possible, so everything too expensive should be avoided.
     In theory to pick randomly a card we should shuffle the whole deck every time and then pick a card.
 
@@ -101,8 +128,13 @@ RAZZ SIMULATION
      random number generator.
 
 
+# TODO: comment more on this 
 ** Python
-   The python version of the program is 
+   The python version of the program is equivalent to the C program, but in python I didn't try to optimize too much, but only to make it readable and correct.
+
+* Putting them together
+  So now there is 
+#
 
 * Other random generators
   - [[http://en.wikipedia.org/wiki/Pseudorandom_number_generator][Pseudorandom number generator]]
