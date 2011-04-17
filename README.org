@@ -152,6 +152,20 @@ RAZZ SIMULATION
 # TODO: comment more on this 
 ** Python
    The python version of the program is equivalent to the C program, but in python I didn't try to optimize too much, but only to make it readable and correct.
+   The deck is implemented a list of integers, and to pick a random card it first chooses it randomly from the list and the remove it from the list.
+
+#+begin_src python
+  def get_random_card(self):
+      ""
+      "Returns a card randomly from the deck, assuming it's already
+      in random order
+      """
+      c = choice(self.cards)
+      self.cards.remove(c)
+      return c
+  
+#+end_src
+   
 
 * Putting them together
   So now there is a solver that uses exact probabilistic results, one randomized simulation in C and in python.

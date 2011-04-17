@@ -21,16 +21,14 @@ doc: Doxyfile
 	doxygen
 
 # use git --archive maybe if possible?
-dist: $(FNAME)
-
-$(FNAME):
-	git archive --format=tar -o $@ master
+dist:
+	git archive --format=tar -o $(FNAME) master
 
 test:
 	nosetests-2.6
 
 clean:
-	rm -f *.o razz razz_prof razz_fast $(FNAME)
+	rm -f *.o razz razz_prof razz_fast
 
 
 .PHONY: doc clean test all dist

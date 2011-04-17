@@ -48,7 +48,10 @@ class Deck(object):
 
     # This is the function which must be maximally fast
     def get_random_card(self):
-        "Returns a card randomly from the deck, assuming it's already in random order"
+        """
+        Returns a card randomly from the deck, assuming it's already
+        in random order
+        """
         c = choice(self.cards)
         self.cards.remove(c)
         return c
