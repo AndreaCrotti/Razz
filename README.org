@@ -93,13 +93,13 @@ RAZZ SIMULATION
     - decrement by 1 the number of cards
 
     For example given the following deck: \\
-    [1, 2, 4, 3] \\
-
-    We pick index 1, so 2 must be extracted \\
-    [1, 3, 4 | 2] \\
+    $[1, 2, 4, 3]$ \\
+    
+    We pick index 1, so 2 is selected an swapped with the last element: \\
+    $[1, 3, 4 | 2]$ \\
     
     And now the deck the next random index can only select cards in the deck
-    [1, 3, 4]
+    $[1, 3, 4]$
     
     This approach is many order of magnitudes faster then shuffling the whole deck and, for the property of the random function, it also gives the right probabilities.
 
@@ -238,12 +238,3 @@ RAZZ SIMULATION
      very fast and using only arithmetic given a large amount of random seeds
      It uses a similar formula to linear congruential generators but here the /c/ changes at every execution.
    - [[http://en.literateprograms.org/Mersenne_twister_(C)][mersenne twister]]
-
-** Testing random generators
-   There are a few tests that can be done to test if a random generator is working correctly
-   - Frequency test
-   - Permutation test
-   - Run test
-   - Gap test
-   - Poker test
-   - Birthday test
