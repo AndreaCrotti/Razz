@@ -226,13 +226,6 @@ RAZZ SIMULATION
   This generators normally need a *seed*, which is the starting point of the sequence which will be created.
   /random numbers should not be generated with a method chosen at random/ (Knuth)
 
-  A good way to generate pseudo random numbers comes from the *linear congruential generators*.
-
-** Linear congruential generators
-   $X_{n+1} = f (X_n) = (aX_n + c) % m$
-   The trick is to find the right values of /a/, /c/ and /m/.
-   The maximal length of the sequence that we can get is /m/, and using the correct values we can maximize it.
-
 ** Other possible generators
    - [[http://en.wikipedia.org/wiki/Multiply-with-carry][multiple with carry]]
      very fast and using only arithmetic given a large amount of random seeds
